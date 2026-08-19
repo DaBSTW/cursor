@@ -1,0 +1,86 @@
+locale:
+  name: "Español (España)"
+
+report:
+  cooldown-active: "<red>Debes esperar <yellow><cooldown></yellow> antes de reportar de nuevo.</red>"
+  daily-limit-reached: "<red>Has alcanzado tu límite diario de <limit> reportes.</red>"
+  self-report-blocked: "<red>No puedes reportarte a ti mismo.</red>"
+  target-offline: "<red>Ese jugador no está conectado.</red>"
+  target-not-found: "<red>No se encontró al jugador '<player>'.</red>"
+  duplicate-pending: "<red>Ya tienes un reporte pendiente contra <player> (ticket #<ticket_id>).</red>"
+  submitted: "<green>✅ Reporte #<ticket_id> enviado. Gracias.</green>"
+  cancelled: "<gray>Reporte cancelado.</gray>"
+  book-title: "Reportar jugador"
+  rate-limited: "<red>Estás abriendo el libro demasiado rápido, espera un momento.</red>"
+
+session:
+  invalid: "<red>Esta página ya no es válida, usa /report de nuevo.</red>"
+  owner-mismatch: "<red>Esta sesión no te pertenece.</red>"
+  expired: "<red>Tu sesión de reporte expiró, usa /report de nuevo.</red>"
+
+book:
+  page:
+    target-confirm:
+      title: "<gold>Vas a reportar a:</gold>"
+      subtitle: "<white><player></white>"
+      continue: "<green>[ Continuar ]</green>"
+      cancel: "<red>[ Cancelar ]</red>"
+    category:
+      title: "<gold>Categoría</gold>"
+    subreason:
+      title: "<gold>Sub-motivo</gold>"
+    evidence:
+      title: "<gold>¿Detalles?</gold>"
+      add: "<yellow>[ Añadir ]</yellow>"
+      skip: "<gray>[ Omitir ]</gray>"
+    summary:
+      title: "<gold>Resumen</gold>"
+      target: "<white>Jugador: <player></white>"
+      category: "<white>Categoría: <category></white>"
+      subreason: "<white>Sub-motivo: <sub_reason></white>"
+      evidence: "<white>Evidencia: <evidence></white>"
+      confirm: "<green>[ ✔ Enviar reporte ]</green>"
+      confirm-disabled: "<gray>[ ✔ Enviar reporte ] (espera <cooldown>)</gray>"
+      cancel: "<red>[ ✘ Cancelar ]</red>"
+    result:
+      title: "<green>✅ Reporte enviado</green>"
+      ticket: "<white>Ticket: #<ticket_id></white>"
+      close: "<gray>[ Cerrar ]</gray>"
+  select-target:
+    title: "<gold>¿A quién quieres reportar?</gold>"
+    empty: "<gray>No hay jugadores disponibles para reportar.</gray>"
+    entry: "<white><player></white>"
+
+evidence:
+  prompt: "Escribe los detalles aquí"
+  too-long: "<red>El detalle no puede superar <max> caracteres.</red>"
+
+staff:
+  notify:
+    high-priority: "<red>⚠ Nuevo reporte de alta prioridad: <player> — <category></red>"
+  claim:
+    success: "<green>Has reclamado el reporte #<ticket_id>.</green>"
+    already-claimed: "<red>Este reporte ya fue reclamado por <reviewer>.</red>"
+  resolve:
+    success: "<green>Reporte #<ticket_id> resuelto: <resolution>.</green>"
+    already-resolved: "<red>Este reporte ya fue resuelto por otro miembro del staff.</red>"
+  mark-false:
+    success: "<green>Reporte #<ticket_id> marcado como falso.</green>"
+  notifications:
+    enabled: "<green>Notificaciones de reportes activadas.</green>"
+    disabled: "<gray>Notificaciones de reportes desactivadas.</gray>"
+  queue:
+    title: "Cola de reportes"
+  detail:
+    title: "Reporte #<ticket_id>"
+
+command:
+  reload-success: "<green>Configuración y traducciones recargadas.</green>"
+  reload-failed: "<red>No se pudo recargar: <reason></red>"
+  no-permission: "<red>No tienes permiso para usar este comando.</red>"
+  player-only: "<red>Este comando solo puede usarse en el juego.</red>"
+  unknown-player: "<red>No se encontró al jugador '<player>'.</red>"
+  usage: "<gray>Uso: <usage></gray>"
+
+error:
+  generic: "<red>Ocurrió un error inesperado. Contacta a un administrador.</red>"

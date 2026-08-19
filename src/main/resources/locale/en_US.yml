@@ -1,0 +1,86 @@
+locale:
+  name: "English (US)"
+
+report:
+  cooldown-active: "<red>You must wait <yellow><cooldown></yellow> before reporting again.</red>"
+  daily-limit-reached: "<red>You have reached your daily limit of <limit> reports.</red>"
+  self-report-blocked: "<red>You cannot report yourself.</red>"
+  target-offline: "<red>That player is not online.</red>"
+  target-not-found: "<red>Could not find player '<player>'.</red>"
+  duplicate-pending: "<red>You already have a pending report against <player> (ticket #<ticket_id>).</red>"
+  submitted: "<green>✅ Report #<ticket_id> submitted. Thank you.</green>"
+  cancelled: "<gray>Report cancelled.</gray>"
+  book-title: "Report player"
+  rate-limited: "<red>You are opening the book too fast, wait a moment.</red>"
+
+session:
+  invalid: "<red>This page is no longer valid, use /report again.</red>"
+  owner-mismatch: "<red>This session does not belong to you.</red>"
+  expired: "<red>Your report session expired, use /report again.</red>"
+
+book:
+  page:
+    target-confirm:
+      title: "<gold>You are about to report:</gold>"
+      subtitle: "<white><player></white>"
+      continue: "<green>[ Continue ]</green>"
+      cancel: "<red>[ Cancel ]</red>"
+    category:
+      title: "<gold>Category</gold>"
+    subreason:
+      title: "<gold>Sub-reason</gold>"
+    evidence:
+      title: "<gold>Details?</gold>"
+      add: "<yellow>[ Add ]</yellow>"
+      skip: "<gray>[ Skip ]</gray>"
+    summary:
+      title: "<gold>Summary</gold>"
+      target: "<white>Player: <player></white>"
+      category: "<white>Category: <category></white>"
+      subreason: "<white>Sub-reason: <sub_reason></white>"
+      evidence: "<white>Evidence: <evidence></white>"
+      confirm: "<green>[ ✔ Submit report ]</green>"
+      confirm-disabled: "<gray>[ ✔ Submit report ] (wait <cooldown>)</gray>"
+      cancel: "<red>[ ✘ Cancel ]</red>"
+    result:
+      title: "<green>✅ Report submitted</green>"
+      ticket: "<white>Ticket: #<ticket_id></white>"
+      close: "<gray>[ Close ]</gray>"
+  select-target:
+    title: "<gold>Who do you want to report?</gold>"
+    empty: "<gray>No players available to report.</gray>"
+    entry: "<white><player></white>"
+
+evidence:
+  prompt: "Type the details here"
+  too-long: "<red>Details cannot exceed <max> characters.</red>"
+
+staff:
+  notify:
+    high-priority: "<red>⚠ New high-priority report: <player> — <category></red>"
+  claim:
+    success: "<green>You claimed report #<ticket_id>.</green>"
+    already-claimed: "<red>This report was already claimed by <reviewer>.</red>"
+  resolve:
+    success: "<green>Report #<ticket_id> resolved: <resolution>.</green>"
+    already-resolved: "<red>This report was already resolved by another staff member.</red>"
+  mark-false:
+    success: "<green>Report #<ticket_id> marked as false.</green>"
+  notifications:
+    enabled: "<green>Report notifications enabled.</green>"
+    disabled: "<gray>Report notifications disabled.</gray>"
+  queue:
+    title: "Report queue"
+  detail:
+    title: "Report #<ticket_id>"
+
+command:
+  reload-success: "<green>Configuration and translations reloaded.</green>"
+  reload-failed: "<red>Reload failed: <reason></red>"
+  no-permission: "<red>You do not have permission to use this command.</red>"
+  player-only: "<red>This command can only be used in-game.</red>"
+  unknown-player: "<red>Could not find player '<player>'.</red>"
+  usage: "<gray>Usage: <usage></gray>"
+
+error:
+  generic: "<red>An unexpected error occurred. Contact an administrator.</red>"

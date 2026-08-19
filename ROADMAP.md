@@ -26,12 +26,12 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: toda cadena de texto y toda constante de comportamiento vive en YAML antes de escribir lógica que las consuma.
 
-- [ ] `M` `ConfigManager`: carga/valida `config.yml`, con valores por defecto y **validación estricta al arrancar** (una categoría con `priority` inválida debe fallar ruidosamente en el log, no silenciosamente en runtime).
-- [ ] `M` Modelo tipado de categorías: `ReportCategory` (id, display, priority, sub-reasons) parseado una vez a memoria, no leído del YAML en caliente.
-- [ ] `M` `LocaleManager` con soporte MiniMessage y resolución de placeholders (`{player}`, `{ticket_id}`, `{cooldown}`).
-- [ ] `S` Ficheros `locale/es_ES.yml` y `locale/en_US.yml` completos (todas las claves, aunque las features aún no existan).
-- [ ] `S` Comando `/reportsreload` con permiso `bookreports.admin`, recarga config + locale sin tocar sesiones activas.
-- [ ] `S` Tests unitarios del parser de config: categorías bien/mal formadas, sub-reasons vacías, prioridad desconocida.
+- [x] `M` `ConfigManager`: carga/valida `config.yml`, con valores por defecto y **validación estricta al arrancar** (una categoría con `priority` inválida debe fallar ruidosamente en el log, no silenciosamente en runtime).
+- [x] `M` Modelo tipado de categorías: `ReportCategory` (id, display, priority, sub-reasons) parseado una vez a memoria, no leído del YAML en caliente.
+- [x] `M` `LocaleManager` con soporte MiniMessage y resolución de placeholders (`{player}`, `{ticket_id}`, `{cooldown}`).
+- [x] `S` Ficheros `locale/es_ES.yml` y `locale/en_US.yml` completos (todas las claves, aunque las features aún no existan).
+- [x] `S` Comando `/reportsreload` con permiso `bookreports.admin`, recarga config + locale sin tocar sesiones activas.
+- [x] `S` Tests unitarios del parser de config: categorías bien/mal formadas, sub-reasons vacías, prioridad desconocida.
 
 **Criterio de aceptación:** cambiar el `display` de una categoría en `config.yml` + `/reportsreload` se refleja sin reiniciar el servidor.
 

@@ -1,0 +1,69 @@
+# BookReports configuration. Reload with /reportsreload after editing — no restart needed.
+storage:
+  type: sqlite # sqlite | mysql
+  mysql:
+    host: localhost
+    port: 3306
+    database: bookreports
+    user: root
+    password: ""
+    pool-size: 10
+
+report:
+  cooldown-seconds: 120
+  daily-limit: 10
+  session-timeout-seconds: 300
+  prevent-self-report: true
+  prevent-duplicate-pending: true
+
+  categories:
+    hacks:
+      display: "<green>⚔ Hacks / Cheats</green>"
+      priority: HIGH
+      sub-reasons: [killaura, speed, fly, reach, xray, other]
+    chat_abuse:
+      display: "<yellow>💬 Chat abusivo / Spam</yellow>"
+      priority: MEDIUM
+      sub-reasons: [spam, harassment, advertising, other]
+    inappropriate_name:
+      display: "<gold>🏷 Nombre o skin inapropiado</gold>"
+      priority: LOW
+      sub-reasons: []
+    bug_abuse:
+      display: "<red>🐛 Abuso de bugs / Exploits</red>"
+      priority: HIGH
+      sub-reasons: []
+    staff_impersonation:
+      display: "<dark_red>🛡 Suplantación de staff</dark_red>"
+      priority: HIGH
+      sub-reasons: []
+    other:
+      display: "<gray>❓ Otro</gray>"
+      priority: LOW
+      sub-reasons: []
+
+priority-escalation:
+  distinct-reporters-threshold: 3
+  window-seconds: 600
+  escalate-to: HIGH
+
+false-report-penalty:
+  enabled: true
+  threshold-in-30-days: 3
+  cooldown-multiplier: 4
+  mute-minutes: 0
+
+enable-report-tool: false
+
+staff:
+  alert-sound: ENTITY_EXPERIENCE_ORB_PICKUP
+  claim-timeout-minutes: 15
+
+discord:
+  enabled: false
+  webhook-url: ""
+  min-priority-to-notify: HIGH
+
+placeholderapi: true
+locale: es_ES
+debug: false
