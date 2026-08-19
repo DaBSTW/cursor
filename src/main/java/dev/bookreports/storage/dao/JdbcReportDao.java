@@ -166,6 +166,21 @@ public final class JdbcReportDao implements ReportDao {
     }
 
     @Override
+    public int countByStatus(ReportStatus status) {
+        String sql = "SELECT COUNT(*) FROM br_reports WHERE status = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, status.name());
+            try (ResultSet rs = statement.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new StorageException("Failed to count reports for status=" + status, e);
+        }
+    }
+
+    @Override
     public boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote,
             Instant resolvedAt) {
         // The status guard is the double-resolution defense: if two staff resolve the same report at once,

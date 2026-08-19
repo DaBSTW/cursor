@@ -9,6 +9,7 @@ import dev.bookreports.config.DiscordSettings;
 import dev.bookreports.config.FalseReportPenaltySettings;
 import dev.bookreports.config.MySqlSettings;
 import dev.bookreports.config.PriorityEscalationSettings;
+import dev.bookreports.config.PunishmentSettings;
 import dev.bookreports.config.StaffSettings;
 import dev.bookreports.config.StorageType;
 import dev.bookreports.storage.TestDatabases;
@@ -124,6 +125,6 @@ class DailyLimitServiceTest {
                 120, dailyLimit, 300, true, true, Map.of(), new PriorityEscalationSettings(3, 600, Priority.HIGH),
                 new FalseReportPenaltySettings(true, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
-                true, "es_ES", "default");
+                new PunishmentSettings("7d", "1h"), true, "es_ES", "default");
     }
 }

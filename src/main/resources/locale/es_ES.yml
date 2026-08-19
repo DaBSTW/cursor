@@ -104,6 +104,11 @@ staff:
     not-infraction: "<white>No es una infracción</white>"
     duplicate: "<white>Duplicado</white>"
     banned: "<white>Sancionado</white>"
+  sanction-menu:
+    title: "Elige una sanción"
+    kick: "<yellow>[ Expulsar ]</yellow>"
+    mute: "<gold>[ Silenciar ]</gold>"
+    ban: "<red>[ Banear ]</red>"
   history:
     title: "Historial de <player>"
     empty: "<gray>Sin reportes previos.</gray>"

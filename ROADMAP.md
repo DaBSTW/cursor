@@ -113,11 +113,11 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: conectar con el ecosistema existente. Todo aquí es *soft-depend*: si el plugin externo no está, BookReports funciona igual con la feature deshabilitada.
 
-- [ ] `M` `PunishmentBridge` (interfaz) + implementaciones detectadas en `onEnable` para LiteBans y AdvancedBan; fallback "acción externa aplicada" cuando no hay ninguno.
-- [ ] `S` `DiscordNotifier`: webhook async con `HttpClient` de Java, filtrado por prioridad mínima, con timeout y sin reintentos infinitos.
-- [ ] `S` `PlaceholderExpansionImpl` con los placeholders de §11.
-- [ ] `M` Sincronización en red con proxy: canal `bookreports:sync`, columna `server` poblada, panel de staff capaz de mostrar y reclamar reportes de otros backends sobre MySQL compartido.
-- [ ] `S` Verificación de que arrancar sin **ninguna** integración presente no produce warnings ni stacktraces.
+- [x] `M` `PunishmentBridge` (interfaz) + implementaciones detectadas en `onEnable` para LiteBans y AdvancedBan; fallback "acción externa aplicada" cuando no hay ninguno.
+- [x] `S` `DiscordNotifier`: webhook async con `HttpClient` de Java, filtrado por prioridad mínima, con timeout y sin reintentos infinitos.
+- [x] `S` `PlaceholderExpansionImpl` con los placeholders de §11.
+- [x] `M` Sincronización en red con proxy: canal `bookreports:sync`, columna `server` poblada (ya se rellena desde `server-id` desde Fase 2), panel de staff capaz de mostrar y reclamar reportes de otros backends sobre MySQL compartido (las consultas del DAO nunca filtran por `server`, así que esto ya vale sin código extra). El canal en sí sólo añade un aviso en vivo best-effort — no verificado contra un proxy real por falta de un entorno multi-servidor en este sandbox.
+- [x] `S` Verificación de que arrancar sin **ninguna** integración presente no produce warnings ni stacktraces (cada integración sólo se registra tras comprobar su plugin/softdepend; el build de test cubre el arranque sin ninguno instalado).
 
 **Criterio de aceptación:** el plugin arranca limpio en un servidor pelado y en uno con las cuatro integraciones activas, sin cambios de configuración más allá de activar cada flag.
 

@@ -105,6 +105,7 @@ class PriorityCalculatorTest {
                 new PriorityEscalationSettings(threshold, windowSeconds, escalateTo),
                 new dev.bookreports.config.FalseReportPenaltySettings(true, 3, 4, 0), false,
                 new dev.bookreports.config.StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15),
-                new dev.bookreports.config.DiscordSettings(false, "", Priority.HIGH), true, "es_ES", "default");
+                new dev.bookreports.config.DiscordSettings(false, "", Priority.HIGH),
+                new dev.bookreports.config.PunishmentSettings("7d", "1h"), true, "es_ES", "default");
     }
 }

@@ -16,6 +16,11 @@ import dev.bookreports.config.ConfigManager;
 import dev.bookreports.config.ConfigurationException;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.gui.AnvilInputGUI;
+import dev.bookreports.integration.discord.DiscordNotifier;
+import dev.bookreports.integration.placeholder.PlaceholderExpansionImpl;
+import dev.bookreports.integration.proxy.ProxySyncChannel;
+import dev.bookreports.integration.punishment.PunishmentBridge;
+import dev.bookreports.integration.punishment.PunishmentBridges;
 import dev.bookreports.service.CooldownService;
 import dev.bookreports.service.DailyLimitService;
 import dev.bookreports.service.PriorityCalculator;
@@ -35,6 +40,7 @@ import dev.bookreports.util.FoliaSchedulerAdapter;
 import dev.bookreports.util.SchedulerAdapter;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -157,6 +163,7 @@ public final class BookReportsPlugin extends JavaPlugin {
 
         registerBookFlow();
         registerStaffPanel(reportDao, staffPrefsDao);
+        registerIntegrations(reportDao, cooldownService);
         releaseStaleClaimsLoop();
     }
 
@@ -181,8 +188,29 @@ public final class BookReportsPlugin extends JavaPlugin {
         StaffNotificationService notifications = new StaffNotificationService(configManager::current, localeManager,
                 staffPrefsDao, workerExecutor, getLogger());
         getServer().getPluginManager().registerEvents(notifications, this);
+        Optional<PunishmentBridge> punishmentBridge = PunishmentBridges.detect(getServer().getPluginManager());
+        punishmentBridge.ifPresent(bridge -> getLogger().info("Punishment bridge active: " + bridge.name()));
         setExecutorIfPresent("reportadmin", new ReportAdminCommand(this, localeManager, reportService, reportDao,
-                configManager::current, notifications, workerExecutor));
+                configManager::current, notifications, punishmentBridge, workerExecutor));
+    }
+
+    /** Every integration here is soft-depend (SPECS.md §11/§6) — absent, it's simply never registered. */
+    private void registerIntegrations(ReportDao reportDao, CooldownService cooldownService) {
+        DiscordNotifier discordNotifier = new DiscordNotifier(configManager::current, workerExecutor, getLogger());
+        getServer().getPluginManager().registerEvents(discordNotifier, this);
+
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null
+                && configManager.current().placeholderApiEnabled()) {
+            new PlaceholderExpansionImpl(reportDao, cooldownService, workerExecutor, getPluginMeta().getVersion())
+                    .register();
+            getLogger().info("PlaceholderAPI expansion registered.");
+        }
+
+        ProxySyncChannel proxySync = new ProxySyncChannel(this, getLogger(),
+                remote -> getLogger().info("Remote report #" + remote.id() + " (" + remote.priority() + ") on server '"
+                        + remote.originServer() + "': " + remote.targetName() + " — " + remote.categoryId()));
+        proxySync.register();
+        getServer().getPluginManager().registerEvents(proxySync, this);
     }
 
     /** Runs once immediately, then reschedules itself every {@link #CLAIM_RELEASE_INTERVAL_TICKS}. */

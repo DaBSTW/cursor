@@ -45,13 +45,14 @@ public final class ConfigParser {
         boolean enableReportTool = root.getBoolean("enable-report-tool", false);
         StaffSettings staff = parseStaff(sectionOrEmpty(root, "staff"));
         DiscordSettings discord = parseDiscord(sectionOrEmpty(root, "discord"));
+        PunishmentSettings punishments = parsePunishments(sectionOrEmpty(root, "punishments"));
         boolean placeholderApiEnabled = root.getBoolean("placeholderapi", true);
         String locale = requireNonBlank(root.getString("locale", "es_ES"), "locale");
         String serverId = requireNonBlank(root.getString("server-id", "default"), "server-id");
 
         return new BookReportsConfig(storageType, mysql, cooldownSeconds, dailyLimit, sessionTimeoutSeconds,
                 preventSelfReport, preventDuplicatePending, categories, escalation, penalty, enableReportTool, staff,
-                discord, placeholderApiEnabled, locale, serverId);
+                discord, punishments, placeholderApiEnabled, locale, serverId);
     }
 
     private Map<String, ReportCategory> parseCategories(ConfigurationSection section) {
@@ -146,6 +147,14 @@ public final class ConfigParser {
         Priority minPriority = parseEnum(Priority.class, section.getString("min-priority-to-notify", "HIGH"),
                 "discord.min-priority-to-notify");
         return new DiscordSettings(enabled, webhookUrl, minPriority);
+    }
+
+    private PunishmentSettings parsePunishments(ConfigurationSection section) {
+        String banDuration = requireNonBlank(section.getString("default-ban-duration", "7d"),
+                "punishments.default-ban-duration");
+        String muteDuration = requireNonBlank(section.getString("default-mute-duration", "1h"),
+                "punishments.default-mute-duration");
+        return new PunishmentSettings(banDuration, muteDuration);
     }
 
     private <T extends Enum<T>> T parseEnum(Class<T> type, String raw, String path) {

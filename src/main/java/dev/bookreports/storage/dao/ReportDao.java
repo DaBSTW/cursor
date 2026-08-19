@@ -30,6 +30,9 @@ public interface ReportDao {
 
     int countByReporterSince(UUID reporterUuid, Instant since);
 
+    /** Total reports currently at {@code status}, regardless of category — used for the pending-count placeholder. */
+    int countByStatus(ReportStatus status);
+
     /** Returns {@code false} if no row matched {@code id} — the caller decides whether that is an error. */
     boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote, Instant resolvedAt);
 

@@ -107,6 +107,15 @@ class JdbcReportDaoTest {
     }
 
     @Test
+    void countByStatusOnlyCountsMatchingStatus() {
+        dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+
+        assertEquals(2, dao.countByStatus(ReportStatus.PENDING));
+        assertEquals(0, dao.countByStatus(ReportStatus.RESOLVED_ACTION));
+    }
+
+    @Test
     void countByReporterSinceOnlyCountsWithinTheWindow() {
         UUID reporter = UUID.randomUUID();
         dao.insert(draft(reporter, UUID.randomUUID()));

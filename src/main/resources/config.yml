@@ -64,6 +64,12 @@ discord:
   webhook-url: ""
   min-priority-to-notify: HIGH
 
+# Durations passed verbatim to whichever punishment plugin is detected (LiteBans/AdvancedBan
+# both understand this format, e.g. "7d", "1h", "perm") when staff use the quick-sanction menu.
+punishments:
+  default-ban-duration: 7d
+  default-mute-duration: 1h
+
 placeholderapi: true
 locale: es_ES
 debug: false

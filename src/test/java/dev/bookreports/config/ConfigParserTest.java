@@ -31,6 +31,8 @@ class ConfigParserTest {
         assertFalse(config.category("bug_abuse").orElseThrow().hasSubReasons());
         assertEquals(3, config.priorityEscalation().distinctReportersThreshold());
         assertEquals("es_ES", config.locale());
+        assertEquals("7d", config.punishments().defaultBanDuration());
+        assertEquals("1h", config.punishments().defaultMuteDuration());
     }
 
     @Test

@@ -1,12 +1,16 @@
 package dev.bookreports.gui;
 
+import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
+import dev.bookreports.integration.punishment.PunishmentBridge;
 import dev.bookreports.service.ReportService;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -40,17 +44,22 @@ public final class ReportDetailView implements InventoryHolder, Listener {
     private final Player viewer;
     private final LocaleManager locale;
     private final ReportService reportService;
+    private final Optional<PunishmentBridge> punishmentBridge;
+    private final Supplier<BookReportsConfig> config;
     private final Runnable onBack;
     private Report report;
     private Inventory inventory;
     private boolean registered;
 
     public ReportDetailView(Plugin plugin, Player viewer, LocaleManager locale, ReportService reportService,
-            Report report, Runnable onBack) {
+            Optional<PunishmentBridge> punishmentBridge, Supplier<BookReportsConfig> config, Report report,
+            Runnable onBack) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.viewer = Objects.requireNonNull(viewer, "viewer");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.reportService = Objects.requireNonNull(reportService, "reportService");
+        this.punishmentBridge = Objects.requireNonNull(punishmentBridge, "punishmentBridge");
+        this.config = Objects.requireNonNull(config, "config");
         this.report = Objects.requireNonNull(report, "report");
         this.onBack = Objects.requireNonNull(onBack, "onBack");
     }
@@ -123,7 +132,7 @@ public final class ReportDetailView implements InventoryHolder, Listener {
             case CLAIM_SLOT -> claim();
             case TELEPORT_SLOT -> teleport();
             case HISTORY_SLOT -> viewHistory();
-            case RESOLVE_SANCTION_SLOT -> resolve(ReportStatus.RESOLVED_ACTION, "EXTERNAL_ACTION_APPLIED");
+            case RESOLVE_SANCTION_SLOT -> onSanctionRequested();
             case RESOLVE_REJECT_SLOT -> openResolveMenu();
             case MARK_FALSE_SLOT -> markFalse();
             case BACK_SLOT -> {
@@ -204,6 +213,29 @@ public final class ReportDetailView implements InventoryHolder, Listener {
 
     private void openResolveMenu() {
         new ResolveMenuView(plugin, viewer, locale, (status, reasonCode) -> resolve(status, reasonCode)).open();
+    }
+
+    /** With no bridge active, sanctions can only happen out-of-band — just record that fact. */
+    private void onSanctionRequested() {
+        if (punishmentBridge.isEmpty()) {
+            resolve(ReportStatus.RESOLVED_ACTION, "EXTERNAL_ACTION_APPLIED");
+            return;
+        }
+        new SanctionMenuView(plugin, viewer, locale, this::applySanction).open();
+    }
+
+    private void applySanction(SanctionMenuView.Action action) {
+        PunishmentBridge bridge = punishmentBridge.orElseThrow();
+        String targetName = report.targetName();
+        String staffName = viewer.getName();
+        String reasonCode = "SANCTION_" + report.categoryId();
+        switch (action) {
+            case KICK -> bridge.kick(targetName, reasonCode, staffName);
+            case MUTE ->
+                bridge.mute(targetName, config.get().punishments().defaultMuteDuration(), reasonCode, staffName);
+            case BAN -> bridge.ban(targetName, config.get().punishments().defaultBanDuration(), reasonCode, staffName);
+        }
+        resolve(ReportStatus.RESOLVED_ACTION, "SANCTION_" + action.name());
     }
 
     private void refresh() {
