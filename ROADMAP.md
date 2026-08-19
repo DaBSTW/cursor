@@ -10,13 +10,13 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: un jar que carga en el servidor y no hace nada más. Todo lo demás se construye encima.
 
-- [ ] `S` Inicializar proyecto Gradle (Kotlin DSL) con Java 21 toolchain y `paper-api:1.21.x` como `compileOnly`.
-- [ ] `S` Configurar plugin Shadow (`com.gradleup.shadow`) con relocación de `com.zaxxer`, `com.github.benmanes.caffeine` y `org.sqlite` bajo `dev.bookreports.libs.*`.
-- [ ] `S` Crear `paper-plugin.yml` (formato moderno de Paper, no `plugin.yml` legacy) con `api-version: '1.21'`, bootstrapper y declaración de `softdepend` (PlaceholderAPI, LiteBans, AdvancedBan).
-- [ ] `S` Clase `BookReportsPlugin` con `onEnable`/`onDisable` vacíos + log de arranque con versión.
-- [ ] `S` `.gitignore`, `.editorconfig`, licencia y estructura de paquetes de §14 (paquetes vacíos con `package-info.java`).
-- [ ] `M` CI en GitHub Actions: build + tests en cada push/PR, artefacto del jar subido en cada run.
-- [ ] `S` `SchedulerAdapter` con detección de Folia en runtime y dos implementaciones (`BukkitSchedulerImpl`, `FoliaSchedulerImpl`) — se hace **desde el día 1** porque retrofitear scheduling después toca todos los callbacks.
+- [x] `S` Inicializar proyecto Gradle (Kotlin DSL) con Java 21 toolchain y `paper-api:1.21.x` como `compileOnly`.
+- [x] `S` Configurar plugin Shadow (`com.gradleup.shadow`) con relocación de `com.zaxxer`, `com.github.benmanes.caffeine` y `org.sqlite` bajo `dev.bookreports.libs.*`.
+- [x] `S` Crear `paper-plugin.yml` (formato moderno de Paper, no `plugin.yml` legacy) con `api-version: '1.21'`, bootstrapper y declaración de `softdepend` (PlaceholderAPI, LiteBans, AdvancedBan).
+- [x] `S` Clase `BookReportsPlugin` con `onEnable`/`onDisable` vacíos + log de arranque con versión.
+- [x] `S` `.gitignore`, `.editorconfig`, licencia y estructura de paquetes de §14 (paquetes vacíos con `package-info.java`).
+- [x] `M` CI en GitHub Actions: build + tests en cada push/PR, artefacto del jar subido en cada run.
+- [x] `S` `SchedulerAdapter` con detección de Folia en runtime y dos implementaciones (`BukkitSchedulerImpl`, `FoliaSchedulerImpl`) — se hace **desde el día 1** porque retrofitear scheduling después toca todos los callbacks.
 
 **Criterio de aceptación:** `./gradlew build` produce un jar; el servidor lo carga y lo lista en `/plugins`.
 

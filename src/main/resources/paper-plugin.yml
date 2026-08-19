@@ -1,0 +1,56 @@
+name: BookReports
+version: '${version}'
+main: dev.bookreports.BookReportsPlugin
+api-version: '1.21'
+folia-supported: true
+description: Hypixel-style book report system for Paper servers.
+author: DaBSTW
+website: https://github.com/DaBSTW/cursor
+
+# The internal book-click command is exposed only as /breport:select, never as a
+# bare /select — this keeps it out of tab-complete collisions with other plugins.
+command-fallback-prefix: breport
+
+softdepend:
+  - PlaceholderAPI
+  - LiteBans
+  - AdvancedBan
+
+commands:
+  report:
+    description: Open the report book.
+    usage: /report [player]
+    permission: bookreports.report
+  reportadmin:
+    description: Open the staff report review queue.
+    usage: /reportadmin <list|view|claim|resolve|history|notifications>
+    aliases: [rvw, reports]
+    permission: bookreports.staff
+  reportsreload:
+    description: Reload BookReports configuration and locale files.
+    usage: /reportsreload
+    permission: bookreports.admin
+  select:
+    description: Internal book click handler. Not for manual use.
+    usage: /breport:select <sessionId> <optionId>
+    permission: bookreports.report
+
+permissions:
+  bookreports.report:
+    description: Allows submitting player reports via /report.
+    default: true
+  bookreports.report.tool:
+    description: Allows obtaining the physical report-tool item.
+    default: false
+  bookreports.staff:
+    description: Allows opening the staff review queue.
+    default: op
+  bookreports.staff.resolve:
+    description: Allows resolving reports from the console.
+    default: op
+  bookreports.staff.notify:
+    description: Receives live in-game alerts for high-priority reports.
+    default: op
+  bookreports.admin:
+    description: Allows reloading configuration and locale files.
+    default: op
