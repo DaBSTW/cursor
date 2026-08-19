@@ -41,13 +41,13 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: poder guardar y leer reportes desde consola, antes de que exista UI alguna.
 
-- [ ] `M` `StorageManager` con HikariCP, conexión async en `onEnable` y apagado limpio del pool en `onDisable`.
-- [ ] `M` Dialectos separados: scripts en `resources/db/sqlite/` y `resources/db/mysql/` (difieren en `AUTOINCREMENT` vs `AUTO_INCREMENT`).
-- [ ] `M` Sistema de migraciones propio: tabla `br_meta` con `schema_version`, migraciones incrementales idempotentes.
-- [ ] `M` `ReportDao`: `insert`, `findByUuid`, `findById`, `findByTarget`, `findByStatus` (paginado), `countByReporterSince`, `updateStatus`, `claim`.
-- [ ] `S` `PenaltyDao`: `insert`, `countByPlayerSince`.
-- [ ] `S` Modelos inmutables `Report` y `ReportPenalty` (records Java 21).
-- [ ] `M` Tests de integración contra `jdbc:sqlite::memory:` cubriendo cada método del DAO + una migración de v1 a v2.
+- [x] `M` `StorageManager` con HikariCP, conexión async en `onEnable` y apagado limpio del pool en `onDisable`.
+- [x] `M` Dialectos separados: scripts en `resources/db/sqlite/` y `resources/db/mysql/` (difieren en `AUTOINCREMENT` vs `AUTO_INCREMENT`).
+- [x] `M` Sistema de migraciones propio: tabla `br_meta` con `schema_version`, migraciones incrementales idempotentes.
+- [x] `M` `ReportDao`: `insert`, `findByUuid`, `findById`, `findByTarget`, `findByStatus` (paginado), `countByReporterSince`, `updateStatus`, `claim`.
+- [x] `S` `PenaltyDao`: `insert`, `countByPlayerSince`.
+- [x] `S` Modelos inmutables `Report` y `ReportPenalty` (records Java 21).
+- [x] `M` Tests de integración contra `jdbc:sqlite::memory:` cubriendo cada método del DAO + una migración de v1 a v2.
 - [ ] `S` Verificación manual contra MySQL real (docker) — el SQL "compatible" siempre esconde una sorpresa de tipos/timestamp.
 
 **Criterio de aceptación:** un comando temporal de debug inserta un reporte y lo lee de vuelta, en SQLite y en MySQL, sin bloquear el hilo principal (verificado con timings o Spark).
