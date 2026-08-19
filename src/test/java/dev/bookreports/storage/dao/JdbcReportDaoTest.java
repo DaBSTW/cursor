@@ -3,6 +3,7 @@ package dev.bookreports.storage.dao;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.zaxxer.hikari.HikariDataSource;
@@ -85,7 +86,7 @@ class JdbcReportDaoTest {
         Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
         UUID reviewer = UUID.randomUUID();
 
-        assertTrue(dao.updateStatus(report.id(), ReportStatus.RESOLVED_ACTION, reviewer, "Banned"));
+        assertTrue(dao.updateStatus(report.id(), ReportStatus.RESOLVED_ACTION, reviewer, "Banned", Instant.now()));
 
         Report resolved = dao.findById(report.id()).orElseThrow();
         assertEquals(ReportStatus.RESOLVED_ACTION, resolved.status());
@@ -97,7 +98,7 @@ class JdbcReportDaoTest {
 
     @Test
     void updateStatusReturnsFalseForUnknownId() {
-        assertFalse(dao.updateStatus(999, ReportStatus.RESOLVED_REJECTED, null, "n/a"));
+        assertFalse(dao.updateStatus(999, ReportStatus.RESOLVED_REJECTED, null, "n/a", Instant.now()));
     }
 
     @Test
@@ -106,13 +107,41 @@ class JdbcReportDaoTest {
         UUID first = UUID.randomUUID();
         UUID second = UUID.randomUUID();
 
-        assertTrue(dao.claim(report.id(), first));
-        assertFalse(dao.claim(report.id(), second));
+        assertTrue(dao.claim(report.id(), first, Instant.now()));
+        assertFalse(dao.claim(report.id(), second, Instant.now()));
 
         Report claimed = dao.findById(report.id()).orElseThrow();
         assertEquals(first, claimed.reviewerUuid());
         assertEquals(ReportStatus.IN_REVIEW, claimed.status());
         assertEquals(1, claimed.claimVersion());
+    }
+
+    @Test
+    void findStaleClaimsOnlyReturnsClaimsOlderThanTheCutoff() {
+        Report fresh = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        Report stale = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        dao.claim(fresh.id(), UUID.randomUUID(), Instant.now());
+        dao.claim(stale.id(), UUID.randomUUID(), Instant.now().minusSeconds(3600));
+
+        List<Report> found = dao.findStaleClaims(Instant.now().minusSeconds(1800));
+
+        assertEquals(1, found.size());
+        assertEquals(stale.id(), found.get(0).id());
+    }
+
+    @Test
+    void releaseClaimReturnsItToPendingAndOnlyOnce() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        UUID reviewer = UUID.randomUUID();
+        dao.claim(report.id(), reviewer, Instant.now());
+
+        assertTrue(dao.releaseClaim(report.id(), reviewer));
+
+        Report released = dao.findById(report.id()).orElseThrow();
+        assertEquals(ReportStatus.PENDING, released.status());
+        assertNull(released.reviewerUuid());
+
+        assertFalse(dao.releaseClaim(report.id(), reviewer));
     }
 
     private Report draft(UUID reporter, UUID target) {

@@ -47,10 +47,11 @@ public final class ConfigParser {
         DiscordSettings discord = parseDiscord(sectionOrEmpty(root, "discord"));
         boolean placeholderApiEnabled = root.getBoolean("placeholderapi", true);
         String locale = requireNonBlank(root.getString("locale", "es_ES"), "locale");
+        String serverId = requireNonBlank(root.getString("server-id", "default"), "server-id");
 
         return new BookReportsConfig(storageType, mysql, cooldownSeconds, dailyLimit, sessionTimeoutSeconds,
                 preventSelfReport, preventDuplicatePending, categories, escalation, penalty, enableReportTool, staff,
-                discord, placeholderApiEnabled, locale);
+                discord, placeholderApiEnabled, locale, serverId);
     }
 
     private Map<String, ReportCategory> parseCategories(ConfigurationSection section) {

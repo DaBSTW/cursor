@@ -67,3 +67,7 @@ discord:
 placeholderapi: true
 locale: es_ES
 debug: false
+
+# Identifies this backend in the `server` column when multiple Paper instances share one
+# MySQL database behind a proxy (Fase 6). Irrelevant for a standalone SQLite server.
+server-id: default

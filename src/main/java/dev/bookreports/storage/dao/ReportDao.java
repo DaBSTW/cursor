@@ -25,8 +25,17 @@ public interface ReportDao {
     int countByReporterSince(UUID reporterUuid, Instant since);
 
     /** Returns {@code false} if no row matched {@code id} — the caller decides whether that is an error. */
-    boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote);
+    boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote, Instant resolvedAt);
 
     /** Atomically assigns a reviewer. Returns {@code false} if the report was already claimed by someone else. */
-    boolean claim(long id, UUID reviewerUuid);
+    boolean claim(long id, UUID reviewerUuid, Instant claimedAt);
+
+    /** {@code IN_REVIEW} reports whose claim is older than {@code claimedBefore} — candidates for auto-release. */
+    List<Report> findStaleClaims(Instant claimedBefore);
+
+    /**
+     * Atomically releases a claim back to {@code PENDING}. Returns {@code false} if the report was resolved or
+     * re-claimed by someone else in the meantime.
+     */
+    boolean releaseClaim(long id, UUID reviewerUuid);
 }

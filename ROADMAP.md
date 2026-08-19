@@ -58,14 +58,14 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: toda la lógica de negocio funcionando y testeada, invocable por API, todavía sin interfaz de usuario.
 
-- [ ] `M` `ReportService.submitReport(...)`: valida (auto-reporte, target existe, duplicado pendiente, cooldown, límite diario) → dispara `ReportCreateEvent` cancelable → persiste → dispara `ReportCreatedEvent`.
-- [ ] `M` `CooldownService` con Caffeine, respetando el multiplicador por reportes falsos.
-- [ ] `S` Contador de límite diario con caché de 60s por jugador (no golpear la DB en cada intento).
-- [ ] `M` `PriorityCalculator`: prioridad base por categoría + escalado por consenso (N reporteros distintos / ventana temporal).
-- [ ] `M` Lógica de resolución: `claim` con TTL de 15 min y auto-liberación programada, `resolve`, `markFalse` (+ inserción de penalización).
-- [ ] `S` Eventos públicos de §9 (`ReportCreateEvent`, `ReportCreatedEvent`, `ReportClaimedEvent`, `ReportResolvedEvent`, `ReportFalseMarkedEvent`).
-- [ ] `S` `BookReportsAPI` registrada en el `ServicesManager` de Bukkit.
-- [ ] `L` Batería de tests unitarios: cada regla anti-abuso con su caso de borde (cooldown justo expirado, límite diario en el cambio de día UTC, escalado con exactamente N-1 y N reporteros).
+- [x] `M` `ReportService.submitReport(...)`: valida (auto-reporte, target existe, duplicado pendiente, cooldown, límite diario) → dispara `ReportCreateEvent` cancelable → persiste → dispara `ReportCreatedEvent`.
+- [x] `M` `CooldownService` con Caffeine, respetando el multiplicador por reportes falsos.
+- [x] `S` Contador de límite diario con caché de 60s por jugador (no golpear la DB en cada intento).
+- [x] `M` `PriorityCalculator`: prioridad base por categoría + escalado por consenso (N reporteros distintos / ventana temporal).
+- [x] `M` Lógica de resolución: `claim` con TTL de 15 min y auto-liberación programada, `resolve`, `markFalse` (+ inserción de penalización).
+- [x] `S` Eventos públicos de §9 (`ReportCreateEvent`, `ReportCreatedEvent`, `ReportClaimedEvent`, `ReportResolvedEvent`, `ReportFalseMarkedEvent`).
+- [x] `S` `BookReportsAPI` registrada en el `ServicesManager` de Bukkit.
+- [x] `L` Batería de tests unitarios: cada regla anti-abuso con su caso de borde (cooldown justo expirado, límite diario en el cambio de día UTC, escalado con exactamente N-1 y N reporteros).
 
 **Criterio de aceptación:** todo §8 (anti-abuso) verificado por tests automáticos; un plugin externo de prueba puede cancelar un reporte vía `ReportCreateEvent`.
 

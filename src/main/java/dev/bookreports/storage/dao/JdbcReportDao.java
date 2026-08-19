@@ -154,7 +154,8 @@ public final class JdbcReportDao implements ReportDao {
     }
 
     @Override
-    public boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote) {
+    public boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote,
+            Instant resolvedAt) {
         String sql = "UPDATE br_reports SET status = ?, reviewer_uuid = ?, resolution_note = ?, "
                 + "resolved_at = ? WHERE id = ?";
         try (Connection connection = dataSource.getConnection();
@@ -163,7 +164,7 @@ public final class JdbcReportDao implements ReportDao {
             statement.setString(1, status.name());
             statement.setString(2, reviewerUuid != null ? reviewerUuid.toString() : null);
             statement.setString(3, resolutionNote);
-            statement.setTimestamp(4, resolved ? Timestamp.from(Instant.now()) : null);
+            statement.setTimestamp(4, resolved ? Timestamp.from(resolvedAt) : null);
             statement.setLong(5, id);
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -172,18 +173,47 @@ public final class JdbcReportDao implements ReportDao {
     }
 
     @Override
-    public boolean claim(long id, UUID reviewerUuid) {
+    public boolean claim(long id, UUID reviewerUuid, Instant claimedAt) {
         String sql = "UPDATE br_reports SET reviewer_uuid = ?, claimed_at = ?, status = ?, "
                 + "claim_version = claim_version + 1 WHERE id = ? AND reviewer_uuid IS NULL";
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, reviewerUuid.toString());
-            statement.setTimestamp(2, Timestamp.from(Instant.now()));
+            statement.setTimestamp(2, Timestamp.from(claimedAt));
             statement.setString(3, ReportStatus.IN_REVIEW.name());
             statement.setLong(4, id);
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
             throw new StorageException("Failed to claim report id=" + id, e);
+        }
+    }
+
+    @Override
+    public List<Report> findStaleClaims(Instant claimedBefore) {
+        String sql = "SELECT * FROM br_reports WHERE status = ? AND claimed_at < ? ORDER BY claimed_at ASC";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, ReportStatus.IN_REVIEW.name());
+            statement.setTimestamp(2, Timestamp.from(claimedBefore));
+            return queryList(statement);
+        } catch (SQLException e) {
+            throw new StorageException("Failed to read stale claims before=" + claimedBefore, e);
+        }
+    }
+
+    @Override
+    public boolean releaseClaim(long id, UUID reviewerUuid) {
+        String sql = "UPDATE br_reports SET reviewer_uuid = NULL, claimed_at = NULL, status = ? "
+                + "WHERE id = ? AND reviewer_uuid = ? AND status = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, ReportStatus.PENDING.name());
+            statement.setLong(2, id);
+            statement.setString(3, reviewerUuid.toString());
+            statement.setString(4, ReportStatus.IN_REVIEW.name());
+            return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new StorageException("Failed to release claim for report id=" + id, e);
         }
     }
 
