@@ -95,15 +95,15 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: el otro lado del sistema — que los reportes se revisen, no solo se acumulen.
 
-- [ ] `M` Framework de GUI paginado reutilizable (`PaginatedView` base): navegación, slots de borde, manejo de clics, cierre seguro.
-- [ ] `M` `ReportQueueView`: 54 slots, cabezas de jugador, lore con metadatos, filtros por estado/categoría, orden por prioridad y antigüedad.
-- [ ] `S` Indicador visual de prioridad (glow para HIGH) y badge de agrupación ("3 reportes en 10 min").
-- [ ] `M` `ReportDetailView`: reclamar, teleport, historial, ver evidencia completa, resolver (sancionar/rechazar), marcar falso.
-- [ ] `M` Sub-menú de resolución con motivos rápidos preconfigurados.
-- [ ] `M` Sub-comandos de consola `/reportadmin list|view|claim|resolve|history` (imprescindibles para scripting y para operar sin cliente gráfico).
-- [ ] `M` Notificación en vivo al staff online: mensaje clicable `[Ver] [Teleport]`, sonido y action bar; toggle persistente por jugador.
-- [ ] `S` Nodos de permisos completos de §10 declarados en `paper-plugin.yml` con sus defaults.
-- [ ] `S` Protección contra doble-resolución: si dos staff resuelven el mismo reporte en paralelo, el segundo recibe un aviso claro en vez de sobrescribir.
+- [x] `M` Framework de GUI paginado reutilizable (`PaginatedView` base): navegación, slots de borde, manejo de clics, cierre seguro.
+- [x] `M` `ReportQueueView`: 54 slots, cabezas de jugador, lore con metadatos, filtros por estado/categoría, orden por prioridad y antigüedad.
+- [x] `S` Indicador visual de prioridad (glow para HIGH) y badge de agrupación ("3 reportes en 10 min").
+- [x] `M` `ReportDetailView`: reclamar, teleport, historial, ver evidencia completa, resolver (sancionar/rechazar), marcar falso.
+- [x] `M` Sub-menú de resolución con motivos rápidos preconfigurados.
+- [x] `M` Sub-comandos de consola `/reportadmin list|view|claim|resolve|history` (imprescindibles para scripting y para operar sin cliente gráfico).
+- [x] `M` Notificación en vivo al staff online: mensaje clicable `[Ver] [Teleport]`, sonido y action bar; toggle persistente por jugador.
+- [x] `S` Nodos de permisos completos de §10 declarados en `paper-plugin.yml` con sus defaults.
+- [x] `S` Protección contra doble-resolución: si dos staff resuelven el mismo reporte en paralelo, el segundo recibe un aviso claro en vez de sobrescribir.
 
 **Criterio de aceptación:** un reporte creado en Fase 4 se ve, se reclama y se resuelve íntegramente desde el GUI, y el reportante recibe feedback del desenlace.
 

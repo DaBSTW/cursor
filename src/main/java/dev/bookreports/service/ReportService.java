@@ -184,6 +184,15 @@ public final class ReportService {
         return CompletableFuture.supplyAsync(() -> reportDao.findByUuid(reportUuid), executor);
     }
 
+    public CompletableFuture<Optional<Report>> getReportById(long reportId) {
+        return CompletableFuture.supplyAsync(() -> reportDao.findById(reportId), executor);
+    }
+
+    /** For console tooling (SPECS.md §5.1) — GUI code talks to {@link ReportDao} directly instead. */
+    public CompletableFuture<List<Report>> getQueue(ReportStatus status, int page, int pageSize) {
+        return CompletableFuture.supplyAsync(() -> reportDao.findByStatus(status, page, pageSize), executor);
+    }
+
     /** Non-blocking, in-memory check — safe to call from the main thread. */
     public boolean isOnCooldown(UUID reporterUuid) {
         return cooldownService.isOnCooldown(reporterUuid);

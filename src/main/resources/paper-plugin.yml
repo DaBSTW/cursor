@@ -23,7 +23,7 @@ commands:
     permission: bookreports.report
   reportadmin:
     description: Open the staff report review queue.
-    usage: /reportadmin <list|view|claim|resolve|history|notifications>
+    usage: /reportadmin <list|view|teleport|claim|resolve|history|notifications>
     aliases: [rvw, reports]
     permission: bookreports.staff
   reportsreload:

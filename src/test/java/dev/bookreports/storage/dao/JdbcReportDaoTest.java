@@ -73,6 +73,40 @@ class JdbcReportDaoTest {
     }
 
     @Test
+    void findByStatusOrdersBySeverityNotAlphabetically() {
+        UUID target = UUID.randomUUID();
+        dao.insert(draftWithPriority(target, Priority.LOW));
+        dao.insert(draftWithPriority(target, Priority.HIGH));
+        dao.insert(draftWithPriority(target, Priority.MEDIUM));
+
+        List<Report> queue = dao.findByStatus(ReportStatus.PENDING, 0, 10);
+
+        assertEquals(List.of(Priority.HIGH, Priority.MEDIUM, Priority.LOW),
+                queue.stream().map(Report::priority).toList());
+    }
+
+    @Test
+    void findByStatusFiltersByCategoryWhenGiven() {
+        UUID target = UUID.randomUUID();
+        Report hacks = dao.insert(draft(UUID.randomUUID(), target));
+        Report other = dao.insert(
+                new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "chat_abuse", null,
+                        null, "default", ReportStatus.PENDING, Priority.LOW, null, null, Instant.now(), null, null, 0));
+
+        List<Report> hacksOnly = dao.findByStatus(ReportStatus.PENDING, "hacks", 0, 10);
+
+        assertEquals(1, hacksOnly.size());
+        assertEquals(hacks.id(), hacksOnly.get(0).id());
+        assertTrue(dao.findByStatus(ReportStatus.PENDING, "chat_abuse", 0, 10).stream()
+                .anyMatch(r -> r.id() == other.id()));
+    }
+
+    private Report draftWithPriority(UUID target, Priority priority) {
+        return new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "hacks", null, null,
+                "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0);
+    }
+
+    @Test
     void countByReporterSinceOnlyCountsWithinTheWindow() {
         UUID reporter = UUID.randomUUID();
         dao.insert(draft(reporter, UUID.randomUUID()));
@@ -99,6 +133,22 @@ class JdbcReportDaoTest {
     @Test
     void updateStatusReturnsFalseForUnknownId() {
         assertFalse(dao.updateStatus(999, ReportStatus.RESOLVED_REJECTED, null, "n/a", Instant.now()));
+    }
+
+    @Test
+    void updateStatusRejectsResolvingAnAlreadyResolvedReport() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        UUID firstReviewer = UUID.randomUUID();
+        UUID secondReviewer = UUID.randomUUID();
+
+        assertTrue(dao.updateStatus(report.id(), ReportStatus.RESOLVED_ACTION, firstReviewer, "Banned", Instant.now()));
+        // A second staff member resolving the same report concurrently must not overwrite the first resolution.
+        assertFalse(dao.updateStatus(report.id(), ReportStatus.RESOLVED_REJECTED, secondReviewer, "No evidence",
+                Instant.now()));
+
+        Report stillFirst = dao.findById(report.id()).orElseThrow();
+        assertEquals(ReportStatus.RESOLVED_ACTION, stillFirst.status());
+        assertEquals(firstReviewer, stillFirst.reviewerUuid());
     }
 
     @Test

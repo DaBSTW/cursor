@@ -12,6 +12,7 @@ report:
   cancelled: "<gray>Report cancelled.</gray>"
   book-title: "Report player"
   rate-limited: "<red>You are opening the book too fast, wait a moment.</red>"
+  resolved: "<gray>Your report #<ticket_id> has been reviewed by staff.</gray>"
   tool-name: "<yellow>Report Player</yellow>"
   tool-disabled: "<red>The report tool item is not enabled on this server.</red>"
 
@@ -60,6 +61,8 @@ evidence:
 staff:
   notify:
     high-priority: "<red>⚠ New high-priority report: <player> — <category></red>"
+    view: "<yellow>[ View ]</yellow>"
+    teleport: "<aqua>[ Teleport ]</aqua>"
   claim:
     success: "<green>You claimed report #<ticket_id>.</green>"
     already-claimed: "<red>This report was already claimed by <reviewer>.</red>"
@@ -73,8 +76,37 @@ staff:
     disabled: "<gray>Report notifications disabled.</gray>"
   queue:
     title: "Report queue"
+    filter: "<yellow>Filter: <white><status></white></yellow>"
+    lore:
+      category: "<gray>Category: <white><category></white></gray>"
+      priority: "<gray>Priority: <white><priority></white></gray>"
+      reporter: "<gray>Reported by: <white><player></white></gray>"
+      reporters-count: "<yellow><count> recent reports in this category</yellow>"
   detail:
     title: "Report #<ticket_id>"
+    target: "<gray>Reported: <white><player></white></gray>"
+    reporter: "<gray>Reporter: <white><player></white></gray>"
+    category: "<gray>Category: <white><category></white></gray>"
+    status: "<gray>Status: <white><status></white></gray>"
+    evidence: "<gray>Evidence: <white><evidence></white></gray>"
+    claim: "<green>[ Claim ]</green>"
+    claimed-by: "<gray>Claimed by: <white><player></white></gray>"
+    unclaimed: "<gray>Unclaimed</gray>"
+    teleport: "<aqua>[ Teleport ]</aqua>"
+    history: "<gray>[ View history ]</gray>"
+    resolve-sanction: "<green>[ Resolve: Sanction ]</green>"
+    resolve-reject: "<red>[ Resolve: Reject ]</red>"
+    mark-false: "<dark_red>[ Mark as false ]</dark_red>"
+    back: "<gray>[ Back ]</gray>"
+  resolve-menu:
+    title: "Resolution reason"
+    no-evidence: "<white>Not enough evidence</white>"
+    not-infraction: "<white>Not a violation</white>"
+    duplicate: "<white>Duplicate</white>"
+    banned: "<white>Sanctioned</white>"
+  history:
+    title: "History for <player>"
+    empty: "<gray>No previous reports.</gray>"
 
 command:
   reload-success: "<green>Configuration and translations reloaded.</green>"

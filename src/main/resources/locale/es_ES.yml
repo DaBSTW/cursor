@@ -12,6 +12,7 @@ report:
   cancelled: "<gray>Reporte cancelado.</gray>"
   book-title: "Reportar jugador"
   rate-limited: "<red>Estás abriendo el libro demasiado rápido, espera un momento.</red>"
+  resolved: "<gray>Tu reporte #<ticket_id> ha sido revisado por el staff.</gray>"
   tool-name: "<yellow>Reportar Jugador</yellow>"
   tool-disabled: "<red>El item de reporte no está habilitado en este servidor.</red>"
 
@@ -60,6 +61,8 @@ evidence:
 staff:
   notify:
     high-priority: "<red>⚠ Nuevo reporte de alta prioridad: <player> — <category></red>"
+    view: "<yellow>[ Ver ]</yellow>"
+    teleport: "<aqua>[ Teleport ]</aqua>"
   claim:
     success: "<green>Has reclamado el reporte #<ticket_id>.</green>"
     already-claimed: "<red>Este reporte ya fue reclamado por <reviewer>.</red>"
@@ -73,8 +76,37 @@ staff:
     disabled: "<gray>Notificaciones de reportes desactivadas.</gray>"
   queue:
     title: "Cola de reportes"
+    filter: "<yellow>Filtro: <white><status></white></yellow>"
+    lore:
+      category: "<gray>Categoría: <white><category></white></gray>"
+      priority: "<gray>Prioridad: <white><priority></white></gray>"
+      reporter: "<gray>Reportado por: <white><player></white></gray>"
+      reporters-count: "<yellow><count> reportes recientes en esta categoría</yellow>"
   detail:
     title: "Reporte #<ticket_id>"
+    target: "<gray>Reportado: <white><player></white></gray>"
+    reporter: "<gray>Reportante: <white><player></white></gray>"
+    category: "<gray>Categoría: <white><category></white></gray>"
+    status: "<gray>Estado: <white><status></white></gray>"
+    evidence: "<gray>Evidencia: <white><evidence></white></gray>"
+    claim: "<green>[ Reclamar ]</green>"
+    claimed-by: "<gray>Reclamado por: <white><player></white></gray>"
+    unclaimed: "<gray>Sin reclamar</gray>"
+    teleport: "<aqua>[ Teletransportarse ]</aqua>"
+    history: "<gray>[ Ver historial ]</gray>"
+    resolve-sanction: "<green>[ Resolver: Sancionar ]</green>"
+    resolve-reject: "<red>[ Resolver: Rechazar ]</red>"
+    mark-false: "<dark_red>[ Marcar como falso ]</dark_red>"
+    back: "<gray>[ Volver ]</gray>"
+  resolve-menu:
+    title: "Motivo de resolución"
+    no-evidence: "<white>No hay evidencia suficiente</white>"
+    not-infraction: "<white>No es una infracción</white>"
+    duplicate: "<white>Duplicado</white>"
+    banned: "<white>Sancionado</white>"
+  history:
+    title: "Historial de <player>"
+    empty: "<gray>Sin reportes previos.</gray>"
 
 command:
   reload-success: "<green>Configuración y traducciones recargadas.</green>"

@@ -111,16 +111,28 @@ public final class JdbcReportDao implements ReportDao {
 
     @Override
     public List<Report> findByStatus(ReportStatus status, int page, int pageSize) {
+        return findByStatus(status, null, page, pageSize);
+    }
+
+    @Override
+    public List<Report> findByStatus(ReportStatus status, String categoryId, int page, int pageSize) {
         if (page < 0 || pageSize < 1) {
             throw new IllegalArgumentException("page must be >= 0 and pageSize must be >= 1");
         }
-        String sql = "SELECT * FROM br_reports WHERE status = ? "
-                + "ORDER BY priority DESC, created_at ASC LIMIT ? OFFSET ?";
+        // Priority is stored as text, so a plain ORDER BY priority would sort alphabetically (HIGH, LOW,
+        // MEDIUM) instead of by severity — this CASE expression ranks it HIGH, MEDIUM, LOW instead.
+        String sql = "SELECT * FROM br_reports WHERE status = ?" + (categoryId != null ? " AND category_id = ?" : "")
+                + " ORDER BY CASE priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3 END, "
+                + "created_at ASC LIMIT ? OFFSET ?";
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, status.name());
-            statement.setInt(2, pageSize);
-            statement.setInt(3, page * pageSize);
+            int index = 1;
+            statement.setString(index++, status.name());
+            if (categoryId != null) {
+                statement.setString(index++, categoryId);
+            }
+            statement.setInt(index++, pageSize);
+            statement.setInt(index, page * pageSize);
             return queryList(statement);
         } catch (SQLException e) {
             throw new StorageException("Failed to read report queue for status=" + status, e);
@@ -156,8 +168,11 @@ public final class JdbcReportDao implements ReportDao {
     @Override
     public boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote,
             Instant resolvedAt) {
-        String sql = "UPDATE br_reports SET status = ?, reviewer_uuid = ?, resolution_note = ?, "
-                + "resolved_at = ? WHERE id = ?";
+        // The status guard is the double-resolution defense: if two staff resolve the same report at once,
+        // only the first UPDATE matches (still PENDING/IN_REVIEW) — the second affects zero rows and the
+        // caller sees `false` instead of silently overwriting the first resolution.
+        String sql = "UPDATE br_reports SET status = ?, reviewer_uuid = ?, resolution_note = ?, resolved_at = ? "
+                + "WHERE id = ? AND status IN ('PENDING', 'IN_REVIEW')";
         try (Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)) {
             boolean resolved = status != ReportStatus.PENDING && status != ReportStatus.IN_REVIEW;

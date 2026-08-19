@@ -22,6 +22,12 @@ public interface ReportDao {
     /** Zero-indexed page, ordered by priority then age so the staff queue surfaces the most urgent first. */
     List<Report> findByStatus(ReportStatus status, int page, int pageSize);
 
+    /**
+     * Same as {@link #findByStatus(ReportStatus, int, int)}, additionally filtered by category when {@code categoryId}
+     * is non-null.
+     */
+    List<Report> findByStatus(ReportStatus status, String categoryId, int page, int pageSize);
+
     int countByReporterSince(UUID reporterUuid, Instant since);
 
     /** Returns {@code false} if no row matched {@code id} — the caller decides whether that is an error. */

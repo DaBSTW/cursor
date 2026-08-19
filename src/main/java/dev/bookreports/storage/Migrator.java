@@ -29,7 +29,7 @@ public final class Migrator {
     }
 
     private static final List<Migration> MIGRATIONS = List.of(new Migration(1, "V1__init.sql"),
-            new Migration(2, "V2__add_claim_version.sql"));
+            new Migration(2, "V2__add_claim_version.sql"), new Migration(3, "V3__staff_prefs.sql"));
 
     private final DataSource dataSource;
     private final StorageType storageType;

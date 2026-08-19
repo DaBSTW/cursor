@@ -4,9 +4,11 @@ import dev.bookreports.api.BookReportsAPI;
 import dev.bookreports.api.BookReportsApiImpl;
 import dev.bookreports.book.BookBuilder;
 import dev.bookreports.command.RateLimiter;
+import dev.bookreports.command.ReportAdminCommand;
 import dev.bookreports.command.ReportCommand;
 import dev.bookreports.command.ReportToolListener;
 import dev.bookreports.command.ReportsReloadCommand;
+import dev.bookreports.command.StaffNotificationService;
 import dev.bookreports.command.internal.SelectOptionCommand;
 import dev.bookreports.command.internal.SelectTargetCommand;
 import dev.bookreports.config.BookReportsConfig;
@@ -23,8 +25,10 @@ import dev.bookreports.storage.StorageException;
 import dev.bookreports.storage.StorageManager;
 import dev.bookreports.storage.dao.JdbcPenaltyDao;
 import dev.bookreports.storage.dao.JdbcReportDao;
+import dev.bookreports.storage.dao.JdbcStaffPrefsDao;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
+import dev.bookreports.storage.dao.StaffPrefsDao;
 import dev.bookreports.util.BukkitSchedulerAdapter;
 import dev.bookreports.util.FoliaDetector;
 import dev.bookreports.util.FoliaSchedulerAdapter;
@@ -40,6 +44,8 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class BookReportsPlugin extends JavaPlugin {
+
+    private static final long CLAIM_RELEASE_INTERVAL_TICKS = 20L * 60; // once a minute
 
     private SchedulerAdapter scheduler;
     private ConfigManager configManager;
@@ -135,6 +141,7 @@ public final class BookReportsPlugin extends JavaPlugin {
     private void startServices() {
         ReportDao reportDao = new JdbcReportDao(dataSource);
         PenaltyDao penaltyDao = new JdbcPenaltyDao(dataSource);
+        StaffPrefsDao staffPrefsDao = new JdbcStaffPrefsDao(dataSource);
         Clock clock = Clock.systemUTC();
 
         CooldownService cooldownService = new CooldownService(clock);
@@ -149,6 +156,8 @@ public final class BookReportsPlugin extends JavaPlugin {
         getLogger().info("BookReportsAPI registered with the services manager.");
 
         registerBookFlow();
+        registerStaffPanel(reportDao, staffPrefsDao);
+        releaseStaleClaimsLoop();
     }
 
     /** Registered only once storage/{@link #reportService} are ready — every book command ends in a submit. */
@@ -166,6 +175,26 @@ public final class BookReportsPlugin extends JavaPlugin {
         setExecutorIfPresent("target", new SelectTargetCommand(sessionManager, localeManager, books));
         setExecutorIfPresent("select", new SelectOptionCommand(sessionManager, configManager::current, localeManager,
                 books, reportService, anvilInputGUI, scheduler, getLogger()));
+    }
+
+    private void registerStaffPanel(ReportDao reportDao, StaffPrefsDao staffPrefsDao) {
+        StaffNotificationService notifications = new StaffNotificationService(configManager::current, localeManager,
+                staffPrefsDao, workerExecutor, getLogger());
+        getServer().getPluginManager().registerEvents(notifications, this);
+        setExecutorIfPresent("reportadmin", new ReportAdminCommand(this, localeManager, reportService, reportDao,
+                configManager::current, notifications, workerExecutor));
+    }
+
+    /** Runs once immediately, then reschedules itself every {@link #CLAIM_RELEASE_INTERVAL_TICKS}. */
+    private void releaseStaleClaimsLoop() {
+        reportService.releaseStaleClaims().whenComplete((released, error) -> {
+            if (error != null) {
+                getLogger().log(Level.WARNING, "Failed to release stale claims", error);
+            } else if (released > 0) {
+                getLogger().info("Auto-released " + released + " stale claim(s).");
+            }
+        });
+        scheduler.runGlobalLater(this::releaseStaleClaimsLoop, CLAIM_RELEASE_INTERVAL_TICKS);
     }
 
     private void setExecutorIfPresent(String name, org.bukkit.command.CommandExecutor executor) {
