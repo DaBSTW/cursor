@@ -30,6 +30,7 @@ import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
+import dev.bookreports.util.ImmediateSchedulerAdapter;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;

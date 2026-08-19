@@ -189,6 +189,11 @@ public final class ReportService {
         return cooldownService.isOnCooldown(reporterUuid);
     }
 
+    /** Non-blocking, in-memory read — safe to call from the main thread. Used to render the book's summary page. */
+    public Optional<Duration> remainingCooldown(UUID reporterUuid) {
+        return cooldownService.remainingCooldown(reporterUuid);
+    }
+
     /** {@code true} if this reviewer newly claimed the report; {@code false} if someone already had it. */
     public CompletableFuture<Boolean> claim(long reportId, UUID reviewerUuid) {
         return CompletableFuture.supplyAsync(() -> {

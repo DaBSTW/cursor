@@ -34,6 +34,10 @@ commands:
     description: Internal book click handler. Not for manual use.
     usage: /breport:select <sessionId> <optionId>
     permission: bookreports.report
+  target:
+    description: Internal book click handler for the online-player picker. Not for manual use.
+    usage: /breport:target <uuid>
+    permission: bookreports.report
 
 permissions:
   bookreports.report:

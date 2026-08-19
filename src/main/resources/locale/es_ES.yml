@@ -12,6 +12,8 @@ report:
   cancelled: "<gray>Reporte cancelado.</gray>"
   book-title: "Reportar jugador"
   rate-limited: "<red>Estás abriendo el libro demasiado rápido, espera un momento.</red>"
+  tool-name: "<yellow>Reportar Jugador</yellow>"
+  tool-disabled: "<red>El item de reporte no está habilitado en este servidor.</red>"
 
 session:
   invalid: "<red>Esta página ya no es válida, usa /report de nuevo.</red>"

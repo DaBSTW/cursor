@@ -75,17 +75,17 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: el `/report` de Hypixel funcionando. Es la fase de mayor riesgo: la máquina de estados y la validación de clics concentran casi todos los bugs de seguridad del plugin.
 
-- [ ] `M` `ReportSession` (record) + `SessionManager` con caché Caffeine, expiración por inactividad y **una sola sesión activa por jugador**.
-- [ ] `M` Máquina de estados explícita: tabla de transiciones válidas `ReportState × acción → ReportState`, con rechazo por defecto (whitelist, no blacklist).
-- [ ] `M` `SelectOptionCommand` (`/breport:select <sessionId> <optionId>`): comando oculto que valida propietario de sesión + sesión viva + transición legal antes de actuar. **Los tres checks son obligatorios** (§13).
-- [ ] `M` `BookBuilder` + `ComponentUtil`: construcción de páginas con Adventure, `ClickEvent.runCommand`, `HoverEvent.showText` y estilo de corchetes tipo Hypixel.
-- [ ] `M` Páginas: `TargetConfirmPage`, `CategoryPage`, `SubReasonPage` (salta si la categoría no tiene sub-reasons), `SummaryPage`, `ResultPage`.
-- [ ] `M` Página de selección de objetivo cuando `/report` se usa sin argumento: lista paginada de jugadores online.
-- [ ] `M` `AnvilInputGUI` propio para la evidencia de texto libre + sanitización server-side (strip de formato, longitud máxima).
-- [ ] `S` Estado degradado en cooldown: el enlace de envío se renderiza gris y **sin** `ClickEvent`, mostrando el tiempo restante.
-- [ ] `S` Rate limiting de `/report` (1/seg) contra spam de apertura de libros.
-- [ ] `M` Item físico opcional `report-tool` + listener de clic derecho sobre jugador (tras `enable-report-tool`).
-- [ ] `M` Tests con MockBukkit del flujo completo, incluyendo los caminos de ataque: sessionId ajeno, sessionId expirado, salto de estado por comando pegado a mano.
+- [x] `M` `ReportSession` (record) + `SessionManager` con caché Caffeine, expiración por inactividad y **una sola sesión activa por jugador**.
+- [x] `M` Máquina de estados explícita: tabla de transiciones válidas `ReportState × acción → ReportState`, con rechazo por defecto (whitelist, no blacklist).
+- [x] `M` `SelectOptionCommand` (`/breport:select <sessionId> <optionId>`): comando oculto que valida propietario de sesión + sesión viva + transición legal antes de actuar. **Los tres checks son obligatorios** (§13).
+- [x] `M` `BookBuilder` + `ComponentUtil`: construcción de páginas con Adventure, `ClickEvent.runCommand`, `HoverEvent.showText` y estilo de corchetes tipo Hypixel.
+- [x] `M` Páginas: `TargetConfirmPage`, `CategoryPage`, `SubReasonPage` (salta si la categoría no tiene sub-reasons), `SummaryPage`, `ResultPage`.
+- [x] `M` Página de selección de objetivo cuando `/report` se usa sin argumento: lista paginada de jugadores online.
+- [x] `M` `AnvilInputGUI` propio para la evidencia de texto libre + sanitización server-side (strip de formato, longitud máxima).
+- [x] `S` Estado degradado en cooldown: el enlace de envío se renderiza gris y **sin** `ClickEvent`, mostrando el tiempo restante.
+- [x] `S` Rate limiting de `/report` (1/seg) contra spam de apertura de libros.
+- [x] `M` Item físico opcional `report-tool` + listener de clic derecho sobre jugador (tras `enable-report-tool`).
+- [x] `M` Tests con MockBukkit del flujo completo, incluyendo los caminos de ataque: sessionId ajeno, sessionId expirado, salto de estado por comando pegado a mano.
 
 **Criterio de aceptación:** dos cuentas reales completan el flujo de principio a fin sin escribir nada salvo `/report`; un tercer jugador copiando el comando `/breport:select` del primero recibe rechazo.
 

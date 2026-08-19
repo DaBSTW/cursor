@@ -12,6 +12,8 @@ report:
   cancelled: "<gray>Report cancelled.</gray>"
   book-title: "Report player"
   rate-limited: "<red>You are opening the book too fast, wait a moment.</red>"
+  tool-name: "<yellow>Report Player</yellow>"
+  tool-disabled: "<red>The report tool item is not enabled on this server.</red>"
 
 session:
   invalid: "<red>This page is no longer valid, use /report again.</red>"

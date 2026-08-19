@@ -1,10 +1,9 @@
-package dev.bookreports.service;
+package dev.bookreports.util;
 
-import dev.bookreports.util.SchedulerAdapter;
 import org.bukkit.entity.Player;
 
 /** Runs everything synchronously on the calling thread — deterministic scheduling for tests. */
-final class ImmediateSchedulerAdapter implements SchedulerAdapter {
+public final class ImmediateSchedulerAdapter implements SchedulerAdapter {
 
     @Override
     public void runAsync(Runnable task) {

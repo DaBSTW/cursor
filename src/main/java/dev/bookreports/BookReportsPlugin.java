@@ -2,15 +2,23 @@ package dev.bookreports;
 
 import dev.bookreports.api.BookReportsAPI;
 import dev.bookreports.api.BookReportsApiImpl;
+import dev.bookreports.book.BookBuilder;
+import dev.bookreports.command.RateLimiter;
+import dev.bookreports.command.ReportCommand;
+import dev.bookreports.command.ReportToolListener;
 import dev.bookreports.command.ReportsReloadCommand;
+import dev.bookreports.command.internal.SelectOptionCommand;
+import dev.bookreports.command.internal.SelectTargetCommand;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.ConfigManager;
 import dev.bookreports.config.ConfigurationException;
 import dev.bookreports.config.LocaleManager;
+import dev.bookreports.gui.AnvilInputGUI;
 import dev.bookreports.service.CooldownService;
 import dev.bookreports.service.DailyLimitService;
 import dev.bookreports.service.PriorityCalculator;
 import dev.bookreports.service.ReportService;
+import dev.bookreports.session.SessionManager;
 import dev.bookreports.storage.StorageException;
 import dev.bookreports.storage.StorageManager;
 import dev.bookreports.storage.dao.JdbcPenaltyDao;
@@ -22,6 +30,7 @@ import dev.bookreports.util.FoliaDetector;
 import dev.bookreports.util.FoliaSchedulerAdapter;
 import dev.bookreports.util.SchedulerAdapter;
 import java.time.Clock;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +46,7 @@ public final class BookReportsPlugin extends JavaPlugin {
     private LocaleManager localeManager;
     private StorageManager storageManager;
     private ExecutorService workerExecutor;
+    private SessionManager sessionManager;
     private volatile DataSource dataSource;
     private volatile ReportService reportService;
 
@@ -61,6 +71,7 @@ public final class BookReportsPlugin extends JavaPlugin {
             reportsReload.setExecutor(reloadCommand);
         }
 
+        sessionManager = new SessionManager(configManager::current, Clock.systemUTC());
         connectStorage();
 
         getLogger().info("BookReports v" + getPluginMeta().getVersion() + " enabled ("
@@ -136,6 +147,32 @@ public final class BookReportsPlugin extends JavaPlugin {
         BookReportsAPI api = new BookReportsApiImpl(reportService, configManager::current, workerExecutor);
         getServer().getServicesManager().register(BookReportsAPI.class, api, this, ServicePriority.Normal);
         getLogger().info("BookReportsAPI registered with the services manager.");
+
+        registerBookFlow();
+    }
+
+    /** Registered only once storage/{@link #reportService} are ready — every book command ends in a submit. */
+    private void registerBookFlow() {
+        BookBuilder books = new BookBuilder(localeManager);
+        RateLimiter rateLimiter = new RateLimiter(Duration.ofSeconds(1));
+        AnvilInputGUI anvilInputGUI = new AnvilInputGUI(localeManager);
+        getServer().getPluginManager().registerEvents(anvilInputGUI, this);
+        getServer().getPluginManager().registerEvents(
+                new ReportToolListener(configManager::current, sessionManager, localeManager, books, rateLimiter),
+                this);
+
+        setExecutorIfPresent("report",
+                new ReportCommand(sessionManager, configManager::current, localeManager, books, rateLimiter));
+        setExecutorIfPresent("target", new SelectTargetCommand(sessionManager, localeManager, books));
+        setExecutorIfPresent("select", new SelectOptionCommand(sessionManager, configManager::current, localeManager,
+                books, reportService, anvilInputGUI, scheduler, getLogger()));
+    }
+
+    private void setExecutorIfPresent(String name, org.bukkit.command.CommandExecutor executor) {
+        var command = getCommand(name);
+        if (command != null) {
+            command.setExecutor(executor);
+        }
     }
 
     public SchedulerAdapter scheduler() {
