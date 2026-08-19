@@ -75,7 +75,7 @@ public final class ReportAdminCommand implements CommandExecutor {
             openQueue(player);
             return;
         }
-        reportService.getQueue(ReportStatus.PENDING, 0, 20).whenComplete((reports, error) -> {
+        reportService.getQueue(ReportStatus.PENDING, 0, 20).whenComplete((reports, error) -> runOnMain(() -> {
             if (error != null) {
                 sender.sendMessage(locale.get("error.generic"));
                 return;
@@ -83,12 +83,12 @@ public final class ReportAdminCommand implements CommandExecutor {
             for (Report report : reports) {
                 sender.sendMessage(summaryLine(report));
             }
-        });
+        }));
     }
 
     private void openQueue(Player player) {
         ReportQueueView[] queueRef = new ReportQueueView[1];
-        ReportQueueView queue = new ReportQueueView(plugin, player, reportDao, config, locale, report -> {
+        ReportQueueView queue = new ReportQueueView(plugin, player, reportDao, config, locale, executor, report -> {
             ReportDetailView detail = new ReportDetailView(plugin, player, locale, reportService, punishmentBridge,
                     config, report, () -> queueRef[0].open(0));
             detail.open();
@@ -98,13 +98,14 @@ public final class ReportAdminCommand implements CommandExecutor {
     }
 
     private void view(CommandSender sender, String[] args) {
-        parseId(sender, args).ifPresent(id -> reportService.getReportById(id).whenComplete((found, error) -> {
-            if (error != null || found.isEmpty()) {
-                sender.sendMessage(locale.get("error.generic"));
-                return;
-            }
-            sender.sendMessage(summaryLine(found.get()));
-        }));
+        parseId(sender, args)
+                .ifPresent(id -> reportService.getReportById(id).whenComplete((found, error) -> runOnMain(() -> {
+                    if (error != null || found.isEmpty()) {
+                        sender.sendMessage(locale.get("error.generic"));
+                        return;
+                    }
+                    sender.sendMessage(summaryLine(found.get()));
+                })));
     }
 
     private void teleport(CommandSender sender, String[] args) {
@@ -112,30 +113,33 @@ public final class ReportAdminCommand implements CommandExecutor {
             sender.sendMessage(locale.get("command.player-only"));
             return;
         }
-        parseId(sender, args).ifPresent(id -> reportService.getReportById(id).whenComplete((found, error) -> {
-            if (error != null || found.isEmpty()) {
-                sender.sendMessage(locale.get("error.generic"));
-                return;
-            }
-            Player target = Bukkit.getPlayer(found.get().targetUuid());
-            if (target == null) {
-                sender.sendMessage(locale.get("report.target-offline"));
-                return;
-            }
-            // This callback runs on the report service's worker executor — teleporting must happen on the main thread.
-            Bukkit.getScheduler().runTask(plugin, () -> player.teleport(target.getLocation()));
-        }));
+        // This callback runs on the report service's worker executor — every branch must hop back to the
+        // main thread before touching the player, not just the successful teleport at the end.
+        parseId(sender, args)
+                .ifPresent(id -> reportService.getReportById(id).whenComplete((found, error) -> runOnMain(() -> {
+                    if (error != null || found.isEmpty()) {
+                        sender.sendMessage(locale.get("error.generic"));
+                        return;
+                    }
+                    Player target = Bukkit.getPlayer(found.get().targetUuid());
+                    if (target == null) {
+                        sender.sendMessage(locale.get("report.target-offline"));
+                        return;
+                    }
+                    player.teleport(target.getLocation());
+                })));
     }
 
     private void claim(CommandSender sender, String[] args) {
         UUID reviewer = reviewerUuid(sender);
-        parseId(sender, args).ifPresent(id -> reportService.claim(id, reviewer).whenComplete((claimed, error) -> {
-            if (error != null || !Boolean.TRUE.equals(claimed)) {
-                sender.sendMessage(locale.get("staff.claim.already-claimed", Map.of("reviewer", "?")));
-                return;
-            }
-            sender.sendMessage(locale.get("staff.claim.success", Map.of("ticket_id", args[1])));
-        }));
+        parseId(sender, args)
+                .ifPresent(id -> reportService.claim(id, reviewer).whenComplete((claimed, error) -> runOnMain(() -> {
+                    if (error != null || !Boolean.TRUE.equals(claimed)) {
+                        sender.sendMessage(locale.get("staff.claim.already-claimed", Map.of("reviewer", "?")));
+                        return;
+                    }
+                    sender.sendMessage(locale.get("staff.claim.success", Map.of("ticket_id", args[1])));
+                })));
     }
 
     private void resolve(CommandSender sender, String[] args) {
@@ -167,14 +171,14 @@ public final class ReportAdminCommand implements CommandExecutor {
     }
 
     private void completeResolve(CommandSender sender, long id, CompletableFuture<Boolean> future) {
-        future.whenComplete((updated, error) -> {
+        future.whenComplete((updated, error) -> runOnMain(() -> {
             if (error != null || !Boolean.TRUE.equals(updated)) {
                 sender.sendMessage(locale.get("staff.resolve.already-resolved"));
                 return;
             }
             sender.sendMessage(
                     locale.get("staff.resolve.success", Map.of("ticket_id", String.valueOf(id), "resolution", "OK")));
-        });
+        }));
     }
 
     private void history(CommandSender sender, String[] args) {
@@ -183,9 +187,11 @@ public final class ReportAdminCommand implements CommandExecutor {
             return;
         }
         String name = args[1];
+        // getOfflinePlayer can block on disk for an uncached name, so this whole lookup stays off the main
+        // thread; only the sendMessage calls below need to hop back onto it.
         executor.execute(() -> {
             OfflinePlayer target = Bukkit.getOfflinePlayer(name);
-            reportService.getReportHistory(target.getUniqueId()).whenComplete((history, error) -> {
+            reportService.getReportHistory(target.getUniqueId()).whenComplete((history, error) -> runOnMain(() -> {
                 if (error != null) {
                     sender.sendMessage(locale.get("error.generic"));
                     return;
@@ -197,8 +203,12 @@ public final class ReportAdminCommand implements CommandExecutor {
                 for (Report report : history) {
                     sender.sendMessage(summaryLine(report));
                 }
-            });
+            }));
         });
+    }
+
+    private void runOnMain(Runnable action) {
+        Bukkit.getScheduler().runTask(plugin, action);
     }
 
     private void notificationsToggle(CommandSender sender, String[] args) {

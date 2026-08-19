@@ -16,6 +16,7 @@ import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportPenalty;
 import dev.bookreports.storage.model.ReportStatus;
 import dev.bookreports.util.SchedulerAdapter;
+import dev.bookreports.util.TextSanitizer;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -127,10 +128,13 @@ public final class ReportService {
         ReportCategory category = cfg.category(request.categoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Unknown category id=" + request.categoryId()));
         Priority priority = priorityCalculator.calculate(category, reporterUuid, existingForTarget);
+        // Re-sanitized here (not just in the anvil GUI): BookReportsAPI lets other plugins call submitReport
+        // directly, bypassing that GUI entirely — SPECS.md §13 requires this defense in depth.
+        String evidenceText = TextSanitizer.stripAndTruncate(request.evidenceText(), TextSanitizer.EVIDENCE_MAX_LENGTH);
 
         return new Report(0, UUID.randomUUID(), reporterUuid, request.reporterName(), targetUuid, request.targetName(),
-                request.categoryId(), request.subReasonId(), request.evidenceText(), request.server(),
-                ReportStatus.PENDING, priority, null, null, clock.instant(), null, null, 0);
+                request.categoryId(), request.subReasonId(), evidenceText, request.server(), ReportStatus.PENDING,
+                priority, null, null, clock.instant(), null, null, 0);
     }
 
     private void fireCreateEventThenPersist(Report draft, CompletableFuture<Report> result) {

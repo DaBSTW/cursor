@@ -127,14 +127,14 @@ Ruta de implementación derivada de [`SPECS.md`](./SPECS.md). Cada fase es entre
 
 > Objetivo: pasar de "funciona en mi servidor de pruebas" a "funciona en producción con 200 jugadores".
 
-- [ ] `M` Pasada de seguridad completa sobre §13: revisar cada punto de entrada de input del usuario (comando, anvil, click de GUI) y su sanitización.
-- [ ] `M` Auditoría de hilos: confirmar con Spark/timings que ninguna consulta SQL toca el hilo principal y que todo callback a la API de Bukkit vuelve al hilo correcto.
-- [ ] `S` Acotar todas las cachés Caffeine (`maximumSize`) y verificar que no hay fugas de memoria tras miles de sesiones.
-- [ ] `M` QA manual del checklist completo de §15 en Paper y, si se soporta, en Folia.
-- [ ] `M` Prueba de carga: 500 reportes sembrados, medir apertura del panel de staff y consultas de historial.
-- [ ] `S` Documentación de usuario: README, wiki de configuración, ejemplos de `config.yml` comentados.
-- [ ] `S` Versionado semántico, `CHANGELOG.md` y release automatizada en CI al taggear.
-- [ ] `S` Publicación en Modrinth/Hangar con descripción, capturas del flujo del libro y matriz de compatibilidad.
+- [x] `M` Pasada de seguridad completa sobre §13: revisar cada punto de entrada de input del usuario (comando, anvil, click de GUI) y su sanitización. Encontrado y corregido: `evidence_text` sólo se saneaba en el anvil GUI, no en `ReportService` — `BookReportsAPI` permitía saltárselo por completo; ahora `TextSanitizer` se aplica en ambos sitios. Añadido también `TabCompleter` vacío a `/breport:select` y `/breport:target` (no tab-completan, como pide la spec).
+- [x] `M` Auditoría de hilos: revisión estática completa de todos los `whenComplete`/`thenAccept` y accesos a DAO fuera de `ReportService` (no se pudo verificar con Spark/timings en vivo por no haber un servidor real en este sandbox). Encontrado y corregido: `ReportQueueView` leía la base de datos de forma síncrona en el hilo principal al abrir/paginar la cola (`PaginatedView` ahora carga contenido de forma asíncrona antes de renderizar); `ReportAdminCommand` tenía varios `sender.sendMessage(...)` ejecutándose en el executor en vez de en el hilo principal, ya corregido.
+- [x] `S` Acotar todas las cachés Caffeine (`maximumSize`) y verificar que no hay fugas de memoria tras miles de sesiones. Verificado: las 6 cachés Caffeine del proyecto (`SessionManager`, `RateLimiter`, `CooldownService`, `DailyLimitService`, `StaffNotificationService`, `PlaceholderExpansionImpl`) declaran `maximumSize` explícito.
+- [ ] `M` QA manual del checklist completo de §15 en Paper y, si se soporta, en Folia. No ejecutable en este sandbox (requiere un servidor Paper real con dos cuentas). Las partes automatizables de §15 (unitarias + integración con MockBukkit/SQLite en memoria) ya están cubiertas por los 85 tests existentes.
+- [x] `M` Prueba de carga: 500 reportes sembrados, medir apertura del panel de staff y consultas de historial. `ReportQueueLoadTest` siembra 500 reportes y mide la consulta de una página de la cola y el historial de un jugador (ambas <150ms sobre SQLite en memoria).
+- [x] `S` Documentación de usuario: README, wiki de configuración, ejemplos de `config.yml` comentados. README ya cubre instalación, configuración, comandos, anti-abuso, integraciones y API; añadida la fila que faltaba de `/reportadmin teleport`. No se creó wiki de GitHub (requiere acceso al repo fuera de este sandbox).
+- [x] `S` Versionado semántico, `CHANGELOG.md` y release automatizada en CI al taggear. `CHANGELOG.md` añadido (Keep a Changelog), `gradle.properties` ya usa semver (`1.0.0-SNAPSHOT`), y el workflow de CI publica un GitHub Release con el jar adjunto al pushear un tag `v*`. No se creó el tag `v1.0.0` real — eso es una acción pública que le corresponde decidir al mantenedor.
+- [ ] `S` Publicación en Modrinth/Hangar con descripción, capturas del flujo del libro y matriz de compatibilidad. Fuera de alcance de este sandbox: requiere cuentas y credenciales externas del mantenedor.
 
 **Criterio de aceptación:** v1.0.0 taggeada, jar publicado, sin issues abiertos de severidad alta.
 

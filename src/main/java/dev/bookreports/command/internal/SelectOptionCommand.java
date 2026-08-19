@@ -15,6 +15,7 @@ import dev.bookreports.session.SessionTransitions;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.util.SchedulerAdapter;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,6 +26,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 /**
@@ -36,7 +38,7 @@ import org.bukkit.entity.Player;
  * a superseded session), and (3) the requested move is in the {@link SessionTransitions} whitelist. Anything that fails
  * any check is logged and rejected — never silently applied "close enough".
  */
-public final class SelectOptionCommand implements CommandExecutor {
+public final class SelectOptionCommand implements CommandExecutor, TabCompleter {
 
     private final SessionManager sessions;
     private final Supplier<BookReportsConfig> config;
@@ -257,6 +259,12 @@ public final class SelectOptionCommand implements CommandExecutor {
     private void logRejected(Player player, UUID sessionId, ReportState state, String actionId, String reason) {
         logger.warning("Rejected selection: sessionId=" + sessionId + " actor=" + player.getUniqueId() + " state="
                 + state + " action=" + actionId + " reason=" + reason);
+    }
+
+    /** SPECS.md §13: this internal command must not tab-complete — it only ever runs via a book's click link. */
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 
     private String targetName(ReportSession session) {

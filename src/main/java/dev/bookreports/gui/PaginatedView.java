@@ -3,6 +3,8 @@ package dev.bookreports.gui;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -43,20 +45,26 @@ public abstract class PaginatedView implements InventoryHolder, Listener {
         this.viewer = Objects.requireNonNull(viewer, "viewer");
     }
 
+    /** Loads this page's content off-thread first — {@link #contentItemsAsync} may hit the database. */
     public final void open(int requestedPage) {
         this.page = Math.max(0, requestedPage);
-        if (!registered) {
-            Bukkit.getPluginManager().registerEvents(this, plugin);
-            registered = true;
-        }
-        this.inventory = Bukkit.createInventory(this, SIZE, title());
-        render();
-        viewer.openInventory(inventory);
+        contentItemsAsync(page).whenComplete((items, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+            if (error != null) {
+                plugin.getLogger().log(Level.WARNING, "Failed to load a page for " + viewer.getName(), error);
+                return;
+            }
+            if (!registered) {
+                Bukkit.getPluginManager().registerEvents(this, plugin);
+                registered = true;
+            }
+            this.inventory = Bukkit.createInventory(this, SIZE, title());
+            render(items);
+            viewer.openInventory(inventory);
+        }));
     }
 
-    private void render() {
+    private void render(List<ItemStack> items) {
         inventory.clear();
-        List<ItemStack> items = contentItems(page);
         for (int i = 0; i < items.size() && i < CONTENT_SLOTS; i++) {
             inventory.setItem(i, items.get(i));
         }
@@ -123,8 +131,11 @@ public abstract class PaginatedView implements InventoryHolder, Listener {
 
     protected abstract Component title();
 
-    /** Items for this page's content slots (0..{@link #CONTENT_SLOTS}), most-important first. */
-    protected abstract List<ItemStack> contentItems(int page);
+    /**
+     * Items for this page's content slots (0..{@link #CONTENT_SLOTS}), most-important first. Runs off the main thread —
+     * implementations that hit the database must do so inside the returned future, never inline.
+     */
+    protected abstract CompletableFuture<List<ItemStack>> contentItemsAsync(int page);
 
     protected abstract void onContentClick(int slotInPage, int page);
 

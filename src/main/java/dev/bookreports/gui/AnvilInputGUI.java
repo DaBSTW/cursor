@@ -1,6 +1,7 @@
 package dev.bookreports.gui;
 
 import dev.bookreports.config.LocaleManager;
+import dev.bookreports.util.TextSanitizer;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,7 +33,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 public final class AnvilInputGUI implements Listener {
 
-    public static final int MAX_LENGTH = 100;
+    public static final int MAX_LENGTH = TextSanitizer.EVIDENCE_MAX_LENGTH;
 
     private final LocaleManager locale;
     private final Map<UUID, Inventory> openByPlayer = new ConcurrentHashMap<>();
@@ -114,14 +115,11 @@ public final class AnvilInputGUI implements Listener {
     }
 
     /**
-     * Re-checked server-side: the anvil GUI's client-side rename field has no length limit of its own, so a malicious
-     * client could send arbitrarily long or color-coded text regardless of what the vanilla UI shows.
+     * Re-checked server-side by {@code ReportService} too: the anvil GUI's client-side rename field has no length limit
+     * of its own, so a malicious client could send arbitrarily long or color-coded text regardless of what the vanilla
+     * UI shows.
      */
     static String sanitize(String raw) {
-        if (raw == null) {
-            return null;
-        }
-        String stripped = raw.replaceAll("[§&][0-9a-fk-orA-FK-OR]", "").strip();
-        return stripped.length() > MAX_LENGTH ? stripped.substring(0, MAX_LENGTH) : stripped;
+        return TextSanitizer.stripAndTruncate(raw, MAX_LENGTH);
     }
 }

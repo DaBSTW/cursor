@@ -32,6 +32,7 @@ import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
 import dev.bookreports.util.ImmediateSchedulerAdapter;
+import dev.bookreports.util.TextSanitizer;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -123,6 +124,18 @@ class ReportServiceTest {
         assertEquals(ReportStatus.PENDING, report.status());
         assertEquals(1, createdEvents.size());
         assertEquals(report.id(), createdEvents.get(0).report().id());
+    }
+
+    @Test
+    void evidenceTextIsSanitizedServerSideEvenWhenTheCallerDoesNotGoThroughTheAnvilGui() {
+        String malicious = "&c".repeat(60) + "still too long after stripping the color codes above";
+        SubmitReportRequest request = new SubmitReportRequest(UUID.randomUUID(), "Reporter", UUID.randomUUID(),
+                "Target", "hacks", "killaura", malicious, "default");
+
+        Report report = submit(request);
+
+        assertTrue(report.evidenceText().length() <= TextSanitizer.EVIDENCE_MAX_LENGTH);
+        assertFalse(report.evidenceText().contains("&c"));
     }
 
     @Test

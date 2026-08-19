@@ -227,8 +227,12 @@ public final class BookReportsPlugin extends JavaPlugin {
 
     private void setExecutorIfPresent(String name, org.bukkit.command.CommandExecutor executor) {
         var command = getCommand(name);
-        if (command != null) {
-            command.setExecutor(executor);
+        if (command == null) {
+            return;
+        }
+        command.setExecutor(executor);
+        if (executor instanceof org.bukkit.command.TabCompleter tabCompleter) {
+            command.setTabCompleter(tabCompleter);
         }
     }
 

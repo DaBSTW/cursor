@@ -127,6 +127,7 @@ Añadir una categoría nueva es añadir una entrada al YAML y ejecutar `/reports
 | `/reportadmin` · `/reports` | `bookreports.staff` | Abre la cola de revisión |
 | `/reportadmin view <id>` | `bookreports.staff` | Detalle de un reporte |
 | `/reportadmin claim <id>` | `bookreports.staff` | Reclama un reporte (evita trabajo duplicado) |
+| `/reportadmin teleport <id>` | `bookreports.staff` | Te teletransporta al jugador reportado |
 | `/reportadmin resolve <id> <acción>` | `bookreports.staff.resolve` | Resuelve desde consola |
 | `/reportadmin history <jugador>` | `bookreports.staff` | Historial completo de un jugador |
 | `/reportadmin notifications toggle` | `bookreports.staff.notify` | Alertas en vivo on/off |

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
@@ -36,16 +38,19 @@ public final class ReportQueueView extends PaginatedView {
     private final ReportDao reportDao;
     private final Supplier<BookReportsConfig> config;
     private final LocaleManager locale;
+    private final Executor executor;
     private final Consumer<Report> onSelect;
     private int statusFilterIndex;
     private String categoryFilter;
+    private List<Report> currentPageReports = List.of();
 
     public ReportQueueView(Plugin plugin, Player viewer, ReportDao reportDao, Supplier<BookReportsConfig> config,
-            LocaleManager locale, Consumer<Report> onSelect) {
+            LocaleManager locale, Executor executor, Consumer<Report> onSelect) {
         super(plugin, viewer);
         this.reportDao = Objects.requireNonNull(reportDao, "reportDao");
         this.config = Objects.requireNonNull(config, "config");
         this.locale = Objects.requireNonNull(locale, "locale");
+        this.executor = Objects.requireNonNull(executor, "executor");
         this.onSelect = Objects.requireNonNull(onSelect, "onSelect");
     }
 
@@ -58,25 +63,29 @@ public final class ReportQueueView extends PaginatedView {
         return locale.get("staff.queue.title");
     }
 
+    /**
+     * Both the DB read and the {@code groupingBadge} lookups it triggers happen here, off the main thread; the fetched
+     * reports are cached in {@link #currentPageReports} for {@link #onContentClick} to reuse without a second round
+     * trip once this future's items are on screen.
+     */
     @Override
-    protected List<ItemStack> contentItems(int page) {
-        List<ItemStack> items = new ArrayList<>();
-        for (Report report : currentPage(page)) {
-            items.add(toItem(report));
-        }
-        return items;
+    protected CompletableFuture<List<ItemStack>> contentItemsAsync(int page) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Report> reports = reportDao.findByStatus(statusFilter(), categoryFilter, page, CONTENT_SLOTS);
+            currentPageReports = reports;
+            List<ItemStack> items = new ArrayList<>();
+            for (Report report : reports) {
+                items.add(toItem(report));
+            }
+            return items;
+        }, executor);
     }
 
     @Override
     protected void onContentClick(int slotInPage, int page) {
-        List<Report> reports = currentPage(page);
-        if (slotInPage < reports.size()) {
-            onSelect.accept(reports.get(slotInPage));
+        if (slotInPage < currentPageReports.size()) {
+            onSelect.accept(currentPageReports.get(slotInPage));
         }
-    }
-
-    private List<Report> currentPage(int page) {
-        return reportDao.findByStatus(statusFilter(), categoryFilter, page, CONTENT_SLOTS);
     }
 
     @Override

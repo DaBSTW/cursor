@@ -4,16 +4,18 @@ import dev.bookreports.book.BookBuilder;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.session.ReportSession;
 import dev.bookreports.session.SessionManager;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 /** {@code /breport:target <uuid>} — starts a new report session from the online-player picker (SPECS.md §4.1). */
-public final class SelectTargetCommand implements CommandExecutor {
+public final class SelectTargetCommand implements CommandExecutor, TabCompleter {
 
     private final SessionManager sessions;
     private final LocaleManager locale;
@@ -46,5 +48,11 @@ public final class SelectTargetCommand implements CommandExecutor {
         ReportSession session = sessions.startWithTarget(player.getUniqueId(), targetId);
         books.openTargetConfirm(player, session, target.getName());
         return true;
+    }
+
+    /** SPECS.md §13: this internal command must not tab-complete — it only ever runs via a book's click link. */
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return List.of();
     }
 }
