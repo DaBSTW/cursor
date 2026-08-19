@@ -153,7 +153,7 @@ BookReports asume que alguien intentará abusar del sistema de reportes, y lo ma
 Todas opcionales — si el plugin no está presente, la función simplemente se desactiva sin errores.
 
 - **PlaceholderAPI** — `%bookreports_pending_count%`, `%bookreports_my_cooldown%`, `%bookreports_target_report_count%`
-- **LiteBans / AdvancedBan** — sanciones con un clic desde el panel de staff
+- **LiteBans / AdvancedBan / EssentialsX** — sanciones con un clic desde el panel de staff (en ese orden de preferencia si hay más de uno instalado)
 - **Discord** — webhook para avisar al staff offline de reportes de alta prioridad
 - **Velocity / BungeeCord** — panel de staff unificado en toda la red sobre MySQL compartido
 - **LuckPerms / Vault** — permisos estándar

@@ -35,7 +35,28 @@ class PunishmentBridgesTest {
     }
 
     @Test
-    void returnsEmptyWhenNeitherPresent() {
+    void detectsEssentialsWhenNothingElsePresent() {
+        PluginManager pluginManager = mock(PluginManager.class);
+        when(pluginManager.getPlugin("Essentials")).thenReturn(mock(Plugin.class));
+
+        Optional<PunishmentBridge> bridge = PunishmentBridges.detect(pluginManager);
+
+        assertTrue(bridge.isPresent());
+        assertEquals("Essentials", bridge.get().name());
+    }
+
+    @Test
+    void prefersLiteBansOverAdvancedBanAndEssentials() {
+        PluginManager pluginManager = mock(PluginManager.class);
+        when(pluginManager.getPlugin("LiteBans")).thenReturn(mock(Plugin.class));
+        when(pluginManager.getPlugin("AdvancedBan")).thenReturn(mock(Plugin.class));
+        when(pluginManager.getPlugin("Essentials")).thenReturn(mock(Plugin.class));
+
+        assertEquals("LiteBans", PunishmentBridges.detect(pluginManager).orElseThrow().name());
+    }
+
+    @Test
+    void returnsEmptyWhenNonePresent() {
         PluginManager pluginManager = mock(PluginManager.class);
 
         assertEquals(Optional.empty(), PunishmentBridges.detect(pluginManager));
