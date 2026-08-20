@@ -164,9 +164,10 @@ Todas opcionales — si el plugin no está presente, la función simplemente se 
 
 - **PlaceholderAPI** — `%bookreports_pending_count%`, `%bookreports_my_cooldown%`, `%bookreports_target_report_count%`
 - **LiteBans / AdvancedBan / EssentialsX** — sanciones con un clic desde el panel de staff (en ese orden de preferencia si hay más de uno instalado)
-- **Discord** — webhook para avisar al staff offline de reportes de alta prioridad
+- **Discord** — webhook que avisa al staff offline al crearse un reporte de alta prioridad, y de nuevo cuando se resuelve
 - **Velocity / BungeeCord** — panel de staff unificado en toda la red sobre MySQL compartido
 - **LuckPerms / Vault** — permisos estándar
+- **bStats** — estadísticas de uso anónimas y agregadas (servidor, versión, config), desactivable con `metrics.enabled: false`
 
 ---
 

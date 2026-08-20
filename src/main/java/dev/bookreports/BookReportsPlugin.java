@@ -18,6 +18,7 @@ import dev.bookreports.config.ConfigurationException;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.gui.AnvilInputGUI;
 import dev.bookreports.integration.discord.DiscordNotifier;
+import dev.bookreports.integration.metrics.BStatsMetrics;
 import dev.bookreports.integration.placeholder.PlaceholderExpansionImpl;
 import dev.bookreports.integration.proxy.ProxySyncChannel;
 import dev.bookreports.integration.punishment.PunishmentBridge;
@@ -88,6 +89,7 @@ public final class BookReportsPlugin extends JavaPlugin {
         sessionManager = new SessionManager(configManager::current, Clock.systemUTC());
         chatContextTracker = new ChatContextTracker();
         getServer().getPluginManager().registerEvents(chatContextTracker, this);
+        BStatsMetrics.start(this, configManager::current);
         connectStorage();
 
         getLogger().info("BookReports v" + getPluginMeta().getVersion() + " enabled ("

@@ -329,7 +329,7 @@ class ReportServiceTest {
                 config.sessionTimeoutSeconds(), config.preventSelfReport(), config.preventDuplicatePending(),
                 config.categories(), config.priorityEscalation(), config.falseReportPenalty(),
                 config.enableReportTool(), config.staff(), config.discord(), config.punishments(),
-                config.placeholderApiEnabled(), config.locale(), config.serverId());
+                config.placeholderApiEnabled(), config.metricsEnabled(), config.locale(), config.serverId());
     }
 
     private BookReportsConfig defaultConfig() {
@@ -338,6 +338,6 @@ class ReportServiceTest {
                 10, 300, true, true, Map.of("hacks", hacks), new PriorityEscalationSettings(3, 600, Priority.HIGH),
                 new FalseReportPenaltySettings(false, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
-                new PunishmentSettings("7d", "1h"), true, "es_ES", "default");
+                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default");
     }
 }

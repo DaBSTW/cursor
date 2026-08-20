@@ -1,6 +1,7 @@
 package dev.bookreports.integration.discord;
 
 import dev.bookreports.api.event.ReportCreatedEvent;
+import dev.bookreports.api.event.ReportResolvedEvent;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.DiscordSettings;
 import dev.bookreports.storage.model.Report;
@@ -18,8 +19,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 /**
- * Discord webhook alerts (SPECS.md §11): a plain HTTP POST, no external library. One attempt per report, bounded by
- * {@link #TIMEOUT} — never retried, so a dead webhook can't pile up requests.
+ * Discord webhook alerts (SPECS.md §11): a plain HTTP POST, no external library, sent on report creation and again on
+ * resolution. One attempt per notification, bounded by {@link #TIMEOUT} — never retried, so a dead webhook can't pile
+ * up requests.
  */
 public final class DiscordNotifier implements Listener {
 
@@ -37,16 +39,42 @@ public final class DiscordNotifier implements Listener {
 
     @EventHandler
     public void onReportCreated(ReportCreatedEvent event) {
-        DiscordSettings discord = config.get().discord();
         Report report = event.report();
-        if (!discord.enabled() || report.priority().ordinal() < discord.minPriorityToNotify().ordinal()) {
+        if (!eligible(report)) {
             return;
         }
+        String content = "⚠ New " + report.priority() + " report: **" + report.targetName() + "** — "
+                + report.categoryId();
+        send(content);
+    }
+
+    /**
+     * Follows up only on reports that met the same threshold as {@link #onReportCreated} — those are the ones staff
+     * were pinged about in the first place, so Discord shows their full lifecycle rather than every routine resolution.
+     */
+    @EventHandler
+    public void onReportResolved(ReportResolvedEvent event) {
+        Report report = event.report();
+        if (!eligible(report)) {
+            return;
+        }
+        String content = "✅ Report #" + report.id() + " against **" + report.targetName() + "** resolved: "
+                + report.status();
+        send(content);
+    }
+
+    private boolean eligible(Report report) {
+        DiscordSettings discord = config.get().discord();
+        return discord.enabled() && report.priority().ordinal() >= discord.minPriorityToNotify().ordinal();
+    }
+
+    private void send(String content) {
+        DiscordSettings discord = config.get().discord();
         HttpRequest request;
         try {
             request = HttpRequest.newBuilder(URI.create(discord.webhookUrl())).timeout(TIMEOUT)
                     .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(payload(report))).build();
+                    .POST(HttpRequest.BodyPublishers.ofString(payload(content))).build();
         } catch (IllegalArgumentException e) {
             logger.log(Level.WARNING, "Invalid discord.webhook-url in config.yml", e);
             return;
@@ -60,9 +88,7 @@ public final class DiscordNotifier implements Listener {
         });
     }
 
-    private String payload(Report report) {
-        String content = "⚠ New " + report.priority() + " report: **" + report.targetName() + "** — "
-                + report.categoryId();
+    private String payload(String content) {
         return "{\"content\":\"" + escape(content) + "\"}";
     }
 

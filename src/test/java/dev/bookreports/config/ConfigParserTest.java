@@ -33,6 +33,35 @@ class ConfigParserTest {
         assertEquals("es_ES", config.locale());
         assertEquals("7d", config.punishments().defaultBanDuration());
         assertEquals("1h", config.punishments().defaultMuteDuration());
+        assertTrue(config.metricsEnabled());
+    }
+
+    @Test
+    void metricsDefaultsToEnabledWhenSectionIsMissing() {
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.StringReader("""
+                report:
+                  categories:
+                    other:
+                      display: "Other"
+                      priority: LOW
+                """));
+
+        assertTrue(parser.parse(yaml).metricsEnabled());
+    }
+
+    @Test
+    void metricsCanBeDisabled() {
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.StringReader("""
+                report:
+                  categories:
+                    other:
+                      display: "Other"
+                      priority: LOW
+                metrics:
+                  enabled: false
+                """));
+
+        assertFalse(parser.parse(yaml).metricsEnabled());
     }
 
     @Test

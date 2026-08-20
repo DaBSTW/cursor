@@ -126,6 +126,6 @@ class DailyLimitServiceTest {
                 120, dailyLimit, 300, true, true, Map.of(), new PriorityEscalationSettings(3, 600, Priority.HIGH),
                 new FalseReportPenaltySettings(true, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
-                new PunishmentSettings("7d", "1h"), true, "es_ES", "default");
+                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default");
     }
 }

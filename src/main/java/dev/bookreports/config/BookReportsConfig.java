@@ -8,8 +8,8 @@ public record BookReportsConfig(StorageType storageType, MySqlSettings mysql, in
         int sessionTimeoutSeconds, boolean preventSelfReport, boolean preventDuplicatePending,
         Map<String, ReportCategory> categories, PriorityEscalationSettings priorityEscalation,
         FalseReportPenaltySettings falseReportPenalty, boolean enableReportTool, StaffSettings staff,
-        DiscordSettings discord, PunishmentSettings punishments, boolean placeholderApiEnabled, String locale,
-        String serverId) {
+        DiscordSettings discord, PunishmentSettings punishments, boolean placeholderApiEnabled, boolean metricsEnabled,
+        String locale, String serverId) {
 
     public BookReportsConfig {
         categories = Map.copyOf(categories);

@@ -71,6 +71,11 @@ punishments:
   default-mute-duration: 1h
 
 placeholderapi: true
+
+# Anonymous usage stats (bstats.org): server count, versions, plugin config summary — never player data.
+metrics:
+  enabled: true
+
 locale: es_ES
 debug: false
 

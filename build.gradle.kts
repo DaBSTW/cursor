@@ -30,6 +30,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    implementation("org.bstats:bstats-bukkit:3.0.2")
 
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -64,6 +65,9 @@ tasks.shadowJar {
     relocate("com.github.benmanes.caffeine", "dev.bookreports.libs.caffeine")
     relocate("org.sqlite", "dev.bookreports.libs.sqlite")
     relocate("org.slf4j", "dev.bookreports.libs.slf4j")
+    // bStats requires relocation so its own internal update-checking service doesn't clash with other
+    // plugins bundling a different bStats version on the same server.
+    relocate("org.bstats", "dev.bookreports.libs.bstats")
 
     minimize {
         exclude(dependency("org.xerial:sqlite-jdbc:.*"))

@@ -33,9 +33,10 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
   (cancelable), `ReportCreatedEvent`, `ReportClaimedEvent`,
   `ReportResolvedEvent`, `ReportFalseMarkedEvent`.
 - Optional integrations, all soft-depend: `PunishmentBridge` for LiteBans,
-  AdvancedBan and EssentialsX, a Discord webhook notifier, a PlaceholderAPI
-  expansion, and a proxy sync channel (`bookreports:sync`) for cross-backend
-  alerts over a shared MySQL database.
+  AdvancedBan and EssentialsX, a Discord webhook notifier (report creation
+  and resolution), a PlaceholderAPI expansion, and a proxy sync channel
+  (`bookreports:sync`) for cross-backend alerts over a shared MySQL database.
+- Anonymous bStats usage metrics, toggleable via `metrics.enabled`.
 - Folia and Bukkit scheduler support via a single `SchedulerAdapter`
   abstraction.
 - `es_ES` and `en_US` locales, fully externalized via MiniMessage.
