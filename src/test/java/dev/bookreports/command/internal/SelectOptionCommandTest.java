@@ -9,6 +9,7 @@ import be.seeseemelk.mockbukkit.ServerMock;
 import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.bookreports.book.BookBuilder;
+import dev.bookreports.chat.ChatContextTracker;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.config.TestConfigs;
@@ -72,7 +73,7 @@ class SelectOptionCommandTest {
         AnvilInputGUI anvilInputGUI = new AnvilInputGUI(locale);
 
         command = new SelectOptionCommand(sessions, () -> config, locale, books, reportService, anvilInputGUI,
-                new ImmediateSchedulerAdapter(), Logger.getLogger("BookReportsTest"));
+                new ChatContextTracker(), new ImmediateSchedulerAdapter(), Logger.getLogger("BookReportsTest"));
     }
 
     @AfterEach

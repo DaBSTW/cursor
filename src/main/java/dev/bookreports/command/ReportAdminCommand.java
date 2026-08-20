@@ -9,6 +9,8 @@ import dev.bookreports.service.ReportService;
 import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
+import dev.bookreports.storage.model.ReporterStats;
+import dev.bookreports.storage.model.StaffStats;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -64,8 +66,9 @@ public final class ReportAdminCommand implements CommandExecutor {
             case "resolve" -> resolve(sender, args);
             case "history" -> history(sender, args);
             case "notifications" -> notificationsToggle(sender, args);
+            case "stats" -> stats(sender, args);
             default -> sender.sendMessage(locale.get("command.usage",
-                    Map.of("usage", "/reportadmin <list|view|claim|resolve|history|notifications>")));
+                    Map.of("usage", "/reportadmin <list|view|claim|resolve|history|notifications|stats>")));
         }
         return true;
     }
@@ -204,6 +207,33 @@ public final class ReportAdminCommand implements CommandExecutor {
                     sender.sendMessage(summaryLine(report));
                 }
             }));
+        });
+    }
+
+    private void stats(CommandSender sender, String[] args) {
+        if (args.length < 3 || !("reporter".equalsIgnoreCase(args[1]) || "staff".equalsIgnoreCase(args[1]))) {
+            sender.sendMessage(
+                    locale.get("command.usage", Map.of("usage", "/reportadmin stats <reporter|staff> <player>")));
+            return;
+        }
+        String kind = args[1].toLowerCase(Locale.ROOT);
+        String name = args[2];
+        // getOfflinePlayer and the DAO stats query can both block, so this whole lookup stays off the main
+        // thread; only the sendMessage calls below need to hop back onto it.
+        executor.execute(() -> {
+            UUID targetId = Bukkit.getOfflinePlayer(name).getUniqueId();
+            if ("reporter".equals(kind)) {
+                ReporterStats stats = reportDao.reporterStats(targetId);
+                runOnMain(() -> sender.sendMessage(locale.get("staff.stats.reporter",
+                        Map.of("player", name, "total", String.valueOf(stats.total()), "actioned",
+                                String.valueOf(stats.actioned()), "rejected", String.valueOf(stats.rejectedOrFalse()),
+                                "accuracy", String.valueOf(stats.accuracyPercent())))));
+            } else {
+                StaffStats stats = reportDao.staffStats(targetId);
+                runOnMain(() -> sender.sendMessage(locale.get("staff.stats.staff",
+                        Map.of("player", name, "resolved", String.valueOf(stats.resolvedCount()), "avg_minutes",
+                                String.format(Locale.ROOT, "%.1f", stats.avgResolutionMinutes())))));
+            }
         });
     }
 

@@ -49,6 +49,17 @@ class JdbcReportDaoTest {
     }
 
     @Test
+    void chatContextRoundTripsThroughInsertAndRead() {
+        Report withContext = new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", UUID.randomUUID(),
+                "Target", "chat_abuse", null, null, "default", ReportStatus.PENDING, Priority.MEDIUM, null, null,
+                Instant.now(), null, null, 0, "hello | world");
+
+        Report inserted = dao.insert(withContext);
+
+        assertEquals("hello | world", dao.findById(inserted.id()).orElseThrow().chatContext());
+    }
+
+    @Test
     void findByTargetOrdersMostRecentFirst() throws InterruptedException {
         UUID target = UUID.randomUUID();
         Report first = dao.insert(draft(UUID.randomUUID(), target));
@@ -89,9 +100,9 @@ class JdbcReportDaoTest {
     void findByStatusFiltersByCategoryWhenGiven() {
         UUID target = UUID.randomUUID();
         Report hacks = dao.insert(draft(UUID.randomUUID(), target));
-        Report other = dao.insert(
-                new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "chat_abuse", null,
-                        null, "default", ReportStatus.PENDING, Priority.LOW, null, null, Instant.now(), null, null, 0));
+        Report other = dao.insert(new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target",
+                "chat_abuse", null, null, "default", ReportStatus.PENDING, Priority.LOW, null, null, Instant.now(),
+                null, null, 0, null));
 
         List<Report> hacksOnly = dao.findByStatus(ReportStatus.PENDING, "hacks", 0, 10);
 
@@ -103,7 +114,7 @@ class JdbcReportDaoTest {
 
     private Report draftWithPriority(UUID target, Priority priority) {
         return new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "hacks", null, null,
-                "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0);
+                "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0, null);
     }
 
     @Test
@@ -203,8 +214,53 @@ class JdbcReportDaoTest {
         assertFalse(dao.releaseClaim(report.id(), reviewer));
     }
 
+    @Test
+    void reporterStatsCountsActionedAndRejectedButNotDuplicates() {
+        UUID reporter = UUID.randomUUID();
+        Report actioned = dao.insert(draft(reporter, UUID.randomUUID()));
+        Report rejected = dao.insert(draft(reporter, UUID.randomUUID()));
+        Report duplicate = dao.insert(draft(reporter, UUID.randomUUID()));
+        dao.insert(draft(reporter, UUID.randomUUID())); // still PENDING, shouldn't count either way
+        dao.updateStatus(actioned.id(), ReportStatus.RESOLVED_ACTION, UUID.randomUUID(), "banned", Instant.now());
+        dao.updateStatus(rejected.id(), ReportStatus.RESOLVED_REJECTED, UUID.randomUUID(), "no evidence",
+                Instant.now());
+        dao.updateStatus(duplicate.id(), ReportStatus.RESOLVED_DUPLICATE, UUID.randomUUID(), "dup", Instant.now());
+
+        var stats = dao.reporterStats(reporter);
+
+        assertEquals(4, stats.total());
+        assertEquals(1, stats.actioned());
+        assertEquals(1, stats.rejectedOrFalse());
+        assertEquals(50, stats.accuracyPercent());
+    }
+
+    @Test
+    void reporterStatsIsZeroForAReporterWithNoHistory() {
+        var stats = dao.reporterStats(UUID.randomUUID());
+
+        assertEquals(0, stats.total());
+        assertEquals(0, stats.accuracyPercent());
+    }
+
+    @Test
+    void staffStatsCountsResolvedReportsAndAverageResolutionTime() {
+        UUID reviewer = UUID.randomUUID();
+        Report first = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        Report second = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        Instant claimedAt = Instant.now().minusSeconds(600);
+        dao.claim(first.id(), reviewer, claimedAt);
+        dao.claim(second.id(), reviewer, claimedAt);
+        dao.updateStatus(first.id(), ReportStatus.RESOLVED_ACTION, reviewer, "banned", claimedAt.plusSeconds(60));
+        dao.updateStatus(second.id(), ReportStatus.RESOLVED_ACTION, reviewer, "banned", claimedAt.plusSeconds(180));
+
+        var stats = dao.staffStats(reviewer);
+
+        assertEquals(2, stats.resolvedCount());
+        assertEquals(2.0, stats.avgResolutionMinutes(), 0.01);
+    }
+
     private Report draft(UUID reporter, UUID target) {
         return new Report(0, UUID.randomUUID(), reporter, "Reporter", target, "Target", "hacks", "killaura", null,
-                "default", ReportStatus.PENDING, Priority.HIGH, null, null, Instant.now(), null, null, 0);
+                "default", ReportStatus.PENDING, Priority.HIGH, null, null, Instant.now(), null, null, 0, null);
     }
 }

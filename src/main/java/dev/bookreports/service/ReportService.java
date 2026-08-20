@@ -5,6 +5,7 @@ import dev.bookreports.api.event.ReportCreateEvent;
 import dev.bookreports.api.event.ReportCreatedEvent;
 import dev.bookreports.api.event.ReportFalseMarkedEvent;
 import dev.bookreports.api.event.ReportResolvedEvent;
+import dev.bookreports.chat.ChatContextTracker;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.FalseReportPenaltySettings;
 import dev.bookreports.config.ReportCategory;
@@ -15,6 +16,7 @@ import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportPenalty;
 import dev.bookreports.storage.model.ReportStatus;
+import dev.bookreports.storage.model.ReporterStats;
 import dev.bookreports.util.SchedulerAdapter;
 import dev.bookreports.util.TextSanitizer;
 import java.time.Clock;
@@ -131,10 +133,11 @@ public final class ReportService {
         // Re-sanitized here (not just in the anvil GUI): BookReportsAPI lets other plugins call submitReport
         // directly, bypassing that GUI entirely — SPECS.md §13 requires this defense in depth.
         String evidenceText = TextSanitizer.stripAndTruncate(request.evidenceText(), TextSanitizer.EVIDENCE_MAX_LENGTH);
+        String chatContext = TextSanitizer.stripAndTruncate(request.chatContext(), ChatContextTracker.MAX_TOTAL_LENGTH);
 
         return new Report(0, UUID.randomUUID(), reporterUuid, request.reporterName(), targetUuid, request.targetName(),
                 request.categoryId(), request.subReasonId(), evidenceText, request.server(), ReportStatus.PENDING,
-                priority, null, null, clock.instant(), null, null, 0);
+                priority, null, null, clock.instant(), null, null, 0, chatContext);
     }
 
     private void fireCreateEventThenPersist(Report draft, CompletableFuture<Report> result) {
@@ -195,6 +198,10 @@ public final class ReportService {
     /** For console tooling (SPECS.md §5.1) — GUI code talks to {@link ReportDao} directly instead. */
     public CompletableFuture<List<Report>> getQueue(ReportStatus status, int page, int pageSize) {
         return CompletableFuture.supplyAsync(() -> reportDao.findByStatus(status, page, pageSize), executor);
+    }
+
+    public CompletableFuture<ReporterStats> reporterStats(UUID reporterUuid) {
+        return CompletableFuture.supplyAsync(() -> reportDao.reporterStats(reporterUuid), executor);
     }
 
     /** Non-blocking, in-memory check — safe to call from the main thread. */

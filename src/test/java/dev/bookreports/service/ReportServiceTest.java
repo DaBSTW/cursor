@@ -14,6 +14,7 @@ import dev.bookreports.api.event.ReportCreateEvent;
 import dev.bookreports.api.event.ReportCreatedEvent;
 import dev.bookreports.api.event.ReportFalseMarkedEvent;
 import dev.bookreports.api.event.ReportResolvedEvent;
+import dev.bookreports.chat.ChatContextTracker;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.DiscordSettings;
 import dev.bookreports.config.FalseReportPenaltySettings;
@@ -130,12 +131,24 @@ class ReportServiceTest {
     void evidenceTextIsSanitizedServerSideEvenWhenTheCallerDoesNotGoThroughTheAnvilGui() {
         String malicious = "&c".repeat(60) + "still too long after stripping the color codes above";
         SubmitReportRequest request = new SubmitReportRequest(UUID.randomUUID(), "Reporter", UUID.randomUUID(),
-                "Target", "hacks", "killaura", malicious, "default");
+                "Target", "hacks", "killaura", malicious, "default", null);
 
         Report report = submit(request);
 
         assertTrue(report.evidenceText().length() <= TextSanitizer.EVIDENCE_MAX_LENGTH);
         assertFalse(report.evidenceText().contains("&c"));
+    }
+
+    @Test
+    void chatContextIsSanitizedAndCappedServerSide() {
+        String longChat = "&c".repeat(60) + "x".repeat(600);
+        SubmitReportRequest request = new SubmitReportRequest(UUID.randomUUID(), "Reporter", UUID.randomUUID(),
+                "Target", "hacks", "killaura", "evidence", "default", longChat);
+
+        Report report = submit(request);
+
+        assertTrue(report.chatContext().length() <= ChatContextTracker.MAX_TOTAL_LENGTH);
+        assertFalse(report.chatContext().contains("&c"));
     }
 
     @Test
@@ -308,7 +321,7 @@ class ReportServiceTest {
 
     private SubmitReportRequest request(UUID reporter, UUID target) {
         return new SubmitReportRequest(reporter, "Reporter", target, "Target", "hacks", "killaura", "evidence",
-                "default");
+                "default", null);
     }
 
     private BookReportsConfig withDailyLimit(int dailyLimit) {

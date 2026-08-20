@@ -10,12 +10,14 @@ import java.util.UUID;
  * <p>
  * Before the first {@link dev.bookreports.storage.dao.ReportDao#insert} call, {@code id} is {@code 0} and
  * {@code claimVersion} is {@code 0} — both are assigned by the database. {@code subReasonId}, {@code evidenceText},
- * {@code reviewerUuid}, {@code resolutionNote}, {@code claimedAt} and {@code resolvedAt} are nullable.
+ * {@code chatContext}, {@code reviewerUuid}, {@code resolutionNote}, {@code claimedAt} and {@code resolvedAt} are
+ * nullable. {@code chatContext} is the target's recent chat, captured automatically — unlike {@code evidenceText},
+ * which the reporter typed in themselves.
  */
 public record Report(long id, UUID uuid, UUID reporterUuid, String reporterName, UUID targetUuid, String targetName,
         String categoryId, String subReasonId, String evidenceText, String server, ReportStatus status,
         Priority priority, UUID reviewerUuid, String resolutionNote, Instant createdAt, Instant claimedAt,
-        Instant resolvedAt, int claimVersion) {
+        Instant resolvedAt, int claimVersion, String chatContext) {
 
     public Report {
         Objects.requireNonNull(uuid, "uuid");

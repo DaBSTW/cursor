@@ -89,6 +89,8 @@ staff:
     category: "<gray>Category: <white><category></white></gray>"
     status: "<gray>Status: <white><status></white></gray>"
     evidence: "<gray>Evidence: <white><evidence></white></gray>"
+    reporter-accuracy: "<yellow>Reporter accuracy: <white><accuracy>%</white> (<total> reports)</yellow>"
+    chat-context: "<gray>Recent chat: <white><context></white></gray>"
     claim: "<green>[ Claim ]</green>"
     claimed-by: "<gray>Claimed by: <white><player></white></gray>"
     unclaimed: "<gray>Unclaimed</gray>"
@@ -112,6 +114,9 @@ staff:
   history:
     title: "History for <player>"
     empty: "<gray>No previous reports.</gray>"
+  stats:
+    reporter: "<yellow><player>: <white><accuracy>%</white> accuracy (<actioned> actioned, <rejected> rejected, <total> total)</yellow>"
+    staff: "<yellow><player>: <white><resolved></white> resolved, avg <white><avg_minutes> min</white> claim-to-resolve</yellow>"
 
 command:
   reload-success: "<green>Configuration and translations reloaded.</green>"

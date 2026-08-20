@@ -6,6 +6,8 @@ import dev.bookreports.integration.punishment.PunishmentBridge;
 import dev.bookreports.service.ReportService;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
+import dev.bookreports.storage.model.ReporterStats;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,6 +50,7 @@ public final class ReportDetailView implements InventoryHolder, Listener {
     private final Supplier<BookReportsConfig> config;
     private final Runnable onBack;
     private Report report;
+    private ReporterStats reporterStats;
     private Inventory inventory;
     private boolean registered;
 
@@ -64,15 +67,20 @@ public final class ReportDetailView implements InventoryHolder, Listener {
         this.onBack = Objects.requireNonNull(onBack, "onBack");
     }
 
+    /** Loads the reporter's track record before the first render — {@link #refresh} reuses it, it doesn't change. */
     public void open() {
-        if (!registered) {
-            Bukkit.getPluginManager().registerEvents(this, plugin);
-            registered = true;
-        }
-        inventory = Bukkit.createInventory(this, SIZE,
-                locale.get("staff.detail.title", Map.of("ticket_id", String.valueOf(report.id()))));
-        render();
-        viewer.openInventory(inventory);
+        reportService.reporterStats(report.reporterUuid())
+                .whenComplete((stats, error) -> Bukkit.getScheduler().runTask(plugin, () -> {
+                    this.reporterStats = error == null ? stats : null;
+                    if (!registered) {
+                        Bukkit.getPluginManager().registerEvents(this, plugin);
+                        registered = true;
+                    }
+                    inventory = Bukkit.createInventory(this, SIZE,
+                            locale.get("staff.detail.title", Map.of("ticket_id", String.valueOf(report.id()))));
+                    render();
+                    viewer.openInventory(inventory);
+                }));
     }
 
     private void render() {
@@ -97,15 +105,25 @@ public final class ReportDetailView implements InventoryHolder, Listener {
             String reviewer = report.reviewerUuid() != null
                     ? String.valueOf(Bukkit.getOfflinePlayer(report.reviewerUuid()).getName())
                     : null;
-            meta.lore(List.of(locale.get("staff.detail.target", Map.of("player", report.targetName())),
-                    locale.get("staff.detail.reporter", Map.of("player", report.reporterName())),
-                    locale.get("staff.detail.category", Map.of("category", report.categoryId())),
-                    locale.get("staff.detail.status", Map.of("status", report.status().name())),
-                    locale.get("staff.detail.evidence",
-                            Map.of("evidence", report.evidenceText() != null ? report.evidenceText() : "-")),
-                    reviewer != null
-                            ? locale.get("staff.detail.claimed-by", Map.of("player", reviewer))
-                            : locale.get("staff.detail.unclaimed")));
+            List<Component> lore = new ArrayList<>(
+                    List.of(locale.get("staff.detail.target", Map.of("player", report.targetName())),
+                            locale.get("staff.detail.reporter", Map.of("player", report.reporterName())),
+                            locale.get("staff.detail.category", Map.of("category", report.categoryId())),
+                            locale.get("staff.detail.status", Map.of("status", report.status().name())),
+                            locale.get("staff.detail.evidence",
+                                    Map.of("evidence", report.evidenceText() != null ? report.evidenceText() : "-"))));
+            if (reporterStats != null && reporterStats.total() > 0) {
+                lore.add(locale.get("staff.detail.reporter-accuracy",
+                        Map.of("accuracy", String.valueOf(reporterStats.accuracyPercent()), "total",
+                                String.valueOf(reporterStats.total()))));
+            }
+            if (report.chatContext() != null && !report.chatContext().isBlank()) {
+                lore.add(locale.get("staff.detail.chat-context", Map.of("context", report.chatContext())));
+            }
+            lore.add(reviewer != null
+                    ? locale.get("staff.detail.claimed-by", Map.of("player", reviewer))
+                    : locale.get("staff.detail.unclaimed"));
+            meta.lore(lore);
             head.setItemMeta(meta);
         }
         return head;

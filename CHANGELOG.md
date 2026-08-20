@@ -23,6 +23,12 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
   `/reportadmin`.
 - Live in-game alerts for new HIGH-priority reports, with a per-player
   notifications toggle persisted across restarts.
+- Automatic chat-context capture: a report's target's recent chat lines are
+  attached to the ticket automatically, without the reporter typing or
+  copying anything.
+- Reporter accuracy and staff performance stats (`ReporterStats`,
+  `StaffStats`), surfaced in the report detail view and via
+  `/reportadmin stats reporter|staff <player>`.
 - Public API: `BookReportsAPI` (services manager) plus `ReportCreateEvent`
   (cancelable), `ReportCreatedEvent`, `ReportClaimedEvent`,
   `ReportResolvedEvent`, `ReportFalseMarkedEvent`.

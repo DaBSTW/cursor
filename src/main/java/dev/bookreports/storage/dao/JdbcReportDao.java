@@ -4,12 +4,15 @@ import dev.bookreports.storage.StorageException;
 import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
+import dev.bookreports.storage.model.ReporterStats;
+import dev.bookreports.storage.model.StaffStats;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +33,8 @@ public final class JdbcReportDao implements ReportDao {
     @Override
     public Report insert(Report report) {
         String sql = "INSERT INTO br_reports (uuid, reporter_uuid, reporter_name, target_uuid, target_name, "
-                + "category_id, sub_reason_id, evidence_text, server, status, priority, created_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "category_id, sub_reason_id, evidence_text, server, status, priority, created_at, chat_context) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         long id;
         // The insert connection must be closed before findById below borrows another one — the pool is
         // sized to 1 for SQLite, so holding both open at once would deadlock waiting for itself.
@@ -49,6 +52,7 @@ public final class JdbcReportDao implements ReportDao {
             statement.setString(10, report.status().name());
             statement.setString(11, report.priority().name());
             statement.setTimestamp(12, Timestamp.from(report.createdAt()));
+            statement.setString(13, report.chatContext());
             statement.executeUpdate();
             id = generatedId(statement, report.uuid());
         } catch (SQLException e) {
@@ -247,6 +251,56 @@ public final class JdbcReportDao implements ReportDao {
         }
     }
 
+    @Override
+    public ReporterStats reporterStats(UUID reporterUuid) {
+        // RESOLVED_DUPLICATE is deliberately excluded from both buckets: someone else already reported the
+        // same thing first, which says nothing about whether this reporter was right.
+        String sql = "SELECT COUNT(*) AS total, "
+                + "SUM(CASE WHEN status = 'RESOLVED_ACTION' THEN 1 ELSE 0 END) AS actioned, "
+                + "SUM(CASE WHEN status IN ('RESOLVED_REJECTED', 'FALSE_REPORT') THEN 1 ELSE 0 END) AS rejected "
+                + "FROM br_reports WHERE reporter_uuid = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, reporterUuid.toString());
+            try (ResultSet rs = statement.executeQuery()) {
+                rs.next();
+                return new ReporterStats(rs.getInt("total"), rs.getInt("actioned"), rs.getInt("rejected"));
+            }
+        } catch (SQLException e) {
+            throw new StorageException("Failed to compute reporter stats for reporter=" + reporterUuid, e);
+        }
+    }
+
+    @Override
+    public StaffStats staffStats(UUID reviewerUuid) {
+        // Averaging claim-to-resolution time in SQL would need dialect-specific date arithmetic (julianday()
+        // vs TIMESTAMPDIFF()), so the durations are computed here instead, keeping this class portable.
+        String sql = "SELECT claimed_at, resolved_at FROM br_reports "
+                + "WHERE reviewer_uuid = ? AND resolved_at IS NOT NULL";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, reviewerUuid.toString());
+            try (ResultSet rs = statement.executeQuery()) {
+                int resolvedCount = 0;
+                long totalSeconds = 0;
+                int timedCount = 0;
+                while (rs.next()) {
+                    resolvedCount++;
+                    Timestamp claimedAt = rs.getTimestamp("claimed_at");
+                    Timestamp resolvedAt = rs.getTimestamp("resolved_at");
+                    if (claimedAt != null) {
+                        totalSeconds += Duration.between(claimedAt.toInstant(), resolvedAt.toInstant()).getSeconds();
+                        timedCount++;
+                    }
+                }
+                double avgMinutes = timedCount == 0 ? 0.0 : totalSeconds / 60.0 / timedCount;
+                return new StaffStats(resolvedCount, avgMinutes);
+            }
+        } catch (SQLException e) {
+            throw new StorageException("Failed to compute staff stats for reviewer=" + reviewerUuid, e);
+        }
+    }
+
     private Report map(ResultSet rs) throws SQLException {
         Timestamp claimedAt = rs.getTimestamp("claimed_at");
         Timestamp resolvedAt = rs.getTimestamp("resolved_at");
@@ -258,6 +312,7 @@ public final class JdbcReportDao implements ReportDao {
                 ReportStatus.valueOf(rs.getString("status")), Priority.valueOf(rs.getString("priority")),
                 reviewerUuid != null ? UUID.fromString(reviewerUuid) : null, rs.getString("resolution_note"),
                 rs.getTimestamp("created_at").toInstant(), claimedAt != null ? claimedAt.toInstant() : null,
-                resolvedAt != null ? resolvedAt.toInstant() : null, rs.getInt("claim_version"));
+                resolvedAt != null ? resolvedAt.toInstant() : null, rs.getInt("claim_version"),
+                rs.getString("chat_context"));
     }
 }

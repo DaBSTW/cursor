@@ -2,6 +2,8 @@ package dev.bookreports.storage.dao;
 
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
+import dev.bookreports.storage.model.ReporterStats;
+import dev.bookreports.storage.model.StaffStats;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -47,4 +49,10 @@ public interface ReportDao {
      * re-claimed by someone else in the meantime.
      */
     boolean releaseClaim(long id, UUID reviewerUuid);
+
+    /** This reporter's overall track record — see {@link ReporterStats} for how accuracy is defined. */
+    ReporterStats reporterStats(UUID reporterUuid);
+
+    /** How many reports this reviewer has resolved, and their average claim-to-resolution time. */
+    StaffStats staffStats(UUID reviewerUuid);
 }

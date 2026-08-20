@@ -1,6 +1,7 @@
 package dev.bookreports.command.internal;
 
 import dev.bookreports.book.BookBuilder;
+import dev.bookreports.chat.ChatContextTracker;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.config.ReportCategory;
@@ -46,18 +47,20 @@ public final class SelectOptionCommand implements CommandExecutor, TabCompleter 
     private final BookBuilder books;
     private final ReportService reportService;
     private final AnvilInputGUI anvilInputGUI;
+    private final ChatContextTracker chatContextTracker;
     private final SchedulerAdapter scheduler;
     private final Logger logger;
 
     public SelectOptionCommand(SessionManager sessions, Supplier<BookReportsConfig> config, LocaleManager locale,
-            BookBuilder books, ReportService reportService, AnvilInputGUI anvilInputGUI, SchedulerAdapter scheduler,
-            Logger logger) {
+            BookBuilder books, ReportService reportService, AnvilInputGUI anvilInputGUI,
+            ChatContextTracker chatContextTracker, SchedulerAdapter scheduler, Logger logger) {
         this.sessions = Objects.requireNonNull(sessions, "sessions");
         this.config = Objects.requireNonNull(config, "config");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.books = Objects.requireNonNull(books, "books");
         this.reportService = Objects.requireNonNull(reportService, "reportService");
         this.anvilInputGUI = Objects.requireNonNull(anvilInputGUI, "anvilInputGUI");
+        this.chatContextTracker = Objects.requireNonNull(chatContextTracker, "chatContextTracker");
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
         this.logger = Objects.requireNonNull(logger, "logger");
     }
@@ -209,7 +212,7 @@ public final class SelectOptionCommand implements CommandExecutor, TabCompleter 
         String targetName = targetName(session);
         SubmitReportRequest request = new SubmitReportRequest(player.getUniqueId(), player.getName(),
                 session.targetId(), targetName, session.categoryId(), session.subReasonId(), session.evidenceText(),
-                config.get().serverId());
+                config.get().serverId(), chatContextTracker.recentContext(session.targetId()));
 
         reportService.submitReport(request).whenComplete((report, error) -> scheduler.runGlobal(() -> {
             sessions.invalidate(player.getUniqueId());

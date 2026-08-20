@@ -3,6 +3,7 @@ package dev.bookreports;
 import dev.bookreports.api.BookReportsAPI;
 import dev.bookreports.api.BookReportsApiImpl;
 import dev.bookreports.book.BookBuilder;
+import dev.bookreports.chat.ChatContextTracker;
 import dev.bookreports.command.RateLimiter;
 import dev.bookreports.command.ReportAdminCommand;
 import dev.bookreports.command.ReportCommand;
@@ -59,6 +60,7 @@ public final class BookReportsPlugin extends JavaPlugin {
     private StorageManager storageManager;
     private ExecutorService workerExecutor;
     private SessionManager sessionManager;
+    private ChatContextTracker chatContextTracker;
     private volatile DataSource dataSource;
     private volatile ReportService reportService;
 
@@ -84,6 +86,8 @@ public final class BookReportsPlugin extends JavaPlugin {
         }
 
         sessionManager = new SessionManager(configManager::current, Clock.systemUTC());
+        chatContextTracker = new ChatContextTracker();
+        getServer().getPluginManager().registerEvents(chatContextTracker, this);
         connectStorage();
 
         getLogger().info("BookReports v" + getPluginMeta().getVersion() + " enabled ("
@@ -181,7 +185,7 @@ public final class BookReportsPlugin extends JavaPlugin {
                 new ReportCommand(sessionManager, configManager::current, localeManager, books, rateLimiter));
         setExecutorIfPresent("target", new SelectTargetCommand(sessionManager, localeManager, books));
         setExecutorIfPresent("select", new SelectOptionCommand(sessionManager, configManager::current, localeManager,
-                books, reportService, anvilInputGUI, scheduler, getLogger()));
+                books, reportService, anvilInputGUI, chatContextTracker, scheduler, getLogger()));
     }
 
     private void registerStaffPanel(ReportDao reportDao, StaffPrefsDao staffPrefsDao) {

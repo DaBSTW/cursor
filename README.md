@@ -131,6 +131,8 @@ Añadir una categoría nueva es añadir una entrada al YAML y ejecutar `/reports
 | `/reportadmin resolve <id> <acción>` | `bookreports.staff.resolve` | Resuelve desde consola |
 | `/reportadmin history <jugador>` | `bookreports.staff` | Historial completo de un jugador |
 | `/reportadmin notifications toggle` | `bookreports.staff.notify` | Alertas en vivo on/off |
+| `/reportadmin stats reporter <jugador>` | `bookreports.staff` | Precisión histórica de un reportante |
+| `/reportadmin stats staff <jugador>` | `bookreports.staff` | Reportes resueltos y tiempo promedio de un staff |
 | `/reportsreload` | `bookreports.admin` | Recarga config y traducciones en caliente |
 
 ---
@@ -145,6 +147,14 @@ BookReports asume que alguien intentará abusar del sistema de reportes, y lo ma
 - **Anti-brigading**: si varios jugadores reportan al mismo objetivo por lo mismo, se agrupan en un solo caso priorizado en lugar de inundar la cola.
 - **Penalización por reportes falsos**: el staff puede marcar un reporte como falso; la reincidencia multiplica el cooldown del reportante.
 - **Sesiones firmadas**: cada clic del libro se valida contra el dueño de la sesión, su vigencia y la transición de estado esperada. Copiar el comando interno de otro jugador no funciona.
+
+---
+
+## 📎 Evidencia automática y métricas
+
+- **Contexto de chat automático**: BookReports mantiene un buffer corto (últimas ~10 líneas) del chat de cada jugador. Al crear un reporte, ese contexto se adjunta automáticamente al ticket — el reportante no tiene que escribir ni copiar nada, y el staff ve de inmediato lo que dijo el jugador reportado justo antes.
+- **Precisión de reportantes**: cada reportante acumula un % de precisión (reportes que terminaron en sanción vs. rechazados/falsos) visible en el detalle del ticket y vía `/reportadmin stats reporter <jugador>` — útil para dar más peso a reportantes confiables.
+- **Rendimiento de staff**: `/reportadmin stats staff <jugador>` muestra cuántos reportes ha resuelto cada miembro del staff y su tiempo promedio de reclamo a resolución, para evaluar carga y actividad del equipo.
 
 ---
 
