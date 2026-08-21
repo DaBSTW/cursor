@@ -76,6 +76,11 @@ tasks.shadowJar {
 
     minimize {
         exclude(dependency("org.xerial:sqlite-jdbc:.*"))
+        // Caffeine's cache implementations are selected by dynamically constructing a class name
+        // (e.g. "SSMSA") and loading it via reflection — minimize's static analysis can't see that
+        // reference, so it strips the class and every cache in the plugin fails at construction with a
+        // ClassNotFoundException. Confirmed by actually booting the plugin on a real Paper server.
+        exclude(dependency("com.github.ben-manes.caffeine:caffeine:.*"))
     }
 }
 

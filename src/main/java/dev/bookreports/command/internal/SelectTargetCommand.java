@@ -14,7 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-/** {@code /breport:target <uuid>} — starts a new report session from the online-player picker (SPECS.md §4.1). */
+/** {@code /bookreports-target <uuid>} — starts a new report session from the online-player picker (SPECS.md §4.1). */
 public final class SelectTargetCommand implements CommandExecutor, TabCompleter {
 
     private final SessionManager sessions;

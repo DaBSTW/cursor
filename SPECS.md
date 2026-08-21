@@ -75,7 +75,7 @@ Comandos disponibles:
 ### 4.2 Estructura del libro (páginas)
 
 El libro es un `ItemStack(Material.WRITTEN_BOOK)` generado dinámicamente por `BookBuilder`, entregado con `Player#openBook(Book)` (API Paper, sin necesidad de darlo en el inventario). Cada página usa `Component` de Adventure; las "opciones" son fragmentos de texto con:
-- `ClickEvent.runCommand("/breport:select <sessionId> <optionId>")` — comando interno oculto (namespaced, no autocompletable, no aparece en el historial de tab de forma útil) que avanza la máquina de estados de la sesión.
+- `ClickEvent.runCommand("/bookreports-select <sessionId> <optionId>")` — comando interno oculto (registrado vía la API de comandos Brigadier de Paper, no autocompletable) que avanza la máquina de estados de la sesión. Su nombre distintivo evita colisiones con comandos de otros plugins ahora que Paper (≥26.x) ya no soporta el prefijo de fallback de `commands:` en YAML.
 - `HoverEvent.showText(...)` con descripción ampliada de la categoría.
 - Formato: corchetes de color `§a[ Cheating / Hacks ]` estilo Hypixel, con subrayado al hover.
 
@@ -403,7 +403,7 @@ public interface BookReportsAPI {
 
 ## 13. Seguridad
 
-- Todos los comandos internos del flujo (`/breport:select ...`) están registrados como comando **no listado** (no aparece en `/help`, `tab-complete` deshabilitado) y validan:
+- Todos los comandos internos del flujo (`/bookreports-select ...`) están registrados como comando **no listado** (no aparece en `/help`, `tab-complete` deshabilitado) y validan:
   1. Que el ejecutor sea el `reporter` dueño de la sesión.
   2. Que el `sessionId` exista y no haya expirado.
   3. Que la transición de estado sea válida (previene "saltos" de página vía comandos copiados/pegados).

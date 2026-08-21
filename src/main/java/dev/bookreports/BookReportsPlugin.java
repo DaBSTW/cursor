@@ -4,6 +4,7 @@ import dev.bookreports.api.BookReportsAPI;
 import dev.bookreports.api.BookReportsApiImpl;
 import dev.bookreports.book.BookBuilder;
 import dev.bookreports.chat.ChatContextTracker;
+import dev.bookreports.command.BasicCommandAdapter;
 import dev.bookreports.command.RateLimiter;
 import dev.bookreports.command.ReportAdminCommand;
 import dev.bookreports.command.ReportCommand;
@@ -40,8 +41,11 @@ import dev.bookreports.util.BukkitSchedulerAdapter;
 import dev.bookreports.util.FoliaDetector;
 import dev.bookreports.util.FoliaSchedulerAdapter;
 import dev.bookreports.util.SchedulerAdapter;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +69,12 @@ public final class BookReportsPlugin extends JavaPlugin {
     private volatile DataSource dataSource;
     private volatile ReportService reportService;
 
+    private BasicCommandAdapter reportCommandAdapter;
+    private BasicCommandAdapter reportAdminCommandAdapter;
+    private BasicCommandAdapter reportsReloadCommandAdapter;
+    private BasicCommandAdapter selectCommandAdapter;
+    private BasicCommandAdapter targetCommandAdapter;
+
     @Override
     public void onEnable() {
         scheduler = FoliaDetector.isFolia() ? new FoliaSchedulerAdapter(this) : new BukkitSchedulerAdapter(this);
@@ -80,11 +90,8 @@ public final class BookReportsPlugin extends JavaPlugin {
             return;
         }
 
-        var reloadCommand = new ReportsReloadCommand(configManager, localeManager, getLogger());
-        var reportsReload = getCommand("reportsreload");
-        if (reportsReload != null) {
-            reportsReload.setExecutor(reloadCommand);
-        }
+        registerCommands();
+        reportsReloadCommandAdapter.bind(new ReportsReloadCommand(configManager, localeManager, getLogger()));
 
         sessionManager = new SessionManager(configManager::current, Clock.systemUTC());
         chatContextTracker = new ChatContextTracker();
@@ -121,6 +128,39 @@ public final class BookReportsPlugin extends JavaPlugin {
             workerExecutor.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * Registers every command via Paper's Brigadier lifecycle event — paper-plugin.yml's YAML {@code commands:} block
+     * is unsupported since Paper 26.x (see {@link BasicCommandAdapter}). This must run synchronously here in
+     * {@code onEnable}: {@code LifecycleEvents.COMMANDS} fires once, early in startup, well before storage connects
+     * asynchronously and the real executors — most of which need {@link #reportService} — become available in
+     * {@link #startServices}. The adapters are bound later; see {@link #registerBookFlow} and
+     * {@link #registerStaffPanel}.
+     */
+    private void registerCommands() {
+        reportCommandAdapter = new BasicCommandAdapter("report", "bookreports.report");
+        reportAdminCommandAdapter = new BasicCommandAdapter("reportadmin", "bookreports.staff");
+        reportsReloadCommandAdapter = new BasicCommandAdapter("reportsreload", "bookreports.admin");
+        // Named distinctively rather than "select"/"target": Paper plugins no longer get a custom
+        // fallback-namespace prefix to hide behind (see ComponentUtil), so the label itself has to be the
+        // thing that avoids colliding with some other plugin's generic command name.
+        selectCommandAdapter = new BasicCommandAdapter("bookreports-select", "bookreports.report");
+        targetCommandAdapter = new BasicCommandAdapter("bookreports-target", "bookreports.report");
+
+        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
+            Commands commands = event.registrar();
+            commands.register("report", "Open the report book.", List.of(), reportCommandAdapter);
+            commands.register("reportadmin", "Open the staff report review queue.", List.of("rvw", "reports"),
+                    reportAdminCommandAdapter);
+            commands.register("reportsreload", "Reload BookReports configuration and locale files.", List.of(),
+                    reportsReloadCommandAdapter);
+            commands.register("bookreports-select", "Internal book click handler. Not for manual use.", List.of(),
+                    selectCommandAdapter);
+            commands.register("bookreports-target",
+                    "Internal book click handler for the online-player picker. Not for manual use.", List.of(),
+                    targetCommandAdapter);
+        });
     }
 
     private boolean loadConfigAndLocale() {
@@ -183,11 +223,11 @@ public final class BookReportsPlugin extends JavaPlugin {
                 new ReportToolListener(configManager::current, sessionManager, localeManager, books, rateLimiter),
                 this);
 
-        setExecutorIfPresent("report",
-                new ReportCommand(sessionManager, configManager::current, localeManager, books, rateLimiter));
-        setExecutorIfPresent("target", new SelectTargetCommand(sessionManager, localeManager, books));
-        setExecutorIfPresent("select", new SelectOptionCommand(sessionManager, configManager::current, localeManager,
-                books, reportService, anvilInputGUI, chatContextTracker, scheduler, getLogger()));
+        reportCommandAdapter
+                .bind(new ReportCommand(sessionManager, configManager::current, localeManager, books, rateLimiter));
+        targetCommandAdapter.bind(new SelectTargetCommand(sessionManager, localeManager, books));
+        selectCommandAdapter.bind(new SelectOptionCommand(sessionManager, configManager::current, localeManager, books,
+                reportService, anvilInputGUI, chatContextTracker, scheduler, getLogger()));
     }
 
     private void registerStaffPanel(ReportDao reportDao, StaffPrefsDao staffPrefsDao) {
@@ -196,7 +236,7 @@ public final class BookReportsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(notifications, this);
         Optional<PunishmentBridge> punishmentBridge = PunishmentBridges.detect(getServer().getPluginManager());
         punishmentBridge.ifPresent(bridge -> getLogger().info("Punishment bridge active: " + bridge.name()));
-        setExecutorIfPresent("reportadmin", new ReportAdminCommand(this, localeManager, reportService, reportDao,
+        reportAdminCommandAdapter.bind(new ReportAdminCommand(this, localeManager, reportService, reportDao,
                 configManager::current, notifications, punishmentBridge, workerExecutor));
     }
 
@@ -229,17 +269,6 @@ public final class BookReportsPlugin extends JavaPlugin {
             }
         });
         scheduler.runGlobalLater(this::releaseStaleClaimsLoop, CLAIM_RELEASE_INTERVAL_TICKS);
-    }
-
-    private void setExecutorIfPresent(String name, org.bukkit.command.CommandExecutor executor) {
-        var command = getCommand(name);
-        if (command == null) {
-            return;
-        }
-        command.setExecutor(executor);
-        if (executor instanceof org.bukkit.command.TabCompleter tabCompleter) {
-            command.setTabCompleter(tabCompleter);
-        }
     }
 
     public SchedulerAdapter scheduler() {

@@ -11,13 +11,17 @@ public final class ComponentUtil {
     private ComponentUtil() {
     }
 
-    /** Builds the fully-qualified, non-tab-completable command a book link runs. */
+    /**
+     * Builds the command a book link runs. The label itself (not a fallback namespace prefix, which Paper plugins no
+     * longer get to customize — see {@code BookReportsPlugin#registerCommands}) is what keeps this out of collisions
+     * with other plugins' commands.
+     */
     public static String selectCommand(UUID sessionId, String actionId) {
-        return "/breport:select " + sessionId + " " + actionId;
+        return "/bookreports-select " + sessionId + " " + actionId;
     }
 
     public static String targetCommand(UUID targetUuid) {
-        return "/breport:target " + targetUuid;
+        return "/bookreports-target " + targetUuid;
     }
 
     /** Attaches a run-command click to an already-styled (locale-sourced) component. */

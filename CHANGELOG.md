@@ -41,6 +41,27 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
   abstraction.
 - `es_ES` and `en_US` locales, fully externalized via MiniMessage.
 
+### Fixed
+- The plugin failed to enable on Paper 26.x with
+  `UnsupportedOperationException: ... JavaPlugin#getCommand ...`: Paper
+  dropped support for the YAML `commands:` block in paper-plugin.yml.
+  Commands are now registered programmatically via the Brigadier lifecycle
+  event (`BasicCommandAdapter`), synchronously in `onEnable` so the
+  registration isn't missed while storage connects asynchronously
+  afterwards. The internal book-click commands were renamed to
+  `bookreports-select`/`bookreports-target` (from a `/breport:select`
+  fallback-prefix trick that no longer exists) to keep them collision-free.
+- The plugin failed to construct *any* Caffeine cache at runtime with
+  `ClassNotFoundException: dev.bookreports.libs.caffeine.cache.SSMSA`:
+  shadowJar's `minimize()` was stripping a Caffeine cache implementation
+  class that's only ever loaded by reflection, never referenced directly in
+  bytecode. Caffeine is now excluded from minimization, same as sqlite-jdbc
+  already was.
+- Both fixes were found and confirmed by actually booting the plugin on a
+  real Paper 1.21.1 server and a real Paper 26.2 server (under Java 25), not
+  just by auditing API compatibility on paper — see git history for the full
+  investigation.
+
 ### Compatibility
 - Verified functional on Paper 1.21.x through 26.2 (Mojang's new `year.drop`
   versioning): `ItemStack.of(...)` replaces the soon-to-be-removed

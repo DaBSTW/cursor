@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The security-critical path SPECS.md §13/§4.3 calls out: session ownership, stale-session-id rejection and
- * whitelist-only state transitions. A player pasting or replaying another session's {@code /breport:select} command
+ * whitelist-only state transitions. A player pasting or replaying another session's {@code /bookreports-select} command
  * must never advance a report.
  */
 class SelectOptionCommandTest {

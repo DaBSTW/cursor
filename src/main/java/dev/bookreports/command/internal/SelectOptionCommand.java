@@ -31,7 +31,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 /**
- * {@code /breport:select <sessionId> <optionId>} — the hidden command every book link runs.
+ * {@code /bookreports-select <sessionId> <optionId>} — the hidden command every book link runs.
  *
  * <p>
  * SPECS.md §13 requires three checks before any click is honored, and all three are mandatory, not optional: (1) a

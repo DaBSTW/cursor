@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Whitelist of legal forward moves in the book flow. Anything not listed here is rejected by
  * {@link dev.bookreports.command.internal.SelectOptionCommand} — default-deny, not default-allow. A pasted or replayed
- * {@code /breport:select} command that tries to skip a page never matches an entry here.
+ * {@code /bookreports-select} command that tries to skip a page never matches an entry here.
  */
 public final class SessionTransitions {
 

@@ -7,38 +7,17 @@ description: Hypixel-style book report system for Paper servers.
 author: DaBSTW
 website: https://github.com/DaBSTW/cursor
 
-# The internal book-click command is exposed only as /breport:select, never as a
-# bare /select — this keeps it out of tab-complete collisions with other plugins.
-command-fallback-prefix: breport
-
 softdepend:
   - PlaceholderAPI
   - LiteBans
   - AdvancedBan
   - Essentials
 
-commands:
-  report:
-    description: Open the report book.
-    usage: /report [player]
-    permission: bookreports.report
-  reportadmin:
-    description: Open the staff report review queue.
-    usage: /reportadmin <list|view|teleport|claim|resolve|history|notifications|stats>
-    aliases: [rvw, reports]
-    permission: bookreports.staff
-  reportsreload:
-    description: Reload BookReports configuration and locale files.
-    usage: /reportsreload
-    permission: bookreports.admin
-  select:
-    description: Internal book click handler. Not for manual use.
-    usage: /breport:select <sessionId> <optionId>
-    permission: bookreports.report
-  target:
-    description: Internal book click handler for the online-player picker. Not for manual use.
-    usage: /breport:target <uuid>
-    permission: bookreports.report
+# Commands are registered programmatically via the Brigadier lifecycle event
+# (BookReportsPlugin#registerCommands) — Paper plugins have not supported this YAML
+# `commands:` block since Paper 26.x; JavaPlugin#getCommand throws at startup instead.
+# See ComponentUtil for why the internal book-click commands are named distinctively
+# (bookreports-select/bookreports-target) rather than something generic like "select".
 
 permissions:
   bookreports.report:
