@@ -69,10 +69,19 @@ tasks.shadowJar {
     relocate("com.zaxxer", "dev.bookreports.libs.hikari")
     relocate("com.github.benmanes.caffeine", "dev.bookreports.libs.caffeine")
     relocate("org.sqlite", "dev.bookreports.libs.sqlite")
-    relocate("org.slf4j", "dev.bookreports.libs.slf4j")
     // bStats requires relocation so its own internal update-checking service doesn't clash with other
     // plugins bundling a different bStats version on the same server.
     relocate("org.bstats", "dev.bookreports.libs.bstats")
+
+    // slf4j-api (a transitive of HikariCP/sqlite-jdbc) is deliberately NOT bundled or relocated: Paper's
+    // runtime classpath already provides SLF4J with a real, working binding (bridged to its own logger).
+    // Shading in our own private, unbound copy — as this used to do — hid that binding from HikariCP's
+    // logger lookups, so SLF4J fell back to "no binding found" and printed straight to stderr, which Paper
+    // then nags plugin authors about. Excluding it lets HikariCP/sqlite-jdbc's logging just go through the
+    // server's own SLF4J, silencing the warning at the source instead of suppressing the symptom.
+    dependencies {
+        exclude(dependency("org.slf4j:slf4j-api:.*"))
+    }
 
     minimize {
         exclude(dependency("org.xerial:sqlite-jdbc:.*"))

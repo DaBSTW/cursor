@@ -51,6 +51,14 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
   afterwards. The internal book-click commands were renamed to
   `bookreports-select`/`bookreports-target` (from a `/breport:select`
   fallback-prefix trick that no longer exists) to keep them collision-free.
+- The plugin printed an `SLF4J: Failed to load class "StaticLoggerBinder"...
+  Defaulting to no-operation (NOP) logger` warning straight to stderr on
+  every startup, which Paper then nags the author about. Caused by shading
+  and relocating our own private, unbound copy of `slf4j-api` (a transitive
+  of HikariCP/sqlite-jdbc), which hid Paper's own already-bound SLF4J from
+  HikariCP's logger lookups. `slf4j-api` is now excluded from the shaded
+  jar entirely, letting that logging go through the server's real logger —
+  HikariCP's connection-pool startup lines now show up properly instead.
 - The plugin failed to construct *any* Caffeine cache at runtime with
   `ClassNotFoundException: dev.bookreports.libs.caffeine.cache.SSMSA`:
   shadowJar's `minimize()` was stripping a Caffeine cache implementation
