@@ -79,7 +79,7 @@ public abstract class PaginatedView implements InventoryHolder, Listener {
     }
 
     private ItemStack borderItem(Material material, String label) {
-        ItemStack item = new ItemStack(material);
+        ItemStack item = ItemStack.of(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(Component.text(label, NamedTextColor.GRAY));

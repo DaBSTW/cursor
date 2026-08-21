@@ -41,6 +41,14 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
   abstraction.
 - `es_ES` and `en_US` locales, fully externalized via MiniMessage.
 
+### Compatibility
+- Verified functional on Paper 1.21.x through 26.2 (Mojang's new `year.drop`
+  versioning): `ItemStack.of(...)` replaces the soon-to-be-removed
+  `new ItemStack(...)` constructor throughout the GUI layer, and every other
+  API this plugin touches (`BukkitScheduler`, `AsyncChatEvent`, `Enchantment`
+  constants) was confirmed unchanged across that range. `api-version: '1.21'`
+  is intentionally left as-is — it's a floor, not a ceiling.
+
 ### Security
 - Every free-text field (report evidence) is sanitized and length-capped both
   where it's captured and again in the service layer, so the check holds

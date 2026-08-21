@@ -16,7 +16,7 @@ final class ReportToolItems {
     }
 
     static ItemStack create(LocaleManager locale) {
-        ItemStack tool = new ItemStack(Material.WRITABLE_BOOK);
+        ItemStack tool = ItemStack.of(Material.WRITABLE_BOOK);
         ItemMeta meta = tool.getItemMeta();
         if (meta != null) {
             meta.displayName(locale.get("report.tool-name"));

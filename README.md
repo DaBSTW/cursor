@@ -3,7 +3,7 @@
 **Sistema de reportes por libro para Minecraft, al estilo Hypixel.**
 Sin comandos que memorizar, sin formularios en el chat: el jugador escribe `/report`, se abre un libro y todo lo demás son clics.
 
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.x-brightgreen)](https://papermc.io)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.x%20--%2026.2-brightgreen)](https://papermc.io)
 [![Paper](https://img.shields.io/badge/Server-Paper%20%7C%20Purpur%20%7C%20Folia-blue)](https://papermc.io)
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://adoptium.net)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](./LICENSE)
@@ -62,13 +62,13 @@ Y del lado del staff:
 ## 🚀 Instalación
 
 1. Descarga `BookReports-1.0.0.jar` desde [Releases](../../releases) (o Modrinth / Hangar).
-2. Colócalo en la carpeta `plugins/` de tu servidor **Paper 1.21.x**.
+2. Colócalo en la carpeta `plugins/` de tu servidor **Paper 1.21.x – 26.2**.
 3. Reinicia el servidor.
 4. Listo. Funciona con la configuración por defecto y SQLite — sin base de datos externa.
 
 **Requisitos:**
-- Paper 1.21.x (o Purpur / Folia)
-- Java 21+
+- Paper **1.21.x hasta 26.2** (o Purpur / Folia) — `api-version: '1.21'` es un mínimo, no un techo: el jar funciona sin cambios en cualquier build igual o más nueva, incluyendo el nuevo esquema de versionado `año.drop` de Mojang (26.1, 26.2, …).
+- Java 21+ (corre igual de bien bajo runtimes más nuevos, como los que exige Paper 26.x)
 
 > ⚠️ Spigot y CraftBukkit no están soportados: el flujo del libro depende de los componentes de Adventure nativos de Paper.
 

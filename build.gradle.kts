@@ -24,6 +24,11 @@ repositories {
 }
 
 dependencies {
+    // Pinned to match MockBukkit's own bundled paper-api build (see testImplementation below) rather than
+    // floating to the newest release — a mismatch there breaks Registry-backed test fixtures (Sound, enchants,
+    // etc). `api-version: '1.21'` in paper-plugin.yml is a floor, not a ceiling, so this still loads on any
+    // newer Paper build; every API this plugin touches (BukkitScheduler, ItemStack.of, AsyncChatEvent,
+    // Enchantment constants) is confirmed unchanged through Paper 26.2. Only bump this pin alongside MockBukkit.
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
 

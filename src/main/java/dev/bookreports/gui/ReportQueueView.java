@@ -94,7 +94,7 @@ public final class ReportQueueView extends PaginatedView {
     }
 
     private ItemStack statusFilterItem() {
-        ItemStack item = new ItemStack(Material.HOPPER);
+        ItemStack item = ItemStack.of(Material.HOPPER);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(locale.get("staff.queue.filter", Map.of("status", statusFilter().name())));
@@ -104,7 +104,7 @@ public final class ReportQueueView extends PaginatedView {
     }
 
     private ItemStack categoryFilterItem() {
-        ItemStack item = new ItemStack(Material.NAME_TAG);
+        ItemStack item = ItemStack.of(Material.NAME_TAG);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             String label = categoryFilter != null ? categoryFilter : "ALL";
@@ -138,7 +138,7 @@ public final class ReportQueueView extends PaginatedView {
     }
 
     private ItemStack toItem(Report report) {
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack head = ItemStack.of(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(Bukkit.getOfflinePlayer(report.targetUuid()));

@@ -55,7 +55,7 @@ public final class ResolveMenuView implements InventoryHolder, Listener {
     }
 
     private ItemStack item(Material material, Component label) {
-        ItemStack item = new ItemStack(material);
+        ItemStack item = ItemStack.of(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(label);

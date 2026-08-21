@@ -97,7 +97,7 @@ public final class ReportDetailView implements InventoryHolder, Listener {
     }
 
     private ItemStack infoItem() {
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack head = ItemStack.of(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(Bukkit.getOfflinePlayer(report.targetUuid()));
@@ -130,7 +130,7 @@ public final class ReportDetailView implements InventoryHolder, Listener {
     }
 
     private ItemStack button(Material material, Component label) {
-        ItemStack item = new ItemStack(material);
+        ItemStack item = ItemStack.of(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(label);
