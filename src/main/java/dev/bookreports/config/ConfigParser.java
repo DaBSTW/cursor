@@ -48,7 +48,7 @@ public final class ConfigParser {
         PunishmentSettings punishments = parsePunishments(sectionOrEmpty(root, "punishments"));
         boolean placeholderApiEnabled = root.getBoolean("placeholderapi", true);
         boolean metricsEnabled = root.getBoolean("metrics.enabled", true);
-        String locale = requireNonBlank(root.getString("locale", "es_ES"), "locale");
+        String locale = requireNonBlank(root.getString("locale", "en_US"), "locale");
         String serverId = requireNonBlank(root.getString("server-id", "default"), "server-id");
 
         return new BookReportsConfig(storageType, mysql, cooldownSeconds, dailyLimit, sessionTimeoutSeconds,

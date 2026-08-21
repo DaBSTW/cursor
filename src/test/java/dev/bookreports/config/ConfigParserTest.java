@@ -30,7 +30,7 @@ class ConfigParserTest {
         assertTrue(config.category("hacks").orElseThrow().hasSubReasons());
         assertFalse(config.category("bug_abuse").orElseThrow().hasSubReasons());
         assertEquals(3, config.priorityEscalation().distinctReportersThreshold());
-        assertEquals("es_ES", config.locale());
+        assertEquals("en_US", config.locale());
         assertEquals("7d", config.punishments().defaultBanDuration());
         assertEquals("1h", config.punishments().defaultMuteDuration());
         assertTrue(config.metricsEnabled());

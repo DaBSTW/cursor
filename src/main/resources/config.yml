@@ -76,7 +76,7 @@ placeholderapi: true
 metrics:
   enabled: true
 
-locale: es_ES
+locale: en_US
 debug: false
 
 # Identifies this backend in the `server` column when multiple Paper instances share one
