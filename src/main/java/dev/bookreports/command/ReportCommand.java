@@ -5,8 +5,10 @@ import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.session.ReportSession;
 import dev.bookreports.session.SessionManager;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -14,10 +16,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 /** {@code /report [player]} and {@code /report tool} — the player-facing entry points into the book flow. */
-public final class ReportCommand implements CommandExecutor {
+public final class ReportCommand implements CommandExecutor, TabCompleter {
 
     private final SessionManager sessions;
     private final Supplier<BookReportsConfig> config;
@@ -91,5 +94,25 @@ public final class ReportCommand implements CommandExecutor {
             return;
         }
         player.getInventory().addItem(ReportToolItems.create(locale));
+    }
+
+    /**
+     * Suggests online player names (and {@code tool}) for {@code /report <partial>} — matching is still exact on
+     * submit.
+     */
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length != 1) {
+            return List.of();
+        }
+        String partial = args[0].toLowerCase(Locale.ROOT);
+        List<String> suggestions = new ArrayList<>(Bukkit.getOnlinePlayers().stream().map(Player::getName)
+                .filter(name -> !(sender instanceof Player self) || !name.equalsIgnoreCase(self.getName()))
+                .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(partial)).sorted(Comparator.naturalOrder())
+                .toList());
+        if ("tool".startsWith(partial)) {
+            suggestions.add("tool");
+        }
+        return suggestions;
     }
 }
