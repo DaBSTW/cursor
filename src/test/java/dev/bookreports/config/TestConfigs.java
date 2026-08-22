@@ -23,7 +23,18 @@ public final class TestConfigs {
                 new FalseReportPenaltySettings(false, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
                 new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
-                new CoreProtectSettings(true, 300, 20));
+                new CoreProtectSettings(true, 300, 20),
+                new UpdateCheckerSettings(false, UpdateSource.GITHUB, "DaBSTW/cursor", 12, true));
+    }
+
+    public static BookReportsConfig withUpdateChecker(boolean enabled, String resource) {
+        BookReportsConfig base = minimal();
+        return new BookReportsConfig(base.storageType(), base.mysql(), base.cooldownSeconds(), base.dailyLimit(),
+                base.sessionTimeoutSeconds(), base.preventSelfReport(), base.preventDuplicatePending(),
+                base.categories(), base.priorityEscalation(), base.falseReportPenalty(), base.enableReportTool(),
+                base.staff(), base.discord(), base.punishments(), base.placeholderApiEnabled(), base.metricsEnabled(),
+                base.locale(), base.serverId(), base.coreProtect(),
+                new UpdateCheckerSettings(enabled, UpdateSource.GITHUB, resource, 12, true));
     }
 
     public static BookReportsConfig withSessionTimeout(int seconds) {
@@ -32,6 +43,6 @@ public final class TestConfigs {
                 seconds, base.preventSelfReport(), base.preventDuplicatePending(), base.categories(),
                 base.priorityEscalation(), base.falseReportPenalty(), base.enableReportTool(), base.staff(),
                 base.discord(), base.punishments(), base.placeholderApiEnabled(), base.metricsEnabled(), base.locale(),
-                base.serverId(), base.coreProtect());
+                base.serverId(), base.coreProtect(), base.updateChecker());
     }
 }

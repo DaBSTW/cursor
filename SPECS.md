@@ -379,6 +379,7 @@ public interface BookReportsAPI {
 | `/reportadmin resolve <id> <acción>` | `bookreports.staff.resolve` | Resuelve sin abrir GUI (uso en consola/scripts). |
 | `/reportadmin history <jugador>` | `bookreports.staff` | Historial completo. |
 | `/reportadmin notifications toggle` | `bookreports.staff.notify` | Activa/desactiva alertas. |
+| `/reportadmin checkupdate` | `bookreports.admin` | Chequea de inmediato si hay una versión nueva (GitHub/Modrinth). |
 | `/reportsreload` | `bookreports.admin` | Recarga config y locale en caliente. |
 
 ---

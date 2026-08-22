@@ -125,6 +125,10 @@ staff:
     reporter: "<yellow><player>: <white><accuracy>%</white> de precisão (<actioned> aplicados, <rejected> rejeitados, <total> total)</yellow>"
     staff: "<yellow><player>: <white><resolved></white> resolvidos, média de <white><avg_minutes> min</white> entre reclamar e resolver</yellow>"
 
+update:
+  notify: "<yellow>⚠ Uma nova versão do BookReports está disponível: <white><latest></white> (você tem <white><current></white>) — <white><url></white></yellow>"
+  up-to-date: "<green>BookReports está atualizado (<white><current></white>).</green>"
+
 command:
   reload-success: "<green>Configuração e traduções recarregadas.</green>"
   reload-failed: "<red>Falha ao recarregar: <reason></red>"

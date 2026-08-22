@@ -127,6 +127,8 @@ class DailyLimitServiceTest {
                 new FalseReportPenaltySettings(true, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
                 new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
-                new dev.bookreports.config.CoreProtectSettings(true, 300, 20));
+                new dev.bookreports.config.CoreProtectSettings(true, 300, 20),
+                new dev.bookreports.config.UpdateCheckerSettings(false, dev.bookreports.config.UpdateSource.GITHUB,
+                        "DaBSTW/cursor", 12, true));
     }
 }

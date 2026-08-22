@@ -125,6 +125,10 @@ staff:
     reporter: "<yellow><player>: <white><accuracy>%</white> точности (<actioned> с наказанием, <rejected> отклонено, <total> всего)</yellow>"
     staff: "<yellow><player>: <white><resolved></white> закрыто, в среднем <white><avg_minutes> мин.</white> от взятия в работу до решения</yellow>"
 
+update:
+  notify: "<yellow>⚠ Доступна новая версия BookReports: <white><latest></white> (у вас <white><current></white>) — <white><url></white></yellow>"
+  up-to-date: "<green>BookReports обновлён (<white><current></white>).</green>"
+
 command:
   reload-success: "<green>Конфигурация и переводы перезагружены.</green>"
   reload-failed: "<red>Ошибка перезагрузки: <reason></red>"

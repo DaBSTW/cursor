@@ -12,6 +12,7 @@ import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
 import dev.bookreports.storage.model.ReporterStats;
 import dev.bookreports.storage.model.StaffStats;
+import dev.bookreports.update.UpdateChecker;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -41,10 +42,12 @@ public final class ReportAdminCommand implements CommandExecutor {
     private final Optional<PunishmentBridge> punishmentBridge;
     private final Executor executor;
     private final AnvilInputGUI anvilInputGUI;
+    private final UpdateChecker updateChecker;
 
     public ReportAdminCommand(Plugin plugin, LocaleManager locale, ReportService reportService, ReportDao reportDao,
             Supplier<BookReportsConfig> config, StaffNotificationService notifications,
-            Optional<PunishmentBridge> punishmentBridge, Executor executor, AnvilInputGUI anvilInputGUI) {
+            Optional<PunishmentBridge> punishmentBridge, Executor executor, AnvilInputGUI anvilInputGUI,
+            UpdateChecker updateChecker) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.reportService = Objects.requireNonNull(reportService, "reportService");
@@ -54,6 +57,7 @@ public final class ReportAdminCommand implements CommandExecutor {
         this.punishmentBridge = Objects.requireNonNull(punishmentBridge, "punishmentBridge");
         this.executor = Objects.requireNonNull(executor, "executor");
         this.anvilInputGUI = Objects.requireNonNull(anvilInputGUI, "anvilInputGUI");
+        this.updateChecker = Objects.requireNonNull(updateChecker, "updateChecker");
     }
 
     @Override
@@ -70,8 +74,9 @@ public final class ReportAdminCommand implements CommandExecutor {
             case "history" -> history(sender, args);
             case "notifications" -> notificationsToggle(sender, args);
             case "stats" -> stats(sender, args);
+            case "checkupdate" -> checkUpdate(sender);
             default -> sender.sendMessage(locale.get("command.usage",
-                    Map.of("usage", "/reportadmin <list|view|claim|resolve|history|notifications|stats>")));
+                    Map.of("usage", "/reportadmin <list|view|claim|resolve|history|notifications|stats|checkupdate>")));
         }
         return true;
     }
@@ -239,6 +244,22 @@ public final class ReportAdminCommand implements CommandExecutor {
                                 String.format(Locale.ROOT, "%.1f", stats.avgResolutionMinutes())))));
             }
         });
+    }
+
+    /** Forces an on-demand check rather than waiting for the next scheduled interval — mainly for admins to verify. */
+    private void checkUpdate(CommandSender sender) {
+        if (!sender.hasPermission("bookreports.admin")) {
+            sender.sendMessage(locale.get("command.no-permission"));
+            return;
+        }
+        updateChecker.checkNow().thenAccept(latest -> runOnMain(() -> {
+            if (latest.isPresent() && updateChecker.updateAvailable()) {
+                sender.sendMessage(locale.get("update.notify", Map.of("latest", latest.get(), "current",
+                        updateChecker.currentVersion(), "url", updateChecker.releasesPageUrl())));
+            } else {
+                sender.sendMessage(locale.get("update.up-to-date", Map.of("current", updateChecker.currentVersion())));
+            }
+        }));
     }
 
     private void runOnMain(Runnable action) {

@@ -137,6 +137,7 @@ Añadir una categoría nueva es añadir una entrada al YAML y ejecutar `/reports
 | `/reportadmin stats reporter <jugador>` | `bookreports.staff` | Precisión histórica de un reportante |
 | `/reportadmin stats staff <jugador>` | `bookreports.staff` | Reportes resueltos y tiempo promedio de un staff |
 | `/reportsreload` | `bookreports.admin` | Recarga config y traducciones en caliente |
+| `/reportadmin checkupdate` | `bookreports.admin` | Chequea de inmediato si hay una versión nueva |
 
 ---
 
@@ -174,6 +175,7 @@ Todas opcionales — si el plugin no está presente, la función simplemente se 
 - **Velocity / BungeeCord** — panel de staff unificado en toda la red sobre MySQL compartido
 - **LuckPerms / Vault** — permisos estándar
 - **bStats** — estadísticas de uso anónimas y agregadas (servidor, versión, config), desactivable con `metrics.enabled: false`
+- **Chequeo automático de versión** — avisa por consola (y opcionalmente a los ops al conectarse) si hay una versión más nueva disponible en GitHub Releases o Modrinth, configurable en `update-checker:`. Nunca bloquea el arranque ni falla si no hay red.
 
 ---
 
@@ -234,6 +236,17 @@ El jar final queda en `build/libs/BookReports-<version>.jar`.
 - **Jar ligero**: sin frameworks pesados, solo HikariCP, SQLite JDBC y Caffeine, todos relocalizados para no chocar con otros plugins.
 
 ---
+
+## 📤 Dónde publicarlo (gratis)
+
+El chequeo automático de versión (`update-checker:`) ya sabe leer **GitHub Releases** y **Modrinth** de fábrica — publicar en cualquiera de los dos lo deja funcionando sin tocar código:
+
+- **[Modrinth](https://modrinth.com)** — recomendado como principal: API limpia y estable, CDN rápido, buen descubrimiento, y es donde cada vez más admins de Paper/Purpur/Folia buscan primero.
+- **[Hangar](https://hangar.papermc.io)** — el repositorio oficial de PaperMC, gratis, pensado específicamente para plugins de Paper/Velocity/Folia. Buena visibilidad dentro del propio ecosistema Paper.
+- **GitHub Releases** — si el código ya vive en GitHub (como este repo), crear un Release ahí es gratis e inmediato — `update-checker.source: github` (el valor por defecto) ya apunta a `DaBSTW/cursor`.
+- **[SpigotMC](https://www.spigotmc.org/resources/)** — la comunidad más grande y establecida; vale la pena para alcance, aunque el checker de este plugin no lee spigot todavía.
+
+No hace falta elegir solo uno — publicar en varios a la vez (cross-posting) es normal y gratis en todos los casos.
 
 ## 📚 Documentación
 

@@ -25,6 +25,8 @@ import dev.bookreports.config.PunishmentSettings;
 import dev.bookreports.config.ReportCategory;
 import dev.bookreports.config.StaffSettings;
 import dev.bookreports.config.StorageType;
+import dev.bookreports.config.UpdateCheckerSettings;
+import dev.bookreports.config.UpdateSource;
 import dev.bookreports.storage.TestDatabases;
 import dev.bookreports.storage.dao.JdbcPenaltyDao;
 import dev.bookreports.storage.dao.JdbcReportDao;
@@ -331,7 +333,7 @@ class ReportServiceTest {
                 config.categories(), config.priorityEscalation(), config.falseReportPenalty(),
                 config.enableReportTool(), config.staff(), config.discord(), config.punishments(),
                 config.placeholderApiEnabled(), config.metricsEnabled(), config.locale(), config.serverId(),
-                config.coreProtect());
+                config.coreProtect(), config.updateChecker());
     }
 
     private BookReportsConfig defaultConfig() {
@@ -341,6 +343,7 @@ class ReportServiceTest {
                 new FalseReportPenaltySettings(false, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
                 new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
-                new CoreProtectSettings(true, 300, 20));
+                new CoreProtectSettings(true, 300, 20),
+                new UpdateCheckerSettings(false, UpdateSource.GITHUB, "DaBSTW/cursor", 12, true));
     }
 }

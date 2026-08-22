@@ -39,6 +39,8 @@ import dev.bookreports.storage.dao.JdbcStaffPrefsDao;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.dao.StaffPrefsDao;
+import dev.bookreports.update.UpdateChecker;
+import dev.bookreports.update.UpdateNotifyListener;
 import dev.bookreports.util.BukkitSchedulerAdapter;
 import dev.bookreports.util.FoliaDetector;
 import dev.bookreports.util.FoliaSchedulerAdapter;
@@ -69,6 +71,7 @@ public final class BookReportsPlugin extends JavaPlugin {
     private SessionManager sessionManager;
     private ChatContextTracker chatContextTracker;
     private AnvilInputGUI anvilInputGUI;
+    private UpdateChecker updateChecker;
     private volatile DataSource dataSource;
     private volatile ReportService reportService;
 
@@ -100,6 +103,13 @@ public final class BookReportsPlugin extends JavaPlugin {
         chatContextTracker = new ChatContextTracker();
         getServer().getPluginManager().registerEvents(chatContextTracker, this);
         BStatsMetrics.start(this, configManager::current);
+
+        updateChecker = new UpdateChecker(configManager::current, getPluginMeta().getVersion(), workerExecutor,
+                getLogger());
+        getServer().getPluginManager()
+                .registerEvents(new UpdateNotifyListener(updateChecker, localeManager, configManager::current), this);
+        updateCheckLoop();
+
         connectStorage();
 
         getLogger().info("BookReports v" + getPluginMeta().getVersion() + " enabled ("
@@ -247,7 +257,7 @@ public final class BookReportsPlugin extends JavaPlugin {
         Optional<PunishmentBridge> punishmentBridge = PunishmentBridges.detect(getServer().getPluginManager());
         punishmentBridge.ifPresent(bridge -> getLogger().info("Punishment bridge active: " + bridge.name()));
         reportAdminCommandAdapter.bind(new ReportAdminCommand(this, localeManager, reportService, reportDao,
-                configManager::current, notifications, punishmentBridge, workerExecutor, anvilInputGUI));
+                configManager::current, notifications, punishmentBridge, workerExecutor, anvilInputGUI, updateChecker));
     }
 
     /** Every integration here is soft-depend (SPECS.md §11/§6) — absent, it's simply never registered. */
@@ -267,6 +277,17 @@ public final class BookReportsPlugin extends JavaPlugin {
                         + remote.originServer() + "': " + remote.targetName() + " — " + remote.categoryId()));
         proxySync.register();
         getServer().getPluginManager().registerEvents(proxySync, this);
+    }
+
+    /**
+     * Runs once immediately, then reschedules itself using the (possibly {@code /reportsreload}-changed)
+     * {@code update-checker.check-interval-hours}. {@link UpdateChecker#checkNow()} is itself non-blocking — this just
+     * needs to be called on some recurring cadence, not necessarily the main thread.
+     */
+    private void updateCheckLoop() {
+        updateChecker.checkNow();
+        long intervalTicks = configManager.current().updateChecker().checkIntervalHours() * 20L * 60 * 60;
+        scheduler.runGlobalLater(this::updateCheckLoop, intervalTicks);
     }
 
     /** Runs once immediately, then reschedules itself every {@link #CLAIM_RELEASE_INTERVAL_TICKS}. */

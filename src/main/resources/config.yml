@@ -78,6 +78,17 @@ coreprotect:
   lookback-seconds: 300
   max-entries: 20
 
+# Checks for a newer BookReports release and logs a console line (and, optionally, tells online ops) when one is
+# found. Never blocks startup and never throws on a network problem — a failed check is just silently retried on
+# the next interval. `source: github` reads GitHub Releases; `source: modrinth` reads a Modrinth project's
+# versions instead — `resource` is "owner/repo" for github, a project slug/id for modrinth.
+update-checker:
+  enabled: true
+  source: github
+  resource: "DaBSTW/cursor"
+  check-interval-hours: 12
+  notify-ops-on-join: true
+
 placeholderapi: true
 
 # Anonymous usage stats (bstats.org): server count, versions, plugin config summary — never player data.

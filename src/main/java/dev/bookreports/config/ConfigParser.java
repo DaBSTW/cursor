@@ -51,10 +51,12 @@ public final class ConfigParser {
         String locale = requireNonBlank(root.getString("locale", "en_US"), "locale");
         String serverId = requireNonBlank(root.getString("server-id", "default"), "server-id");
         CoreProtectSettings coreProtect = parseCoreProtect(sectionOrEmpty(root, "coreprotect"));
+        UpdateCheckerSettings updateChecker = parseUpdateChecker(sectionOrEmpty(root, "update-checker"));
 
         return new BookReportsConfig(storageType, mysql, cooldownSeconds, dailyLimit, sessionTimeoutSeconds,
                 preventSelfReport, preventDuplicatePending, categories, escalation, penalty, enableReportTool, staff,
-                discord, punishments, placeholderApiEnabled, metricsEnabled, locale, serverId, coreProtect);
+                discord, punishments, placeholderApiEnabled, metricsEnabled, locale, serverId, coreProtect,
+                updateChecker);
     }
 
     private Map<String, ReportCategory> parseCategories(ConfigurationSection section) {
@@ -163,6 +165,23 @@ public final class ConfigParser {
             throw new ConfigurationException("'coreprotect.max-entries' must be >= 1 when enabled");
         }
         return new CoreProtectSettings(enabled, lookbackSeconds, maxEntries);
+    }
+
+    private UpdateCheckerSettings parseUpdateChecker(ConfigurationSection section) {
+        boolean enabled = section.getBoolean("enabled", true);
+        UpdateSource source = parseEnum(UpdateSource.class, section.getString("source", "github"),
+                "update-checker.source");
+        String resource = section.getString("resource", "DaBSTW/cursor");
+        int checkIntervalHours = section.getInt("check-interval-hours", 12);
+        boolean notifyOpsOnJoin = section.getBoolean("notify-ops-on-join", true);
+        if (enabled && (resource == null || resource.isBlank())) {
+            throw new ConfigurationException(
+                    "'update-checker.resource' is required when 'update-checker.enabled' is true");
+        }
+        if (enabled && checkIntervalHours < 1) {
+            throw new ConfigurationException("'update-checker.check-interval-hours' must be >= 1 when enabled");
+        }
+        return new UpdateCheckerSettings(enabled, source, resource, checkIntervalHours, notifyOpsOnJoin);
     }
 
     private PunishmentSettings parsePunishments(ConfigurationSection section) {

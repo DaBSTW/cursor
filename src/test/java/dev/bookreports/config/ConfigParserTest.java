@@ -37,6 +37,11 @@ class ConfigParserTest {
         assertTrue(config.coreProtect().enabled());
         assertEquals(300, config.coreProtect().lookbackSeconds());
         assertEquals(20, config.coreProtect().maxEntries());
+        assertTrue(config.updateChecker().enabled());
+        assertEquals(UpdateSource.GITHUB, config.updateChecker().source());
+        assertEquals("DaBSTW/cursor", config.updateChecker().resource());
+        assertEquals(12, config.updateChecker().checkIntervalHours());
+        assertTrue(config.updateChecker().notifyOpsOnJoin());
     }
 
     @Test
@@ -161,6 +166,46 @@ class ConfigParserTest {
                       priority: LOW
                 priority-escalation:
                   escalate-to: NOT_A_PRIORITY
+                """));
+
+        assertThrows(ConfigurationException.class, () -> parser.parse(yaml));
+    }
+
+    @Test
+    void updateCheckerCanBeDisabledAndPointedAtModrinth() {
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.StringReader("""
+                report:
+                  categories:
+                    other:
+                      display: "Other"
+                      priority: LOW
+                update-checker:
+                  enabled: false
+                  source: modrinth
+                  resource: bookreports
+                  check-interval-hours: 6
+                  notify-ops-on-join: false
+                """));
+
+        UpdateCheckerSettings updateChecker = parser.parse(yaml).updateChecker();
+        assertFalse(updateChecker.enabled());
+        assertEquals(UpdateSource.MODRINTH, updateChecker.source());
+        assertEquals("bookreports", updateChecker.resource());
+        assertEquals(6, updateChecker.checkIntervalHours());
+        assertFalse(updateChecker.notifyOpsOnJoin());
+    }
+
+    @Test
+    void rejectsUpdateCheckerEnabledWithoutResource() {
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.StringReader("""
+                report:
+                  categories:
+                    other:
+                      display: "Other"
+                      priority: LOW
+                update-checker:
+                  enabled: true
+                  resource: ""
                 """));
 
         assertThrows(ConfigurationException.class, () -> parser.parse(yaml));

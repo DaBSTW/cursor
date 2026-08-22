@@ -42,6 +42,11 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
 - The staff queue GUI (`/reportadmin`) gained a priority filter, a
   "claimed by me" toggle, and a search box for the target's name, alongside
   the existing status/category filters.
+- Automatic update checking (`update-checker:` in `config.yml`): logs a
+  console line, and optionally notifies ops on join, when a newer version is
+  available on GitHub Releases or Modrinth. `/reportadmin checkupdate`
+  triggers an on-demand check. Never blocks startup and never throws on a
+  network problem.
 - Public API: `BookReportsAPI` (services manager) plus `ReportCreateEvent`
   (cancelable), `ReportCreatedEvent`, `ReportClaimedEvent`,
   `ReportResolvedEvent`, `ReportFalseMarkedEvent`.
