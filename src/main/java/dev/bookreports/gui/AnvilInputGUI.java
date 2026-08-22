@@ -44,13 +44,18 @@ public final class AnvilInputGUI implements Listener {
         this.locale = Objects.requireNonNull(locale, "locale");
     }
 
+    /** Prompts with the default "evidence" title — the original, and still most common, use of this GUI. */
+    public void open(Player player, Consumer<Optional<String>> onComplete) {
+        open(player, "evidence.prompt", onComplete);
+    }
+
     // Zeroing the repair cost keeps evidence submission free regardless of the reporter's XP level. The
     // replacement (AnvilView#setRepairCost) is tied to a player's already-open view, so it can't be used
     // here where the inventory is only just being constructed — AnvilInventory#setRepairCost is deprecated
     // for removal but still present as of Paper 26.2, and this is intentional until that changes.
     @SuppressWarnings("removal")
-    public void open(Player player, Consumer<Optional<String>> onComplete) {
-        Inventory inventory = Bukkit.createInventory(null, InventoryType.ANVIL, locale.get("evidence.prompt"));
+    public void open(Player player, String titleKey, Consumer<Optional<String>> onComplete) {
+        Inventory inventory = Bukkit.createInventory(null, InventoryType.ANVIL, locale.get(titleKey));
         ItemStack prompt = ItemStack.of(Material.PAPER);
         ItemMeta meta = prompt.getItemMeta();
         if (meta != null) {

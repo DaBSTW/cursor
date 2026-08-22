@@ -15,6 +15,10 @@ report:
   resolved: "<gray>Ваша жалоба #<ticket_id> была рассмотрена администрацией.</gray>"
   tool-name: "<yellow>Пожаловаться на игрока</yellow>"
   tool-disabled: "<red>Предмет для жалоб отключён на этом сервере.</red>"
+  status:
+    title: "<gold>Ваши недавние жалобы:</gold>"
+    empty: "<gray>Вы ещё не отправляли жалоб.</gray>"
+    line: "<white>#<ticket_id> <player> — <category> [<status>]</white>"
 
 session:
   invalid: "<red>Эта страница больше не действительна, используйте /report снова.</red>"
@@ -77,6 +81,7 @@ staff:
   queue:
     title: "Очередь жалоб"
     filter: "<yellow>Фильтр: <white><status></white></yellow>"
+    search-prompt: "Поиск по имени игрока"
     lore:
       category: "<gray>Категория: <white><category></white></gray>"
       priority: "<gray>Приоритет: <white><priority></white></gray>"
@@ -91,6 +96,8 @@ staff:
     evidence: "<gray>Доказательства: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Точность заявителя: <white><accuracy>%</white> (<total> жалоб)</yellow>"
     chat-context: "<gray>Недавний чат: <white><context></white></gray>"
+    coreprotect-context: "<gray>CoreProtect: <white><activity></white></gray>"
+    sanction: "<yellow>Санкция: <white><sanction></white></yellow>"
     claim: "<green>[ Взять в работу ]</green>"
     claimed-by: "<gray>В работе у: <white><player></white></gray>"
     unclaimed: "<gray>Не взято в работу</gray>"

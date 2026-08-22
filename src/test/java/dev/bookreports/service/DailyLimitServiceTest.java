@@ -116,9 +116,9 @@ class DailyLimitServiceTest {
     }
 
     private void insertReport(UUID reporter, Instant createdAt) {
-        reportDao.insert(
-                new Report(0, UUID.randomUUID(), reporter, "Reporter", UUID.randomUUID(), "Target", "hacks", null, null,
-                        "default", ReportStatus.PENDING, Priority.HIGH, null, null, createdAt, null, null, 0, null));
+        reportDao.insert(new Report(0, UUID.randomUUID(), reporter, "Reporter", UUID.randomUUID(), "Target", "hacks",
+                null, null, "default", ReportStatus.PENDING, Priority.HIGH, null, null, createdAt, null, null, 0, null,
+                null, null, null));
     }
 
     private BookReportsConfig configWithDailyLimit(int dailyLimit) {
@@ -126,6 +126,7 @@ class DailyLimitServiceTest {
                 120, dailyLimit, 300, true, true, Map.of(), new PriorityEscalationSettings(3, 600, Priority.HIGH),
                 new FalseReportPenaltySettings(true, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
-                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default");
+                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
+                new dev.bookreports.config.CoreProtectSettings(true, 300, 20));
     }
 }

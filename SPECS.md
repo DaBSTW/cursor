@@ -372,7 +372,8 @@ public interface BookReportsAPI {
 |---|---|---|
 | `/report [jugador]` | `bookreports.report` (default: true) | Abre el libro de reporte. |
 | `/report tool` | `bookreports.report.tool` | Entrega el item físico opcional. |
-| `/reportadmin list` | `bookreports.staff` | Abre cola de revisión. |
+| `/report status` | `bookreports.report` | Lista el estado de los últimos reportes propios. |
+| `/reportadmin list` | `bookreports.staff` | Abre cola de revisión (filtrable por estado, categoría, prioridad, "solo míos" y nombre del reportado). |
 | `/reportadmin view <id>` | `bookreports.staff` | Abre detalle. |
 | `/reportadmin claim <id>` | `bookreports.staff` | Reclama un reporte. |
 | `/reportadmin resolve <id> <acción>` | `bookreports.staff.resolve` | Resuelve sin abrir GUI (uso en consola/scripts). |

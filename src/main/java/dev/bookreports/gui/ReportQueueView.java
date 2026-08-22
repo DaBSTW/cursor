@@ -8,10 +8,12 @@ import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -27,35 +29,52 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 
-/** The staff review queue (SPECS.md §5.2): player heads, prioritized and filterable by status and category. */
+/**
+ * The staff review queue (SPECS.md §5.2): player heads, prioritized and filterable by status, category, priority, a
+ * "claimed by me" toggle, and a search box for the target's name.
+ */
 public final class ReportQueueView extends PaginatedView {
 
     private static final int STATUS_FILTER_SLOT = 47;
+    private static final int PRIORITY_FILTER_SLOT = 46;
+    private static final int SEARCH_SLOT = 48;
     private static final int CATEGORY_FILTER_SLOT = 51;
+    private static final int MINE_FILTER_SLOT = 52;
     private static final ReportStatus[] STATUS_FILTERS = {ReportStatus.PENDING, ReportStatus.IN_REVIEW,
             ReportStatus.RESOLVED_ACTION, ReportStatus.RESOLVED_REJECTED};
+    /** {@code null} (no filter) is the first step, then each {@link Priority} in severity order. */
+    private static final Priority[] PRIORITY_FILTERS = {null, Priority.HIGH, Priority.MEDIUM, Priority.LOW};
 
     private final ReportDao reportDao;
     private final Supplier<BookReportsConfig> config;
     private final LocaleManager locale;
     private final Executor executor;
+    private final AnvilInputGUI anvilInputGUI;
     private final Consumer<Report> onSelect;
     private int statusFilterIndex;
+    private int priorityFilterIndex;
     private String categoryFilter;
+    private String targetNameQuery;
+    private boolean claimedByMeOnly;
     private List<Report> currentPageReports = List.of();
 
     public ReportQueueView(Plugin plugin, Player viewer, ReportDao reportDao, Supplier<BookReportsConfig> config,
-            LocaleManager locale, Executor executor, Consumer<Report> onSelect) {
+            LocaleManager locale, Executor executor, AnvilInputGUI anvilInputGUI, Consumer<Report> onSelect) {
         super(plugin, viewer);
         this.reportDao = Objects.requireNonNull(reportDao, "reportDao");
         this.config = Objects.requireNonNull(config, "config");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.executor = Objects.requireNonNull(executor, "executor");
+        this.anvilInputGUI = Objects.requireNonNull(anvilInputGUI, "anvilInputGUI");
         this.onSelect = Objects.requireNonNull(onSelect, "onSelect");
     }
 
     private ReportStatus statusFilter() {
         return STATUS_FILTERS[statusFilterIndex];
+    }
+
+    private Priority priorityFilter() {
+        return PRIORITY_FILTERS[priorityFilterIndex];
     }
 
     @Override
@@ -71,7 +90,9 @@ public final class ReportQueueView extends PaginatedView {
     @Override
     protected CompletableFuture<List<ItemStack>> contentItemsAsync(int page) {
         return CompletableFuture.supplyAsync(() -> {
-            List<Report> reports = reportDao.findByStatus(statusFilter(), categoryFilter, page, CONTENT_SLOTS);
+            UUID claimedBy = claimedByMeOnly ? viewer().getUniqueId() : null;
+            List<Report> reports = reportDao.findByStatus(statusFilter(), categoryFilter, priorityFilter(),
+                    targetNameQuery, claimedBy, page, CONTENT_SLOTS);
             currentPageReports = reports;
             List<ItemStack> items = new ArrayList<>();
             for (Report report : reports) {
@@ -90,24 +111,20 @@ public final class ReportQueueView extends PaginatedView {
 
     @Override
     protected Map<Integer, ItemStack> extraBorderItems() {
-        return Map.of(STATUS_FILTER_SLOT, statusFilterItem(), CATEGORY_FILTER_SLOT, categoryFilterItem());
+        Map<Integer, ItemStack> items = new HashMap<>();
+        items.put(STATUS_FILTER_SLOT, filterItem(Material.HOPPER, statusFilter().name()));
+        items.put(PRIORITY_FILTER_SLOT,
+                filterItem(Material.SPYGLASS, priorityFilter() != null ? priorityFilter().name() : "ALL"));
+        items.put(CATEGORY_FILTER_SLOT, filterItem(Material.NAME_TAG, categoryFilter != null ? categoryFilter : "ALL"));
+        items.put(SEARCH_SLOT, filterItem(Material.COMPASS, targetNameQuery != null ? targetNameQuery : "ALL"));
+        items.put(MINE_FILTER_SLOT, filterItem(Material.PLAYER_HEAD, claimedByMeOnly ? "MINE" : "ALL"));
+        return items;
     }
 
-    private ItemStack statusFilterItem() {
-        ItemStack item = ItemStack.of(Material.HOPPER);
+    private ItemStack filterItem(Material material, String label) {
+        ItemStack item = ItemStack.of(material);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.displayName(locale.get("staff.queue.filter", Map.of("status", statusFilter().name())));
-            item.setItemMeta(meta);
-        }
-        return item;
-    }
-
-    private ItemStack categoryFilterItem() {
-        ItemStack item = ItemStack.of(Material.NAME_TAG);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            String label = categoryFilter != null ? categoryFilter : "ALL";
             meta.displayName(locale.get("staff.queue.filter", Map.of("status", label)));
             item.setItemMeta(meta);
         }
@@ -119,10 +136,31 @@ public final class ReportQueueView extends PaginatedView {
         if (slot == STATUS_FILTER_SLOT) {
             statusFilterIndex = (statusFilterIndex + 1) % STATUS_FILTERS.length;
             open(0);
+        } else if (slot == PRIORITY_FILTER_SLOT) {
+            priorityFilterIndex = (priorityFilterIndex + 1) % PRIORITY_FILTERS.length;
+            open(0);
         } else if (slot == CATEGORY_FILTER_SLOT) {
             categoryFilter = nextCategoryFilter();
             open(0);
+        } else if (slot == SEARCH_SLOT) {
+            onSearchClicked();
+        } else if (slot == MINE_FILTER_SLOT) {
+            claimedByMeOnly = !claimedByMeOnly;
+            open(0);
         }
+    }
+
+    /** Clicking while a search is active clears it instead of reopening the anvil — a quick way back to "ALL". */
+    private void onSearchClicked() {
+        if (targetNameQuery != null) {
+            targetNameQuery = null;
+            open(0);
+            return;
+        }
+        anvilInputGUI.open(viewer(), "staff.queue.search-prompt", result -> {
+            targetNameQuery = result.orElse(null);
+            open(0);
+        });
     }
 
     private String nextCategoryFilter() {

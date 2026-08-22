@@ -50,10 +50,11 @@ public final class ConfigParser {
         boolean metricsEnabled = root.getBoolean("metrics.enabled", true);
         String locale = requireNonBlank(root.getString("locale", "en_US"), "locale");
         String serverId = requireNonBlank(root.getString("server-id", "default"), "server-id");
+        CoreProtectSettings coreProtect = parseCoreProtect(sectionOrEmpty(root, "coreprotect"));
 
         return new BookReportsConfig(storageType, mysql, cooldownSeconds, dailyLimit, sessionTimeoutSeconds,
                 preventSelfReport, preventDuplicatePending, categories, escalation, penalty, enableReportTool, staff,
-                discord, punishments, placeholderApiEnabled, metricsEnabled, locale, serverId);
+                discord, punishments, placeholderApiEnabled, metricsEnabled, locale, serverId, coreProtect);
     }
 
     private Map<String, ReportCategory> parseCategories(ConfigurationSection section) {
@@ -148,6 +149,20 @@ public final class ConfigParser {
         Priority minPriority = parseEnum(Priority.class, section.getString("min-priority-to-notify", "HIGH"),
                 "discord.min-priority-to-notify");
         return new DiscordSettings(enabled, webhookUrl, minPriority);
+    }
+
+    private CoreProtectSettings parseCoreProtect(ConfigurationSection section) {
+        boolean enabled = section.getBoolean("enabled", true);
+        int lookbackSeconds = requirePositiveOrZero(section.getInt("lookback-seconds", 300),
+                "coreprotect.lookback-seconds");
+        int maxEntries = requirePositiveOrZero(section.getInt("max-entries", 20), "coreprotect.max-entries");
+        if (enabled && lookbackSeconds < 1) {
+            throw new ConfigurationException("'coreprotect.lookback-seconds' must be >= 1 when enabled");
+        }
+        if (enabled && maxEntries < 1) {
+            throw new ConfigurationException("'coreprotect.max-entries' must be >= 1 when enabled");
+        }
+        return new CoreProtectSettings(enabled, lookbackSeconds, maxEntries);
     }
 
     private PunishmentSettings parsePunishments(ConfigurationSection section) {

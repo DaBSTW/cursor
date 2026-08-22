@@ -33,8 +33,8 @@ public final class JdbcReportDao implements ReportDao {
     @Override
     public Report insert(Report report) {
         String sql = "INSERT INTO br_reports (uuid, reporter_uuid, reporter_name, target_uuid, target_name, "
-                + "category_id, sub_reason_id, evidence_text, server, status, priority, created_at, chat_context) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "category_id, sub_reason_id, evidence_text, server, status, priority, created_at, chat_context, "
+                + "coreprotect_context) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         long id;
         // The insert connection must be closed before findById below borrows another one — the pool is
         // sized to 1 for SQLite, so holding both open at once would deadlock waiting for itself.
@@ -53,6 +53,7 @@ public final class JdbcReportDao implements ReportDao {
             statement.setString(11, report.priority().name());
             statement.setTimestamp(12, Timestamp.from(report.createdAt()));
             statement.setString(13, report.chatContext());
+            statement.setString(14, report.coreProtectContext());
             statement.executeUpdate();
             id = generatedId(statement, report.uuid());
         } catch (SQLException e) {
@@ -120,26 +121,67 @@ public final class JdbcReportDao implements ReportDao {
 
     @Override
     public List<Report> findByStatus(ReportStatus status, String categoryId, int page, int pageSize) {
+        return findByStatus(status, categoryId, null, null, null, page, pageSize);
+    }
+
+    @Override
+    public List<Report> findByStatus(ReportStatus status, String categoryId, Priority priority, String targetNameQuery,
+            UUID claimedBy, int page, int pageSize) {
         if (page < 0 || pageSize < 1) {
             throw new IllegalArgumentException("page must be >= 0 and pageSize must be >= 1");
         }
         // Priority is stored as text, so a plain ORDER BY priority would sort alphabetically (HIGH, LOW,
         // MEDIUM) instead of by severity — this CASE expression ranks it HIGH, MEDIUM, LOW instead.
-        String sql = "SELECT * FROM br_reports WHERE status = ?" + (categoryId != null ? " AND category_id = ?" : "")
-                + " ORDER BY CASE priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3 END, "
-                + "created_at ASC LIMIT ? OFFSET ?";
+        StringBuilder sql = new StringBuilder("SELECT * FROM br_reports WHERE status = ?");
+        if (categoryId != null) {
+            sql.append(" AND category_id = ?");
+        }
+        if (priority != null) {
+            sql.append(" AND priority = ?");
+        }
+        if (targetNameQuery != null) {
+            // UPPER(...) LIKE UPPER(?) is portable across SQLite and MySQL, unlike ILIKE (Postgres-only).
+            sql.append(" AND UPPER(target_name) LIKE UPPER(?)");
+        }
+        if (claimedBy != null) {
+            sql.append(" AND reviewer_uuid = ?");
+        }
+        sql.append(" ORDER BY CASE priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3 END, "
+                + "created_at ASC LIMIT ? OFFSET ?");
         try (Connection connection = dataSource.getConnection();
-                PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql.toString())) {
             int index = 1;
             statement.setString(index++, status.name());
             if (categoryId != null) {
                 statement.setString(index++, categoryId);
+            }
+            if (priority != null) {
+                statement.setString(index++, priority.name());
+            }
+            if (targetNameQuery != null) {
+                statement.setString(index++, "%" + targetNameQuery + "%");
+            }
+            if (claimedBy != null) {
+                statement.setString(index++, claimedBy.toString());
             }
             statement.setInt(index++, pageSize);
             statement.setInt(index, page * pageSize);
             return queryList(statement);
         } catch (SQLException e) {
             throw new StorageException("Failed to read report queue for status=" + status, e);
+        }
+    }
+
+    @Override
+    public List<Report> findByReporter(UUID reporterUuid, int limit) {
+        String sql = "SELECT * FROM br_reports WHERE reporter_uuid = ? ORDER BY created_at DESC LIMIT ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, reporterUuid.toString());
+            statement.setInt(2, limit);
+            return queryList(statement);
+        } catch (SQLException e) {
+            throw new StorageException("Failed to read own reports for reporter=" + reporterUuid, e);
         }
     }
 
@@ -203,6 +245,20 @@ public final class JdbcReportDao implements ReportDao {
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
             throw new StorageException("Failed to update status for report id=" + id, e);
+        }
+    }
+
+    @Override
+    public boolean recordSanction(long id, String sanctionType, String sanctionDuration) {
+        String sql = "UPDATE br_reports SET sanction_type = ?, sanction_duration = ? WHERE id = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, sanctionType);
+            statement.setString(2, sanctionDuration);
+            statement.setLong(3, id);
+            return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new StorageException("Failed to record sanction for report id=" + id, e);
         }
     }
 
@@ -313,6 +369,7 @@ public final class JdbcReportDao implements ReportDao {
                 reviewerUuid != null ? UUID.fromString(reviewerUuid) : null, rs.getString("resolution_note"),
                 rs.getTimestamp("created_at").toInstant(), claimedAt != null ? claimedAt.toInstant() : null,
                 resolvedAt != null ? resolvedAt.toInstant() : null, rs.getInt("claim_version"),
-                rs.getString("chat_context"));
+                rs.getString("chat_context"), rs.getString("sanction_type"), rs.getString("sanction_duration"),
+                rs.getString("coreprotect_context"));
     }
 }

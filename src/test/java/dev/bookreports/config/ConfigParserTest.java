@@ -34,6 +34,45 @@ class ConfigParserTest {
         assertEquals("7d", config.punishments().defaultBanDuration());
         assertEquals("1h", config.punishments().defaultMuteDuration());
         assertTrue(config.metricsEnabled());
+        assertTrue(config.coreProtect().enabled());
+        assertEquals(300, config.coreProtect().lookbackSeconds());
+        assertEquals(20, config.coreProtect().maxEntries());
+    }
+
+    @Test
+    void coreProtectDefaultsToEnabledWhenSectionIsMissing() {
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.StringReader("""
+                report:
+                  categories:
+                    other:
+                      display: "Other"
+                      priority: LOW
+                """));
+
+        CoreProtectSettings coreProtect = parser.parse(yaml).coreProtect();
+        assertTrue(coreProtect.enabled());
+        assertEquals(300, coreProtect.lookbackSeconds());
+        assertEquals(20, coreProtect.maxEntries());
+    }
+
+    @Test
+    void coreProtectCanBeDisabledAndTuned() {
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.StringReader("""
+                report:
+                  categories:
+                    other:
+                      display: "Other"
+                      priority: LOW
+                coreprotect:
+                  enabled: false
+                  lookback-seconds: 60
+                  max-entries: 5
+                """));
+
+        CoreProtectSettings coreProtect = parser.parse(yaml).coreProtect();
+        assertFalse(coreProtect.enabled());
+        assertEquals(60, coreProtect.lookbackSeconds());
+        assertEquals(5, coreProtect.maxEntries());
     }
 
     @Test

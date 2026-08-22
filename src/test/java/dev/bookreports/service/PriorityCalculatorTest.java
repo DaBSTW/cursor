@@ -70,7 +70,7 @@ class PriorityCalculatorTest {
         UUID target = UUID.randomUUID();
         Report resolved = new Report(1, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "hacks",
                 null, null, "default", ReportStatus.RESOLVED_ACTION, Priority.HIGH, UUID.randomUUID(), "done",
-                NOW.minusSeconds(60), NOW.minusSeconds(30), NOW.minusSeconds(10), 0, null);
+                NOW.minusSeconds(60), NOW.minusSeconds(30), NOW.minusSeconds(10), 0, null, null, null, null);
 
         Priority result = calculator.calculate(hacksLow(), UUID.randomUUID(),
                 List.of(resolved, pendingReport(target, "hacks", NOW.minusSeconds(60))));
@@ -95,7 +95,8 @@ class PriorityCalculatorTest {
 
     private Report pendingReport(UUID target, String categoryId, Instant createdAt) {
         return new Report(1, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", categoryId, null, null,
-                "default", ReportStatus.PENDING, Priority.LOW, null, null, createdAt, null, null, 0, null);
+                "default", ReportStatus.PENDING, Priority.LOW, null, null, createdAt, null, null, 0, null, null, null,
+                null);
     }
 
     private BookReportsConfig configWithEscalation(int threshold, int windowSeconds, Priority escalateTo) {
@@ -106,6 +107,7 @@ class PriorityCalculatorTest {
                 new dev.bookreports.config.FalseReportPenaltySettings(true, 3, 4, 0), false,
                 new dev.bookreports.config.StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15),
                 new dev.bookreports.config.DiscordSettings(false, "", Priority.HIGH),
-                new dev.bookreports.config.PunishmentSettings("7d", "1h"), true, true, "es_ES", "default");
+                new dev.bookreports.config.PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
+                new dev.bookreports.config.CoreProtectSettings(true, 300, 20));
     }
 }

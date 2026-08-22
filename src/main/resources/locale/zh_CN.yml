@@ -15,6 +15,10 @@ report:
   resolved: "<gray>你的举报 #<ticket_id> 已由管理团队处理。</gray>"
   tool-name: "<yellow>举报玩家</yellow>"
   tool-disabled: "<red>此服务器未启用举报道具。</red>"
+  status:
+    title: "<gold>你最近的举报：</gold>"
+    empty: "<gray>你还没有提交过举报。</gray>"
+    line: "<white>#<ticket_id> <player> — <category> [<status>]</white>"
 
 session:
   invalid: "<red>此页面已失效，请重新使用 /report。</red>"
@@ -77,6 +81,7 @@ staff:
   queue:
     title: "举报队列"
     filter: "<yellow>筛选：<white><status></white></yellow>"
+    search-prompt: "按玩家名搜索"
     lore:
       category: "<gray>类别：<white><category></white></gray>"
       priority: "<gray>优先级：<white><priority></white></gray>"
@@ -91,6 +96,8 @@ staff:
     evidence: "<gray>证据：<white><evidence></white></gray>"
     reporter-accuracy: "<yellow>举报人准确率：<white><accuracy>%</white>（共 <total> 次）</yellow>"
     chat-context: "<gray>最近聊天：<white><context></white></gray>"
+    coreprotect-context: "<gray>CoreProtect：<white><activity></white></gray>"
+    sanction: "<yellow>制裁：<white><sanction></white></yellow>"
     claim: "<green>[ 认领 ]</green>"
     claimed-by: "<gray>认领人：<white><player></white></gray>"
     unclaimed: "<gray>未认领</gray>"

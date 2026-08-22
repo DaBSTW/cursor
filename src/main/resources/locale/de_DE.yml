@@ -15,6 +15,10 @@ report:
   resolved: "<gray>Deine Meldung #<ticket_id> wurde vom Team bearbeitet.</gray>"
   tool-name: "<yellow>Spieler melden</yellow>"
   tool-disabled: "<red>Das Melde-Werkzeug ist auf diesem Server nicht aktiviert.</red>"
+  status:
+    title: "<gold>Deine letzten Meldungen:</gold>"
+    empty: "<gray>Du hast noch keine Meldungen abgeschickt.</gray>"
+    line: "<white>#<ticket_id> <player> — <category> [<status>]</white>"
 
 session:
   invalid: "<red>Diese Seite ist nicht mehr gültig, benutze erneut /report.</red>"
@@ -77,6 +81,7 @@ staff:
   queue:
     title: "Meldungswarteschlange"
     filter: "<yellow>Filter: <white><status></white></yellow>"
+    search-prompt: "Nach Spielername suchen"
     lore:
       category: "<gray>Kategorie: <white><category></white></gray>"
       priority: "<gray>Priorität: <white><priority></white></gray>"
@@ -91,6 +96,8 @@ staff:
     evidence: "<gray>Beweis: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Trefferquote des Melders: <white><accuracy>%</white> (<total> Meldungen)</yellow>"
     chat-context: "<gray>Letzter Chat: <white><context></white></gray>"
+    coreprotect-context: "<gray>CoreProtect: <white><activity></white></gray>"
+    sanction: "<yellow>Sanktion: <white><sanction></white></yellow>"
     claim: "<green>[ Übernehmen ]</green>"
     claimed-by: "<gray>Übernommen von: <white><player></white></gray>"
     unclaimed: "<gray>Nicht übernommen</gray>"

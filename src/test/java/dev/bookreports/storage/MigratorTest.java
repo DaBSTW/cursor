@@ -40,9 +40,12 @@ class MigratorTest {
     void migratesFreshDatabaseToLatestVersion() throws SQLException {
         new Migrator(dataSource, StorageType.SQLITE, LOGGER).migrate();
 
-        assertEquals(4, schemaVersion());
+        assertEquals(6, schemaVersion());
         assertTrue(hasColumn("br_reports", "claim_version"));
         assertTrue(hasColumn("br_reports", "chat_context"));
+        assertTrue(hasColumn("br_reports", "sanction_type"));
+        assertTrue(hasColumn("br_reports", "sanction_duration"));
+        assertTrue(hasColumn("br_reports", "coreprotect_context"));
         assertTrue(hasColumn("br_staff_prefs", "notifications_enabled"));
     }
 
@@ -52,7 +55,7 @@ class MigratorTest {
         migrator.migrate();
 
         assertDoesNotThrow(migrator::migrate);
-        assertEquals(4, schemaVersion());
+        assertEquals(6, schemaVersion());
     }
 
     @Test
@@ -61,7 +64,7 @@ class MigratorTest {
 
         new Migrator(dataSource, StorageType.SQLITE, LOGGER).migrate();
 
-        assertEquals(4, schemaVersion());
+        assertEquals(6, schemaVersion());
         assertTrue(hasColumn("br_reports", "claim_version"));
         assertTrue(hasColumn("br_reports", "chat_context"));
         try (Connection connection = dataSource.getConnection();

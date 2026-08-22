@@ -22,7 +22,8 @@ public final class TestConfigs {
                 10, 300, true, true, categories, new PriorityEscalationSettings(3, 600, Priority.HIGH),
                 new FalseReportPenaltySettings(false, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
-                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default");
+                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
+                new CoreProtectSettings(true, 300, 20));
     }
 
     public static BookReportsConfig withSessionTimeout(int seconds) {
@@ -31,6 +32,6 @@ public final class TestConfigs {
                 seconds, base.preventSelfReport(), base.preventDuplicatePending(), base.categories(),
                 base.priorityEscalation(), base.falseReportPenalty(), base.enableReportTool(), base.staff(),
                 base.discord(), base.punishments(), base.placeholderApiEnabled(), base.metricsEnabled(), base.locale(),
-                base.serverId());
+                base.serverId(), base.coreProtect());
     }
 }

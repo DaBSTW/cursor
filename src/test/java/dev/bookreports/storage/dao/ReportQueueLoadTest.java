@@ -61,6 +61,7 @@ class ReportQueueLoadTest {
 
     private Report draft(UUID target, Priority priority) {
         return new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "hacks", null, null,
-                "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0, null);
+                "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0, null, null, null,
+                null);
     }
 }

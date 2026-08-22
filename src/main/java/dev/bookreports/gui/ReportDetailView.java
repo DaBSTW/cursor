@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -119,6 +120,16 @@ public final class ReportDetailView implements InventoryHolder, Listener {
             }
             if (report.chatContext() != null && !report.chatContext().isBlank()) {
                 lore.add(locale.get("staff.detail.chat-context", Map.of("context", report.chatContext())));
+            }
+            if (report.coreProtectContext() != null && !report.coreProtectContext().isBlank()) {
+                lore.add(locale.get("staff.detail.coreprotect-context",
+                        Map.of("activity", report.coreProtectContext())));
+            }
+            if (report.sanctionType() != null) {
+                String sanctionLabel = report.sanctionDuration() != null
+                        ? report.sanctionType() + " (" + report.sanctionDuration() + ")"
+                        : report.sanctionType();
+                lore.add(locale.get("staff.detail.sanction", Map.of("sanction", sanctionLabel)));
             }
             lore.add(reviewer != null
                     ? locale.get("staff.detail.claimed-by", Map.of("player", reviewer))
@@ -247,12 +258,25 @@ public final class ReportDetailView implements InventoryHolder, Listener {
         String targetName = report.targetName();
         String staffName = viewer.getName();
         String reasonCode = "SANCTION_" + report.categoryId();
+        String duration = null;
         switch (action) {
             case KICK -> bridge.kick(targetName, reasonCode, staffName);
-            case MUTE ->
-                bridge.mute(targetName, config.get().punishments().defaultMuteDuration(), reasonCode, staffName);
-            case BAN -> bridge.ban(targetName, config.get().punishments().defaultBanDuration(), reasonCode, staffName);
+            case MUTE -> {
+                duration = config.get().punishments().defaultMuteDuration();
+                bridge.mute(targetName, duration, reasonCode, staffName);
+            }
+            case BAN -> {
+                duration = config.get().punishments().defaultBanDuration();
+                bridge.ban(targetName, duration, reasonCode, staffName);
+            }
         }
+        // Recorded separately from — and independent of — the resolve() call below: a failure here is a lost
+        // audit-trail detail, not a reason to block the resolution the staff member just performed.
+        reportService.recordSanction(report.id(), action.name(), duration).exceptionally(error -> {
+            plugin.getLogger().log(Level.WARNING, "Failed to record sanction audit for report id=" + report.id(),
+                    error);
+            return null;
+        });
         resolve(ReportStatus.RESOLVED_ACTION, "SANCTION_" + action.name());
     }
 

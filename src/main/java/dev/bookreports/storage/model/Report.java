@@ -10,14 +10,18 @@ import java.util.UUID;
  * <p>
  * Before the first {@link dev.bookreports.storage.dao.ReportDao#insert} call, {@code id} is {@code 0} and
  * {@code claimVersion} is {@code 0} — both are assigned by the database. {@code subReasonId}, {@code evidenceText},
- * {@code chatContext}, {@code reviewerUuid}, {@code resolutionNote}, {@code claimedAt} and {@code resolvedAt} are
- * nullable. {@code chatContext} is the target's recent chat, captured automatically — unlike {@code evidenceText},
- * which the reporter typed in themselves.
+ * {@code chatContext}, {@code reviewerUuid}, {@code resolutionNote}, {@code claimedAt}, {@code resolvedAt},
+ * {@code sanctionType}, {@code sanctionDuration} and {@code coreProtectContext} are nullable. {@code chatContext} and
+ * {@code coreProtectContext} are captured automatically (recent chat and recent CoreProtect-logged block activity,
+ * respectively) — unlike {@code evidenceText}, which the reporter typed in themselves. {@code sanctionType} and
+ * {@code sanctionDuration} record what a punishment bridge actually applied (e.g. {@code "BAN"}/{@code "7d"}), set only
+ * when a report is resolved through the staff panel's sanction menu.
  */
 public record Report(long id, UUID uuid, UUID reporterUuid, String reporterName, UUID targetUuid, String targetName,
         String categoryId, String subReasonId, String evidenceText, String server, ReportStatus status,
         Priority priority, UUID reviewerUuid, String resolutionNote, Instant createdAt, Instant claimedAt,
-        Instant resolvedAt, int claimVersion, String chatContext) {
+        Instant resolvedAt, int claimVersion, String chatContext, String sanctionType, String sanctionDuration,
+        String coreProtectContext) {
 
     public Report {
         Objects.requireNonNull(uuid, "uuid");

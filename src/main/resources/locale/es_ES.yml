@@ -15,6 +15,10 @@ report:
   resolved: "<gray>Tu reporte #<ticket_id> ha sido revisado por el staff.</gray>"
   tool-name: "<yellow>Reportar Jugador</yellow>"
   tool-disabled: "<red>El item de reporte no está habilitado en este servidor.</red>"
+  status:
+    title: "<gold>Tus reportes recientes:</gold>"
+    empty: "<gray>No has enviado ningún reporte.</gray>"
+    line: "<white>#<ticket_id> <player> — <category> [<status>]</white>"
 
 session:
   invalid: "<red>Esta página ya no es válida, usa /report de nuevo.</red>"
@@ -77,6 +81,7 @@ staff:
   queue:
     title: "Cola de reportes"
     filter: "<yellow>Filtro: <white><status></white></yellow>"
+    search-prompt: "Buscar por nombre de jugador"
     lore:
       category: "<gray>Categoría: <white><category></white></gray>"
       priority: "<gray>Prioridad: <white><priority></white></gray>"
@@ -91,6 +96,8 @@ staff:
     evidence: "<gray>Evidencia: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Precisión del reportante: <white><accuracy>%</white> (<total> reportes)</yellow>"
     chat-context: "<gray>Chat reciente: <white><context></white></gray>"
+    coreprotect-context: "<gray>CoreProtect: <white><activity></white></gray>"
+    sanction: "<yellow>Sanción: <white><sanction></white></yellow>"
     claim: "<green>[ Reclamar ]</green>"
     claimed-by: "<gray>Reclamado por: <white><player></white></gray>"
     unclaimed: "<gray>Sin reclamar</gray>"

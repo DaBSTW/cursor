@@ -15,6 +15,10 @@ report:
   resolved: "<gray>Votre signalement #<ticket_id> a été examiné par l'équipe.</gray>"
   tool-name: "<yellow>Signaler un joueur</yellow>"
   tool-disabled: "<red>L'objet de signalement n'est pas activé sur ce serveur.</red>"
+  status:
+    title: "<gold>Vos signalements récents :</gold>"
+    empty: "<gray>Vous n'avez soumis aucun signalement.</gray>"
+    line: "<white>#<ticket_id> <player> — <category> [<status>]</white>"
 
 session:
   invalid: "<red>Cette page n'est plus valide, utilisez /report à nouveau.</red>"
@@ -77,6 +81,7 @@ staff:
   queue:
     title: "File des signalements"
     filter: "<yellow>Filtre : <white><status></white></yellow>"
+    search-prompt: "Rechercher par nom de joueur"
     lore:
       category: "<gray>Catégorie : <white><category></white></gray>"
       priority: "<gray>Priorité : <white><priority></white></gray>"
@@ -91,6 +96,8 @@ staff:
     evidence: "<gray>Preuve : <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Fiabilité du signaleur : <white><accuracy>%</white> (<total> signalements)</yellow>"
     chat-context: "<gray>Chat récent : <white><context></white></gray>"
+    coreprotect-context: "<gray>CoreProtect : <white><activity></white></gray>"
+    sanction: "<yellow>Sanction : <white><sanction></white></yellow>"
     claim: "<green>[ Prendre en charge ]</green>"
     claimed-by: "<gray>Pris en charge par : <white><player></white></gray>"
     unclaimed: "<gray>Non pris en charge</gray>"

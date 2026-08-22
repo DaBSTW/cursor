@@ -18,6 +18,8 @@ import dev.bookreports.config.ConfigManager;
 import dev.bookreports.config.ConfigurationException;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.gui.AnvilInputGUI;
+import dev.bookreports.integration.coreprotect.CoreProtectBridge;
+import dev.bookreports.integration.coreprotect.CoreProtectBridges;
 import dev.bookreports.integration.discord.DiscordNotifier;
 import dev.bookreports.integration.metrics.BStatsMetrics;
 import dev.bookreports.integration.placeholder.PlaceholderExpansionImpl;
@@ -66,6 +68,7 @@ public final class BookReportsPlugin extends JavaPlugin {
     private ExecutorService workerExecutor;
     private SessionManager sessionManager;
     private ChatContextTracker chatContextTracker;
+    private AnvilInputGUI anvilInputGUI;
     private volatile DataSource dataSource;
     private volatile ReportService reportService;
 
@@ -200,12 +203,21 @@ public final class BookReportsPlugin extends JavaPlugin {
         DailyLimitService dailyLimitService = new DailyLimitService(reportDao, configManager::current, clock);
         PriorityCalculator priorityCalculator = new PriorityCalculator(configManager::current, clock);
 
+        var coreProtectSettings = configManager.current().coreProtect();
+        Optional<CoreProtectBridge> coreProtectBridge = CoreProtectBridges.detect(getServer().getPluginManager(),
+                coreProtectSettings.lookbackSeconds(), coreProtectSettings.maxEntries());
+        coreProtectBridge.ifPresent(bridge -> getLogger().info("CoreProtect bridge active."));
+
         reportService = new ReportService(reportDao, penaltyDao, cooldownService, dailyLimitService, priorityCalculator,
-                configManager::current, getServer().getPluginManager(), scheduler, workerExecutor, clock, getLogger());
+                configManager::current, getServer().getPluginManager(), scheduler, workerExecutor, clock, getLogger(),
+                coreProtectBridge);
 
         BookReportsAPI api = new BookReportsApiImpl(reportService, configManager::current, workerExecutor);
         getServer().getServicesManager().register(BookReportsAPI.class, api, this, ServicePriority.Normal);
         getLogger().info("BookReportsAPI registered with the services manager.");
+
+        anvilInputGUI = new AnvilInputGUI(localeManager);
+        getServer().getPluginManager().registerEvents(anvilInputGUI, this);
 
         registerBookFlow();
         registerStaffPanel(reportDao, staffPrefsDao);
@@ -217,14 +229,12 @@ public final class BookReportsPlugin extends JavaPlugin {
     private void registerBookFlow() {
         BookBuilder books = new BookBuilder(localeManager);
         RateLimiter rateLimiter = new RateLimiter(Duration.ofSeconds(1));
-        AnvilInputGUI anvilInputGUI = new AnvilInputGUI(localeManager);
-        getServer().getPluginManager().registerEvents(anvilInputGUI, this);
         getServer().getPluginManager().registerEvents(
                 new ReportToolListener(configManager::current, sessionManager, localeManager, books, rateLimiter),
                 this);
 
-        reportCommandAdapter
-                .bind(new ReportCommand(sessionManager, configManager::current, localeManager, books, rateLimiter));
+        reportCommandAdapter.bind(new ReportCommand(sessionManager, configManager::current, localeManager, books,
+                rateLimiter, reportService, scheduler));
         targetCommandAdapter.bind(new SelectTargetCommand(sessionManager, localeManager, books));
         selectCommandAdapter.bind(new SelectOptionCommand(sessionManager, configManager::current, localeManager, books,
                 reportService, anvilInputGUI, chatContextTracker, scheduler, getLogger()));
@@ -237,7 +247,7 @@ public final class BookReportsPlugin extends JavaPlugin {
         Optional<PunishmentBridge> punishmentBridge = PunishmentBridges.detect(getServer().getPluginManager());
         punishmentBridge.ifPresent(bridge -> getLogger().info("Punishment bridge active: " + bridge.name()));
         reportAdminCommandAdapter.bind(new ReportAdminCommand(this, localeManager, reportService, reportDao,
-                configManager::current, notifications, punishmentBridge, workerExecutor));
+                configManager::current, notifications, punishmentBridge, workerExecutor, anvilInputGUI));
     }
 
     /** Every integration here is soft-depend (SPECS.md §11/§6) — absent, it's simply never registered. */

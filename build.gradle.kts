@@ -21,6 +21,9 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://jitpack.io")
+    // CoreProtect's own recommended repository for its API (see its wiki's "Developer API" page) — it isn't
+    // published to Maven Central or JitPack.
+    maven("https://maven.playpro.com")
 }
 
 dependencies {
@@ -31,6 +34,7 @@ dependencies {
     // Enchantment constants) is confirmed unchanged through Paper 26.2. Only bump this pin alongside MockBukkit.
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
+    compileOnly("net.coreprotect:coreprotect:21.3")
 
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
@@ -42,6 +46,7 @@ dependencies {
     testImplementation("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("com.github.seeseemelk:MockBukkit-v1.21:3.133.2")
+    testImplementation("net.coreprotect:coreprotect:21.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -9,6 +9,7 @@ import dev.bookreports.chat.ChatContextTracker;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.FalseReportPenaltySettings;
 import dev.bookreports.config.ReportCategory;
+import dev.bookreports.integration.coreprotect.CoreProtectBridge;
 import dev.bookreports.storage.StorageException;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
@@ -29,6 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.plugin.PluginManager;
 
@@ -54,11 +56,20 @@ public final class ReportService {
     private final Executor executor;
     private final Clock clock;
     private final Logger logger;
+    private final Optional<CoreProtectBridge> coreProtectBridge;
 
     public ReportService(ReportDao reportDao, PenaltyDao penaltyDao, CooldownService cooldownService,
             DailyLimitService dailyLimitService, PriorityCalculator priorityCalculator,
             Supplier<BookReportsConfig> config, PluginManager pluginManager, SchedulerAdapter scheduler,
             Executor executor, Clock clock, Logger logger) {
+        this(reportDao, penaltyDao, cooldownService, dailyLimitService, priorityCalculator, config, pluginManager,
+                scheduler, executor, clock, logger, Optional.empty());
+    }
+
+    public ReportService(ReportDao reportDao, PenaltyDao penaltyDao, CooldownService cooldownService,
+            DailyLimitService dailyLimitService, PriorityCalculator priorityCalculator,
+            Supplier<BookReportsConfig> config, PluginManager pluginManager, SchedulerAdapter scheduler,
+            Executor executor, Clock clock, Logger logger, Optional<CoreProtectBridge> coreProtectBridge) {
         this.reportDao = Objects.requireNonNull(reportDao, "reportDao");
         this.penaltyDao = Objects.requireNonNull(penaltyDao, "penaltyDao");
         this.cooldownService = Objects.requireNonNull(cooldownService, "cooldownService");
@@ -70,6 +81,7 @@ public final class ReportService {
         this.executor = Objects.requireNonNull(executor, "executor");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.logger = Objects.requireNonNull(logger, "logger");
+        this.coreProtectBridge = Objects.requireNonNull(coreProtectBridge, "coreProtectBridge");
     }
 
     /**
@@ -134,10 +146,29 @@ public final class ReportService {
         // directly, bypassing that GUI entirely — SPECS.md §13 requires this defense in depth.
         String evidenceText = TextSanitizer.stripAndTruncate(request.evidenceText(), TextSanitizer.EVIDENCE_MAX_LENGTH);
         String chatContext = TextSanitizer.stripAndTruncate(request.chatContext(), ChatContextTracker.MAX_TOTAL_LENGTH);
+        String coreProtectContext = lookupCoreProtectContext(targetUuid, request.targetName());
 
         return new Report(0, UUID.randomUUID(), reporterUuid, request.reporterName(), targetUuid, request.targetName(),
                 request.categoryId(), request.subReasonId(), evidenceText, request.server(), ReportStatus.PENDING,
-                priority, null, null, clock.instant(), null, null, 0, chatContext);
+                priority, null, null, clock.instant(), null, null, 0, chatContext, null, null, coreProtectContext);
+    }
+
+    /**
+     * Same spirit as the automatic chat-context capture: attach a short summary of the target's recent
+     * CoreProtect-logged block activity without the reporter having to ask for it. Never lets a lookup problem break
+     * report submission — CoreProtect is entirely optional and this is best-effort evidence, not a requirement.
+     */
+    private String lookupCoreProtectContext(UUID targetUuid, String targetName) {
+        if (coreProtectBridge.isEmpty() || !config.get().coreProtect().enabled()) {
+            return null;
+        }
+        try {
+            return coreProtectBridge.get().recentActivity(targetUuid, targetName);
+        } catch (RuntimeException e) {
+            logger.log(Level.WARNING, "CoreProtect lookup failed for target=" + targetUuid + ", continuing without it",
+                    e);
+            return null;
+        }
     }
 
     private void fireCreateEventThenPersist(Report draft, CompletableFuture<Report> result) {
@@ -239,6 +270,20 @@ public final class ReportService {
             }
             return updated;
         }, executor);
+    }
+
+    /**
+     * Records what a punishment bridge actually applied — independent of the resolve/mark-false status change, so a
+     * failure here never blocks the resolution itself. {@code sanctionDuration} is nullable (kicks have none).
+     */
+    public CompletableFuture<Boolean> recordSanction(long reportId, String sanctionType, String sanctionDuration) {
+        return CompletableFuture.supplyAsync(() -> reportDao.recordSanction(reportId, sanctionType, sanctionDuration),
+                executor);
+    }
+
+    /** This reporter's own tickets, most recent first — backs {@code /report status}. */
+    public CompletableFuture<List<Report>> getMyReports(UUID reporterUuid, int limit) {
+        return CompletableFuture.supplyAsync(() -> reportDao.findByReporter(reporterUuid, limit), executor);
     }
 
     /** Resolves the report as {@link ReportStatus#FALSE_REPORT} and records a penalty strike against the reporter. */

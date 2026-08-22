@@ -15,6 +15,10 @@ report:
   resolved: "<gray>Your report #<ticket_id> has been reviewed by staff.</gray>"
   tool-name: "<yellow>Report Player</yellow>"
   tool-disabled: "<red>The report tool item is not enabled on this server.</red>"
+  status:
+    title: "<gold>Your recent reports:</gold>"
+    empty: "<gray>You haven't submitted any reports.</gray>"
+    line: "<white>#<ticket_id> <player> — <category> [<status>]</white>"
 
 session:
   invalid: "<red>This page is no longer valid, use /report again.</red>"
@@ -77,6 +81,7 @@ staff:
   queue:
     title: "Report queue"
     filter: "<yellow>Filter: <white><status></white></yellow>"
+    search-prompt: "Search by player name"
     lore:
       category: "<gray>Category: <white><category></white></gray>"
       priority: "<gray>Priority: <white><priority></white></gray>"
@@ -91,6 +96,8 @@ staff:
     evidence: "<gray>Evidence: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Reporter accuracy: <white><accuracy>%</white> (<total> reports)</yellow>"
     chat-context: "<gray>Recent chat: <white><context></white></gray>"
+    coreprotect-context: "<gray>CoreProtect: <white><activity></white></gray>"
+    sanction: "<yellow>Sanction: <white><sanction></white></yellow>"
     claim: "<green>[ Claim ]</green>"
     claimed-by: "<gray>Claimed by: <white><player></white></gray>"
     unclaimed: "<gray>Unclaimed</gray>"

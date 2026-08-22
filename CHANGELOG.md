@@ -29,6 +29,19 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
 - Reporter accuracy and staff performance stats (`ReporterStats`,
   `StaffStats`), surfaced in the report detail view and via
   `/reportadmin stats reporter|staff <player>`.
+- Automatic CoreProtect evidence (optional): a short summary of the target's
+  recent block activity (e.g. `3x break, 1x place (last 5m)`) is attached to
+  new reports the same way chat context is, configurable under
+  `coreprotect:` in `config.yml`.
+- Sanctions applied from the staff panel's quick-sanction menu are now
+  recorded on the report itself (`sanctionType`/`sanctionDuration`, e.g.
+  `BAN`/`7d`) — a structured audit trail independent of the free-text
+  resolution note.
+- `/report status`: reporters can check the status of their own recent
+  tickets without waiting for a resolution message or asking staff.
+- The staff queue GUI (`/reportadmin`) gained a priority filter, a
+  "claimed by me" toggle, and a search box for the target's name, alongside
+  the existing status/category filters.
 - Public API: `BookReportsAPI` (services manager) plus `ReportCreateEvent`
   (cancelable), `ReportCreatedEvent`, `ReportClaimedEvent`,
   `ReportResolvedEvent`, `ReportFalseMarkedEvent`.

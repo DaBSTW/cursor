@@ -16,6 +16,7 @@ import dev.bookreports.api.event.ReportFalseMarkedEvent;
 import dev.bookreports.api.event.ReportResolvedEvent;
 import dev.bookreports.chat.ChatContextTracker;
 import dev.bookreports.config.BookReportsConfig;
+import dev.bookreports.config.CoreProtectSettings;
 import dev.bookreports.config.DiscordSettings;
 import dev.bookreports.config.FalseReportPenaltySettings;
 import dev.bookreports.config.MySqlSettings;
@@ -329,7 +330,8 @@ class ReportServiceTest {
                 config.sessionTimeoutSeconds(), config.preventSelfReport(), config.preventDuplicatePending(),
                 config.categories(), config.priorityEscalation(), config.falseReportPenalty(),
                 config.enableReportTool(), config.staff(), config.discord(), config.punishments(),
-                config.placeholderApiEnabled(), config.metricsEnabled(), config.locale(), config.serverId());
+                config.placeholderApiEnabled(), config.metricsEnabled(), config.locale(), config.serverId(),
+                config.coreProtect());
     }
 
     private BookReportsConfig defaultConfig() {
@@ -338,6 +340,7 @@ class ReportServiceTest {
                 10, 300, true, true, Map.of("hacks", hacks), new PriorityEscalationSettings(3, 600, Priority.HIGH),
                 new FalseReportPenaltySettings(false, 3, 4, 0), false,
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
-                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default");
+                new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
+                new CoreProtectSettings(true, 300, 20));
     }
 }

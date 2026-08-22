@@ -3,8 +3,11 @@ package dev.bookreports.command;
 import dev.bookreports.book.BookBuilder;
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
+import dev.bookreports.service.ReportService;
 import dev.bookreports.session.ReportSession;
 import dev.bookreports.session.SessionManager;
+import dev.bookreports.storage.model.Report;
+import dev.bookreports.util.SchedulerAdapter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -19,22 +22,31 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-/** {@code /report [player]} and {@code /report tool} — the player-facing entry points into the book flow. */
+/**
+ * {@code /report [player]}, {@code /report tool} and {@code /report status} — the player-facing book flow entry points.
+ */
 public final class ReportCommand implements CommandExecutor, TabCompleter {
+
+    /** Caps how many of the reporter's own tickets {@code /report status} lists — most recent first. */
+    private static final int MAX_STATUS_REPORTS = 10;
 
     private final SessionManager sessions;
     private final Supplier<BookReportsConfig> config;
     private final LocaleManager locale;
     private final BookBuilder books;
     private final RateLimiter rateLimiter;
+    private final ReportService reportService;
+    private final SchedulerAdapter scheduler;
 
     public ReportCommand(SessionManager sessions, Supplier<BookReportsConfig> config, LocaleManager locale,
-            BookBuilder books, RateLimiter rateLimiter) {
+            BookBuilder books, RateLimiter rateLimiter, ReportService reportService, SchedulerAdapter scheduler) {
         this.sessions = Objects.requireNonNull(sessions, "sessions");
         this.config = Objects.requireNonNull(config, "config");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.books = Objects.requireNonNull(books, "books");
         this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter");
+        this.reportService = Objects.requireNonNull(reportService, "reportService");
+        this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
     }
 
     @Override
@@ -45,6 +57,10 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 1 && "tool".equalsIgnoreCase(args[0])) {
             giveTool(player);
+            return true;
+        }
+        if (args.length == 1 && "status".equalsIgnoreCase(args[0])) {
+            showStatus(player);
             return true;
         }
         if (!rateLimiter.tryAcquire(player.getUniqueId())) {
@@ -96,9 +112,30 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
         player.getInventory().addItem(ReportToolItems.create(locale));
     }
 
+    /** Lets a reporter check on their own tickets without having to ask staff or wait for the resolution message. */
+    private void showStatus(Player player) {
+        reportService.getMyReports(player.getUniqueId(), MAX_STATUS_REPORTS)
+                .whenComplete((reports, error) -> scheduler.runForPlayer(player, () -> {
+                    if (error != null) {
+                        player.sendMessage(locale.get("error.generic"));
+                        return;
+                    }
+                    if (reports.isEmpty()) {
+                        player.sendMessage(locale.get("report.status.empty"));
+                        return;
+                    }
+                    player.sendMessage(locale.get("report.status.title"));
+                    for (Report report : reports) {
+                        player.sendMessage(locale.get("report.status.line",
+                                Map.of("ticket_id", String.valueOf(report.id()), "player", report.targetName(),
+                                        "category", report.categoryId(), "status", report.status().name())));
+                    }
+                }));
+    }
+
     /**
-     * Suggests online player names (and {@code tool}) for {@code /report <partial>} — matching is still exact on
-     * submit.
+     * Suggests online player names (and {@code tool}/{@code status}) for {@code /report <partial>} — matching is still
+     * exact on submit.
      */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
@@ -112,6 +149,9 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
                 .toList());
         if ("tool".startsWith(partial)) {
             suggestions.add("tool");
+        }
+        if ("status".startsWith(partial)) {
+            suggestions.add("status");
         }
         return suggestions;
     }

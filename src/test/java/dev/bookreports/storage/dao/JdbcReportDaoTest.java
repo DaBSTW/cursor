@@ -52,7 +52,7 @@ class JdbcReportDaoTest {
     void chatContextRoundTripsThroughInsertAndRead() {
         Report withContext = new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", UUID.randomUUID(),
                 "Target", "chat_abuse", null, null, "default", ReportStatus.PENDING, Priority.MEDIUM, null, null,
-                Instant.now(), null, null, 0, "hello | world");
+                Instant.now(), null, null, 0, "hello | world", null, null, null);
 
         Report inserted = dao.insert(withContext);
 
@@ -102,7 +102,7 @@ class JdbcReportDaoTest {
         Report hacks = dao.insert(draft(UUID.randomUUID(), target));
         Report other = dao.insert(new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target",
                 "chat_abuse", null, null, "default", ReportStatus.PENDING, Priority.LOW, null, null, Instant.now(),
-                null, null, 0, null));
+                null, null, 0, null, null, null, null));
 
         List<Report> hacksOnly = dao.findByStatus(ReportStatus.PENDING, "hacks", 0, 10);
 
@@ -114,7 +114,8 @@ class JdbcReportDaoTest {
 
     private Report draftWithPriority(UUID target, Priority priority) {
         return new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "hacks", null, null,
-                "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0, null);
+                "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0, null, null, null,
+                null);
     }
 
     @Test
@@ -261,6 +262,70 @@ class JdbcReportDaoTest {
 
     private Report draft(UUID reporter, UUID target) {
         return new Report(0, UUID.randomUUID(), reporter, "Reporter", target, "Target", "hacks", "killaura", null,
-                "default", ReportStatus.PENDING, Priority.HIGH, null, null, Instant.now(), null, null, 0, null);
+                "default", ReportStatus.PENDING, Priority.HIGH, null, null, Instant.now(), null, null, 0, null, null,
+                null, null);
+    }
+
+    @Test
+    void recordSanctionSetsBothColumnsAndRoundTripsThroughRead() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+
+        assertTrue(dao.recordSanction(report.id(), "BAN", "7d"));
+
+        Report reread = dao.findById(report.id()).orElseThrow();
+        assertEquals("BAN", reread.sanctionType());
+        assertEquals("7d", reread.sanctionDuration());
+    }
+
+    @Test
+    void recordSanctionAllowsANullDurationForKicks() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+
+        assertTrue(dao.recordSanction(report.id(), "KICK", null));
+
+        assertNull(dao.findById(report.id()).orElseThrow().sanctionDuration());
+    }
+
+    @Test
+    void recordSanctionReturnsFalseForUnknownId() {
+        assertFalse(dao.recordSanction(999, "BAN", "7d"));
+    }
+
+    @Test
+    void findByReporterOrdersMostRecentFirstAndRespectsLimit() throws InterruptedException {
+        UUID reporter = UUID.randomUUID();
+        Report first = dao.insert(draft(reporter, UUID.randomUUID()));
+        Thread.sleep(15);
+        Report second = dao.insert(draft(reporter, UUID.randomUUID()));
+        dao.insert(draft(UUID.randomUUID(), UUID.randomUUID())); // different reporter, must not appear
+
+        List<Report> own = dao.findByReporter(reporter, 1);
+
+        assertEquals(List.of(second.id()), own.stream().map(Report::id).toList());
+    }
+
+    @Test
+    void findByStatusFiltersByPriorityTargetNameAndClaimedBy() {
+        UUID target = UUID.randomUUID();
+        UUID reviewer = UUID.randomUUID();
+        Report matching = dao.insert(new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Steve",
+                "hacks", null, null, "default", ReportStatus.PENDING, Priority.HIGH, null, null, Instant.now(), null,
+                null, 0, null, null, null, null));
+        dao.claim(matching.id(), reviewer, Instant.now());
+        dao.insert(draftWithPriority(UUID.randomUUID(), Priority.LOW));
+
+        List<Report> byPriority = dao.findByStatus(ReportStatus.IN_REVIEW, null, Priority.HIGH, null, null, 0, 10);
+        assertEquals(1, byPriority.size());
+        assertEquals(matching.id(), byPriority.get(0).id());
+
+        List<Report> byName = dao.findByStatus(ReportStatus.IN_REVIEW, null, null, "tev", null, 0, 10);
+        assertEquals(1, byName.size());
+        assertEquals(matching.id(), byName.get(0).id());
+        assertTrue(dao.findByStatus(ReportStatus.IN_REVIEW, null, null, "nosuchname", null, 0, 10).isEmpty());
+
+        List<Report> byClaimedBy = dao.findByStatus(ReportStatus.IN_REVIEW, null, null, null, reviewer, 0, 10);
+        assertEquals(1, byClaimedBy.size());
+        assertEquals(matching.id(), byClaimedBy.get(0).id());
+        assertTrue(dao.findByStatus(ReportStatus.IN_REVIEW, null, null, null, UUID.randomUUID(), 0, 10).isEmpty());
     }
 }

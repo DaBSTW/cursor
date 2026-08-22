@@ -1,5 +1,6 @@
 package dev.bookreports.storage.dao;
 
+import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
 import dev.bookreports.storage.model.ReporterStats;
@@ -30,6 +31,17 @@ public interface ReportDao {
      */
     List<Report> findByStatus(ReportStatus status, String categoryId, int page, int pageSize);
 
+    /**
+     * Same as {@link #findByStatus(ReportStatus, String, int, int)}, with three more optional filters for the staff
+     * queue's search bar: {@code priority} (exact match), {@code targetNameQuery} (case-insensitive substring of the
+     * target's name) and {@code claimedBy} (exact reviewer match) — each ignored when {@code null}.
+     */
+    List<Report> findByStatus(ReportStatus status, String categoryId, Priority priority, String targetNameQuery,
+            UUID claimedBy, int page, int pageSize);
+
+    /** This reporter's own tickets, most recent first, capped at {@code limit} — backs {@code /report status}. */
+    List<Report> findByReporter(UUID reporterUuid, int limit);
+
     int countByReporterSince(UUID reporterUuid, Instant since);
 
     /** Total reports currently at {@code status}, regardless of category — used for the pending-count placeholder. */
@@ -37,6 +49,12 @@ public interface ReportDao {
 
     /** Returns {@code false} if no row matched {@code id} — the caller decides whether that is an error. */
     boolean updateStatus(long id, ReportStatus status, UUID reviewerUuid, String resolutionNote, Instant resolvedAt);
+
+    /**
+     * Records what a punishment bridge actually applied — independent of, and written separately from, the free-text
+     * resolution note. {@code sanctionDuration} is nullable (kicks have none). Returns {@code false} if no row matched.
+     */
+    boolean recordSanction(long id, String sanctionType, String sanctionDuration);
 
     /** Atomically assigns a reviewer. Returns {@code false} if the report was already claimed by someone else. */
     boolean claim(long id, UUID reviewerUuid, Instant claimedAt);

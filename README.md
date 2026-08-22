@@ -59,6 +59,8 @@ Y del lado del staff:
 
 ---
 
+La cola de revisión (`/reportadmin`) además filtra por prioridad, busca por nombre del jugador reportado, y tiene un filtro "solo mis reclamos" — útil en colas grandes con varios miembros de staff activos a la vez.
+
 ## 🚀 Instalación
 
 1. Descarga `BookReports-1.0.0.jar` desde [Releases](../../releases) (o Modrinth / Hangar).
@@ -119,6 +121,7 @@ Añadir una categoría nueva es añadir una entrada al YAML y ejecutar `/reports
 | `/report <jugador>` | `bookreports.report` *(default: true)* | Abre el libro apuntando a ese jugador |
 | `/report` | `bookreports.report` | Abre el libro con la lista de jugadores online |
 | `/report tool` | `bookreports.report.tool` | Entrega el ítem de reporte rápido *(opcional)* |
+| `/report status` | `bookreports.report` | Muestra el estado de tus últimos reportes propios |
 
 ### Staff
 
@@ -153,6 +156,8 @@ BookReports asume que alguien intentará abusar del sistema de reportes, y lo ma
 ## 📎 Evidencia automática y métricas
 
 - **Contexto de chat automático**: BookReports mantiene un buffer corto (últimas ~10 líneas) del chat de cada jugador. Al crear un reporte, ese contexto se adjunta automáticamente al ticket — el reportante no tiene que escribir ni copiar nada, y el staff ve de inmediato lo que dijo el jugador reportado justo antes.
+- **Evidencia automática de CoreProtect** *(opcional)*: si CoreProtect está instalado, cada reporte nuevo se adjunta un resumen de la actividad reciente de bloques del jugador reportado (ej. `3x break, 1x place (last 5m)`) — configurable en `coreprotect:` (`config.yml`), desactivable sin afectar el resto del plugin.
+- **Sanción vinculada al reporte**: cuando el staff sanciona desde el menú rápido, el tipo de sanción y su duración (ej. `BAN (7d)`) quedan grabados en el propio ticket, no solo como una nota de texto libre — auditable desde el detalle del reporte.
 - **Precisión de reportantes**: cada reportante acumula un % de precisión (reportes que terminaron en sanción vs. rechazados/falsos) visible en el detalle del ticket y vía `/reportadmin stats reporter <jugador>` — útil para dar más peso a reportantes confiables.
 - **Rendimiento de staff**: `/reportadmin stats staff <jugador>` muestra cuántos reportes ha resuelto cada miembro del staff y su tiempo promedio de reclamo a resolución, para evaluar carga y actividad del equipo.
 
@@ -164,6 +169,7 @@ Todas opcionales — si el plugin no está presente, la función simplemente se 
 
 - **PlaceholderAPI** — `%bookreports_pending_count%`, `%bookreports_my_cooldown%`, `%bookreports_target_report_count%`
 - **LiteBans / AdvancedBan / EssentialsX** — sanciones con un clic desde el panel de staff (en ese orden de preferencia si hay más de uno instalado)
+- **CoreProtect** — adjunta automáticamente actividad reciente de bloques del jugador reportado como evidencia
 - **Discord** — webhook que avisa al staff offline al crearse un reporte de alta prioridad, y de nuevo cuando se resuelve
 - **Velocity / BungeeCord** — panel de staff unificado en toda la red sobre MySQL compartido
 - **LuckPerms / Vault** — permisos estándar

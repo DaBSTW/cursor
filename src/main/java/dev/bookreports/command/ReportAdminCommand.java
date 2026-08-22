@@ -2,6 +2,7 @@ package dev.bookreports.command;
 
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
+import dev.bookreports.gui.AnvilInputGUI;
 import dev.bookreports.gui.ReportDetailView;
 import dev.bookreports.gui.ReportQueueView;
 import dev.bookreports.integration.punishment.PunishmentBridge;
@@ -39,10 +40,11 @@ public final class ReportAdminCommand implements CommandExecutor {
     private final StaffNotificationService notifications;
     private final Optional<PunishmentBridge> punishmentBridge;
     private final Executor executor;
+    private final AnvilInputGUI anvilInputGUI;
 
     public ReportAdminCommand(Plugin plugin, LocaleManager locale, ReportService reportService, ReportDao reportDao,
             Supplier<BookReportsConfig> config, StaffNotificationService notifications,
-            Optional<PunishmentBridge> punishmentBridge, Executor executor) {
+            Optional<PunishmentBridge> punishmentBridge, Executor executor, AnvilInputGUI anvilInputGUI) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.reportService = Objects.requireNonNull(reportService, "reportService");
@@ -51,6 +53,7 @@ public final class ReportAdminCommand implements CommandExecutor {
         this.notifications = Objects.requireNonNull(notifications, "notifications");
         this.punishmentBridge = Objects.requireNonNull(punishmentBridge, "punishmentBridge");
         this.executor = Objects.requireNonNull(executor, "executor");
+        this.anvilInputGUI = Objects.requireNonNull(anvilInputGUI, "anvilInputGUI");
     }
 
     @Override
@@ -91,11 +94,12 @@ public final class ReportAdminCommand implements CommandExecutor {
 
     private void openQueue(Player player) {
         ReportQueueView[] queueRef = new ReportQueueView[1];
-        ReportQueueView queue = new ReportQueueView(plugin, player, reportDao, config, locale, executor, report -> {
-            ReportDetailView detail = new ReportDetailView(plugin, player, locale, reportService, punishmentBridge,
-                    config, report, () -> queueRef[0].open(0));
-            detail.open();
-        });
+        ReportQueueView queue = new ReportQueueView(plugin, player, reportDao, config, locale, executor, anvilInputGUI,
+                report -> {
+                    ReportDetailView detail = new ReportDetailView(plugin, player, locale, reportService,
+                            punishmentBridge, config, report, () -> queueRef[0].open(0));
+                    detail.open();
+                });
         queueRef[0] = queue;
         queue.open(0);
     }
