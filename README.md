@@ -106,7 +106,7 @@ storage:
 
 Añadir una categoría nueva es añadir una entrada al YAML y ejecutar `/reportsreload`. El libro se regenera solo.
 
-**Idiomas incluidos:** `es_ES`, `en_US`. Todos los textos usan [MiniMessage](https://docs.advntr.dev/minimessage/format.html), así que puedes reescribirlos por completo desde `locale/`.
+**Idiomas incluidos:** `en_US`, `es_ES`, `pt_BR`, `de_DE`, `fr_FR`, `ru_RU`, `zh_CN`. Todos los textos usan [MiniMessage](https://docs.advntr.dev/minimessage/format.html), así que puedes reescribirlos por completo desde `locale/`, o añadir tu propio idioma con un archivo `locale/<código>.yml` nuevo.
 
 ---
 

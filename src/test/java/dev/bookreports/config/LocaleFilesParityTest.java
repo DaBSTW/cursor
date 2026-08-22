@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,18 +15,22 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
 /**
- * Both bundled locales must expose exactly the same keys, or a language switch would silently fall back to raw keys for
+ * Every bundled locale must expose exactly the same keys, or a language switch would silently fall back to raw keys for
  * whatever is missing.
  */
 class LocaleFilesParityTest {
 
-    @Test
-    void esAndEnDeclareTheSameKeys() throws IOException {
-        Set<String> spanish = keysOf("/locale/es_ES.yml");
-        Set<String> english = keysOf("/locale/en_US.yml");
+    private static final List<String> BUNDLED_LOCALES = List.of("es_ES", "en_US", "pt_BR", "de_DE", "fr_FR", "ru_RU",
+            "zh_CN");
 
-        assertFalse(spanish.isEmpty());
-        assertEquals(spanish, english);
+    @Test
+    void everyBundledLocaleDeclaresTheSameKeys() throws IOException {
+        Set<String> baseline = keysOf("/locale/" + BUNDLED_LOCALES.get(0) + ".yml");
+        assertFalse(baseline.isEmpty());
+
+        for (String locale : BUNDLED_LOCALES) {
+            assertEquals(baseline, keysOf("/locale/" + locale + ".yml"), "Key mismatch in locale: " + locale);
+        }
     }
 
     private Set<String> keysOf(String resource) throws IOException {

@@ -39,7 +39,8 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
 - Anonymous bStats usage metrics, toggleable via `metrics.enabled`.
 - Folia and Bukkit scheduler support via a single `SchedulerAdapter`
   abstraction.
-- `es_ES` and `en_US` locales, fully externalized via MiniMessage.
+- Seven bundled locales (`en_US`, `es_ES`, `pt_BR`, `de_DE`, `fr_FR`, `ru_RU`,
+  `zh_CN`), fully externalized via MiniMessage.
 
 ### Fixed
 - The plugin failed to enable on Paper 26.x with

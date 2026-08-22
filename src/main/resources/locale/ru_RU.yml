@@ -1,0 +1,130 @@
+locale:
+  name: "Русский"
+
+report:
+  cooldown-active: "<red>Вы должны подождать <yellow><cooldown></yellow> перед повторной жалобой.</red>"
+  daily-limit-reached: "<red>Вы достигли дневного лимита в <limit> жалоб.</red>"
+  self-report-blocked: "<red>Вы не можете пожаловаться на самого себя.</red>"
+  target-offline: "<red>Этот игрок не в сети.</red>"
+  target-not-found: "<red>Не удалось найти игрока '<player>'.</red>"
+  duplicate-pending: "<red>У вас уже есть открытая жалоба на <player> (тикет #<ticket_id>).</red>"
+  submitted: "<green>✅ Жалоба #<ticket_id> отправлена. Спасибо.</green>"
+  cancelled: "<gray>Жалоба отменена.</gray>"
+  book-title: "Пожаловаться на игрока"
+  rate-limited: "<red>Вы открываете книгу слишком быстро, подождите немного.</red>"
+  resolved: "<gray>Ваша жалоба #<ticket_id> была рассмотрена администрацией.</gray>"
+  tool-name: "<yellow>Пожаловаться на игрока</yellow>"
+  tool-disabled: "<red>Предмет для жалоб отключён на этом сервере.</red>"
+
+session:
+  invalid: "<red>Эта страница больше не действительна, используйте /report снова.</red>"
+  owner-mismatch: "<red>Эта сессия вам не принадлежит.</red>"
+  expired: "<red>Срок вашей сессии жалобы истёк, используйте /report снова.</red>"
+
+book:
+  page:
+    target-confirm:
+      title: "<gold>Вы собираетесь пожаловаться на:</gold>"
+      subtitle: "<white><player></white>"
+      continue: "<green>[ Продолжить ]</green>"
+      cancel: "<red>[ Отмена ]</red>"
+    category:
+      title: "<gold>Категория</gold>"
+    subreason:
+      title: "<gold>Подкатегория</gold>"
+    evidence:
+      title: "<gold>Подробности?</gold>"
+      add: "<yellow>[ Добавить ]</yellow>"
+      skip: "<gray>[ Пропустить ]</gray>"
+    summary:
+      title: "<gold>Сводка</gold>"
+      target: "<white>Игрок: <player></white>"
+      category: "<white>Категория: <category></white>"
+      subreason: "<white>Подкатегория: <sub_reason></white>"
+      evidence: "<white>Доказательства: <evidence></white>"
+      confirm: "<green>[ ✔ Отправить жалобу ]</green>"
+      confirm-disabled: "<gray>[ ✔ Отправить жалобу ] (подождите <cooldown>)</gray>"
+      cancel: "<red>[ ✘ Отмена ]</red>"
+    result:
+      title: "<green>✅ Жалоба отправлена</green>"
+      ticket: "<white>Тикет: #<ticket_id></white>"
+      close: "<gray>[ Закрыть ]</gray>"
+  select-target:
+    title: "<gold>На кого вы хотите пожаловаться?</gold>"
+    empty: "<gray>Нет доступных игроков для жалобы.</gray>"
+    entry: "<white><player></white>"
+
+evidence:
+  prompt: "Введите подробности здесь"
+  too-long: "<red>Подробности не могут превышать <max> символов.</red>"
+
+staff:
+  notify:
+    high-priority: "<red>⚠ Новая жалоба с высоким приоритетом: <player> — <category></red>"
+    view: "<yellow>[ Просмотреть ]</yellow>"
+    teleport: "<aqua>[ Телепорт ]</aqua>"
+  claim:
+    success: "<green>Вы взяли в работу жалобу #<ticket_id>.</green>"
+    already-claimed: "<red>Эта жалоба уже взята в работу игроком <reviewer>.</red>"
+  resolve:
+    success: "<green>Жалоба #<ticket_id> закрыта: <resolution>.</green>"
+    already-resolved: "<red>Эта жалоба уже была закрыта другим сотрудником.</red>"
+  mark-false:
+    success: "<green>Жалоба #<ticket_id> помечена как ложная.</green>"
+  notifications:
+    enabled: "<green>Уведомления о жалобах включены.</green>"
+    disabled: "<gray>Уведомления о жалобах отключены.</gray>"
+  queue:
+    title: "Очередь жалоб"
+    filter: "<yellow>Фильтр: <white><status></white></yellow>"
+    lore:
+      category: "<gray>Категория: <white><category></white></gray>"
+      priority: "<gray>Приоритет: <white><priority></white></gray>"
+      reporter: "<gray>Пожаловался: <white><player></white></gray>"
+      reporters-count: "<yellow><count> недавних жалоб в этой категории</yellow>"
+  detail:
+    title: "Жалоба #<ticket_id>"
+    target: "<gray>Нарушитель: <white><player></white></gray>"
+    reporter: "<gray>Заявитель: <white><player></white></gray>"
+    category: "<gray>Категория: <white><category></white></gray>"
+    status: "<gray>Статус: <white><status></white></gray>"
+    evidence: "<gray>Доказательства: <white><evidence></white></gray>"
+    reporter-accuracy: "<yellow>Точность заявителя: <white><accuracy>%</white> (<total> жалоб)</yellow>"
+    chat-context: "<gray>Недавний чат: <white><context></white></gray>"
+    claim: "<green>[ Взять в работу ]</green>"
+    claimed-by: "<gray>В работе у: <white><player></white></gray>"
+    unclaimed: "<gray>Не взято в работу</gray>"
+    teleport: "<aqua>[ Телепорт ]</aqua>"
+    history: "<gray>[ Смотреть историю ]</gray>"
+    resolve-sanction: "<green>[ Решить: Наказать ]</green>"
+    resolve-reject: "<red>[ Решить: Отклонить ]</red>"
+    mark-false: "<dark_red>[ Пометить как ложную ]</dark_red>"
+    back: "<gray>[ Назад ]</gray>"
+  resolve-menu:
+    title: "Причина решения"
+    no-evidence: "<white>Недостаточно доказательств</white>"
+    not-infraction: "<white>Не является нарушением</white>"
+    duplicate: "<white>Дубликат</white>"
+    banned: "<white>Наказан</white>"
+  sanction-menu:
+    title: "Выберите наказание"
+    kick: "<yellow>[ Кикнуть ]</yellow>"
+    mute: "<gold>[ Замутить ]</gold>"
+    ban: "<red>[ Забанить ]</red>"
+  history:
+    title: "История игрока <player>"
+    empty: "<gray>Предыдущих жалоб нет.</gray>"
+  stats:
+    reporter: "<yellow><player>: <white><accuracy>%</white> точности (<actioned> с наказанием, <rejected> отклонено, <total> всего)</yellow>"
+    staff: "<yellow><player>: <white><resolved></white> закрыто, в среднем <white><avg_minutes> мин.</white> от взятия в работу до решения</yellow>"
+
+command:
+  reload-success: "<green>Конфигурация и переводы перезагружены.</green>"
+  reload-failed: "<red>Ошибка перезагрузки: <reason></red>"
+  no-permission: "<red>У вас нет прав для использования этой команды.</red>"
+  player-only: "<red>Эту команду можно использовать только в игре.</red>"
+  unknown-player: "<red>Не удалось найти игрока '<player>'.</red>"
+  usage: "<gray>Использование: <usage></gray>"
+
+error:
+  generic: "<red>Произошла непредвиденная ошибка. Свяжитесь с администратором.</red>"

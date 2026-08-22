@@ -76,6 +76,8 @@ placeholderapi: true
 metrics:
   enabled: true
 
+# Bundled: en_US, es_ES, pt_BR, de_DE, fr_FR, ru_RU, zh_CN. Drop your own
+# locale/<code>.yml in the plugin's data folder to add another or override one.
 locale: en_US
 debug: false
 

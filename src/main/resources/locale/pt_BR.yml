@@ -1,0 +1,130 @@
+locale:
+  name: "Português (Brasil)"
+
+report:
+  cooldown-active: "<red>Você deve esperar <yellow><cooldown></yellow> antes de reportar novamente.</red>"
+  daily-limit-reached: "<red>Você atingiu seu limite diário de <limit> reportes.</red>"
+  self-report-blocked: "<red>Você não pode reportar a si mesmo.</red>"
+  target-offline: "<red>Esse jogador não está online.</red>"
+  target-not-found: "<red>Não foi possível encontrar o jogador '<player>'.</red>"
+  duplicate-pending: "<red>Você já tem um reporte pendente contra <player> (ticket #<ticket_id>).</red>"
+  submitted: "<green>✅ Reporte #<ticket_id> enviado. Obrigado.</green>"
+  cancelled: "<gray>Reporte cancelado.</gray>"
+  book-title: "Reportar jogador"
+  rate-limited: "<red>Você está abrindo o livro rápido demais, espere um momento.</red>"
+  resolved: "<gray>Seu reporte #<ticket_id> foi analisado pela equipe.</gray>"
+  tool-name: "<yellow>Reportar Jogador</yellow>"
+  tool-disabled: "<red>O item de reporte não está habilitado neste servidor.</red>"
+
+session:
+  invalid: "<red>Esta página não é mais válida, use /report novamente.</red>"
+  owner-mismatch: "<red>Esta sessão não pertence a você.</red>"
+  expired: "<red>Sua sessão de reporte expirou, use /report novamente.</red>"
+
+book:
+  page:
+    target-confirm:
+      title: "<gold>Você está prestes a reportar:</gold>"
+      subtitle: "<white><player></white>"
+      continue: "<green>[ Continuar ]</green>"
+      cancel: "<red>[ Cancelar ]</red>"
+    category:
+      title: "<gold>Categoria</gold>"
+    subreason:
+      title: "<gold>Sub-motivo</gold>"
+    evidence:
+      title: "<gold>Detalhes?</gold>"
+      add: "<yellow>[ Adicionar ]</yellow>"
+      skip: "<gray>[ Pular ]</gray>"
+    summary:
+      title: "<gold>Resumo</gold>"
+      target: "<white>Jogador: <player></white>"
+      category: "<white>Categoria: <category></white>"
+      subreason: "<white>Sub-motivo: <sub_reason></white>"
+      evidence: "<white>Evidência: <evidence></white>"
+      confirm: "<green>[ ✔ Enviar reporte ]</green>"
+      confirm-disabled: "<gray>[ ✔ Enviar reporte ] (espere <cooldown>)</gray>"
+      cancel: "<red>[ ✘ Cancelar ]</red>"
+    result:
+      title: "<green>✅ Reporte enviado</green>"
+      ticket: "<white>Ticket: #<ticket_id></white>"
+      close: "<gray>[ Fechar ]</gray>"
+  select-target:
+    title: "<gold>Quem você quer reportar?</gold>"
+    empty: "<gray>Nenhum jogador disponível para reportar.</gray>"
+    entry: "<white><player></white>"
+
+evidence:
+  prompt: "Digite os detalhes aqui"
+  too-long: "<red>Os detalhes não podem exceder <max> caracteres.</red>"
+
+staff:
+  notify:
+    high-priority: "<red>⚠ Novo reporte de alta prioridade: <player> — <category></red>"
+    view: "<yellow>[ Ver ]</yellow>"
+    teleport: "<aqua>[ Teleportar ]</aqua>"
+  claim:
+    success: "<green>Você reclamou o reporte #<ticket_id>.</green>"
+    already-claimed: "<red>Este reporte já foi reclamado por <reviewer>.</red>"
+  resolve:
+    success: "<green>Reporte #<ticket_id> resolvido: <resolution>.</green>"
+    already-resolved: "<red>Este reporte já foi resolvido por outro membro da equipe.</red>"
+  mark-false:
+    success: "<green>Reporte #<ticket_id> marcado como falso.</green>"
+  notifications:
+    enabled: "<green>Notificações de reportes ativadas.</green>"
+    disabled: "<gray>Notificações de reportes desativadas.</gray>"
+  queue:
+    title: "Fila de reportes"
+    filter: "<yellow>Filtro: <white><status></white></yellow>"
+    lore:
+      category: "<gray>Categoria: <white><category></white></gray>"
+      priority: "<gray>Prioridade: <white><priority></white></gray>"
+      reporter: "<gray>Reportado por: <white><player></white></gray>"
+      reporters-count: "<yellow><count> reportes recentes nesta categoria</yellow>"
+  detail:
+    title: "Reporte #<ticket_id>"
+    target: "<gray>Reportado: <white><player></white></gray>"
+    reporter: "<gray>Reportante: <white><player></white></gray>"
+    category: "<gray>Categoria: <white><category></white></gray>"
+    status: "<gray>Status: <white><status></white></gray>"
+    evidence: "<gray>Evidência: <white><evidence></white></gray>"
+    reporter-accuracy: "<yellow>Precisão do reportante: <white><accuracy>%</white> (<total> reportes)</yellow>"
+    chat-context: "<gray>Chat recente: <white><context></white></gray>"
+    claim: "<green>[ Reclamar ]</green>"
+    claimed-by: "<gray>Reclamado por: <white><player></white></gray>"
+    unclaimed: "<gray>Não reclamado</gray>"
+    teleport: "<aqua>[ Teleportar ]</aqua>"
+    history: "<gray>[ Ver histórico ]</gray>"
+    resolve-sanction: "<green>[ Resolver: Sancionar ]</green>"
+    resolve-reject: "<red>[ Resolver: Rejeitar ]</red>"
+    mark-false: "<dark_red>[ Marcar como falso ]</dark_red>"
+    back: "<gray>[ Voltar ]</gray>"
+  resolve-menu:
+    title: "Motivo da resolução"
+    no-evidence: "<white>Evidência insuficiente</white>"
+    not-infraction: "<white>Não é uma infração</white>"
+    duplicate: "<white>Duplicado</white>"
+    banned: "<white>Sancionado</white>"
+  sanction-menu:
+    title: "Escolha uma sanção"
+    kick: "<yellow>[ Expulsar ]</yellow>"
+    mute: "<gold>[ Silenciar ]</gold>"
+    ban: "<red>[ Banir ]</red>"
+  history:
+    title: "Histórico de <player>"
+    empty: "<gray>Nenhum reporte anterior.</gray>"
+  stats:
+    reporter: "<yellow><player>: <white><accuracy>%</white> de precisão (<actioned> aplicados, <rejected> rejeitados, <total> total)</yellow>"
+    staff: "<yellow><player>: <white><resolved></white> resolvidos, média de <white><avg_minutes> min</white> entre reclamar e resolver</yellow>"
+
+command:
+  reload-success: "<green>Configuração e traduções recarregadas.</green>"
+  reload-failed: "<red>Falha ao recarregar: <reason></red>"
+  no-permission: "<red>Você não tem permissão para usar este comando.</red>"
+  player-only: "<red>Este comando só pode ser usado dentro do jogo.</red>"
+  unknown-player: "<red>Não foi possível encontrar o jogador '<player>'.</red>"
+  usage: "<gray>Uso: <usage></gray>"
+
+error:
+  generic: "<red>Ocorreu um erro inesperado. Contate um administrador.</red>"

@@ -1,0 +1,130 @@
+locale:
+  name: "Français"
+
+report:
+  cooldown-active: "<red>Vous devez attendre <yellow><cooldown></yellow> avant de signaler à nouveau.</red>"
+  daily-limit-reached: "<red>Vous avez atteint votre limite quotidienne de <limit> signalements.</red>"
+  self-report-blocked: "<red>Vous ne pouvez pas vous signaler vous-même.</red>"
+  target-offline: "<red>Ce joueur n'est pas en ligne.</red>"
+  target-not-found: "<red>Impossible de trouver le joueur '<player>'.</red>"
+  duplicate-pending: "<red>Vous avez déjà un signalement en attente contre <player> (ticket #<ticket_id>).</red>"
+  submitted: "<green>✅ Signalement #<ticket_id> envoyé. Merci.</green>"
+  cancelled: "<gray>Signalement annulé.</gray>"
+  book-title: "Signaler un joueur"
+  rate-limited: "<red>Vous ouvrez le livre trop vite, attendez un instant.</red>"
+  resolved: "<gray>Votre signalement #<ticket_id> a été examiné par l'équipe.</gray>"
+  tool-name: "<yellow>Signaler un joueur</yellow>"
+  tool-disabled: "<red>L'objet de signalement n'est pas activé sur ce serveur.</red>"
+
+session:
+  invalid: "<red>Cette page n'est plus valide, utilisez /report à nouveau.</red>"
+  owner-mismatch: "<red>Cette session ne vous appartient pas.</red>"
+  expired: "<red>Votre session de signalement a expiré, utilisez /report à nouveau.</red>"
+
+book:
+  page:
+    target-confirm:
+      title: "<gold>Vous êtes sur le point de signaler :</gold>"
+      subtitle: "<white><player></white>"
+      continue: "<green>[ Continuer ]</green>"
+      cancel: "<red>[ Annuler ]</red>"
+    category:
+      title: "<gold>Catégorie</gold>"
+    subreason:
+      title: "<gold>Sous-motif</gold>"
+    evidence:
+      title: "<gold>Détails ?</gold>"
+      add: "<yellow>[ Ajouter ]</yellow>"
+      skip: "<gray>[ Passer ]</gray>"
+    summary:
+      title: "<gold>Résumé</gold>"
+      target: "<white>Joueur : <player></white>"
+      category: "<white>Catégorie : <category></white>"
+      subreason: "<white>Sous-motif : <sub_reason></white>"
+      evidence: "<white>Preuve : <evidence></white>"
+      confirm: "<green>[ ✔ Envoyer le signalement ]</green>"
+      confirm-disabled: "<gray>[ ✔ Envoyer le signalement ] (attendre <cooldown>)</gray>"
+      cancel: "<red>[ ✘ Annuler ]</red>"
+    result:
+      title: "<green>✅ Signalement envoyé</green>"
+      ticket: "<white>Ticket : #<ticket_id></white>"
+      close: "<gray>[ Fermer ]</gray>"
+  select-target:
+    title: "<gold>Qui voulez-vous signaler ?</gold>"
+    empty: "<gray>Aucun joueur disponible à signaler.</gray>"
+    entry: "<white><player></white>"
+
+evidence:
+  prompt: "Tapez les détails ici"
+  too-long: "<red>Les détails ne peuvent pas dépasser <max> caractères.</red>"
+
+staff:
+  notify:
+    high-priority: "<red>⚠ Nouveau signalement de haute priorité : <player> — <category></red>"
+    view: "<yellow>[ Voir ]</yellow>"
+    teleport: "<aqua>[ Téléporter ]</aqua>"
+  claim:
+    success: "<green>Vous avez pris en charge le signalement #<ticket_id>.</green>"
+    already-claimed: "<red>Ce signalement a déjà été pris en charge par <reviewer>.</red>"
+  resolve:
+    success: "<green>Signalement #<ticket_id> résolu : <resolution>.</green>"
+    already-resolved: "<red>Ce signalement a déjà été résolu par un autre membre de l'équipe.</red>"
+  mark-false:
+    success: "<green>Signalement #<ticket_id> marqué comme faux.</green>"
+  notifications:
+    enabled: "<green>Notifications de signalement activées.</green>"
+    disabled: "<gray>Notifications de signalement désactivées.</gray>"
+  queue:
+    title: "File des signalements"
+    filter: "<yellow>Filtre : <white><status></white></yellow>"
+    lore:
+      category: "<gray>Catégorie : <white><category></white></gray>"
+      priority: "<gray>Priorité : <white><priority></white></gray>"
+      reporter: "<gray>Signalé par : <white><player></white></gray>"
+      reporters-count: "<yellow><count> signalements récents dans cette catégorie</yellow>"
+  detail:
+    title: "Signalement #<ticket_id>"
+    target: "<gray>Signalé : <white><player></white></gray>"
+    reporter: "<gray>Signaleur : <white><player></white></gray>"
+    category: "<gray>Catégorie : <white><category></white></gray>"
+    status: "<gray>Statut : <white><status></white></gray>"
+    evidence: "<gray>Preuve : <white><evidence></white></gray>"
+    reporter-accuracy: "<yellow>Fiabilité du signaleur : <white><accuracy>%</white> (<total> signalements)</yellow>"
+    chat-context: "<gray>Chat récent : <white><context></white></gray>"
+    claim: "<green>[ Prendre en charge ]</green>"
+    claimed-by: "<gray>Pris en charge par : <white><player></white></gray>"
+    unclaimed: "<gray>Non pris en charge</gray>"
+    teleport: "<aqua>[ Téléporter ]</aqua>"
+    history: "<gray>[ Voir l'historique ]</gray>"
+    resolve-sanction: "<green>[ Résoudre : Sanctionner ]</green>"
+    resolve-reject: "<red>[ Résoudre : Rejeter ]</red>"
+    mark-false: "<dark_red>[ Marquer comme faux ]</dark_red>"
+    back: "<gray>[ Retour ]</gray>"
+  resolve-menu:
+    title: "Motif de résolution"
+    no-evidence: "<white>Preuves insuffisantes</white>"
+    not-infraction: "<white>Pas une infraction</white>"
+    duplicate: "<white>Doublon</white>"
+    banned: "<white>Sanctionné</white>"
+  sanction-menu:
+    title: "Choisir une sanction"
+    kick: "<yellow>[ Expulser ]</yellow>"
+    mute: "<gold>[ Rendre muet ]</gold>"
+    ban: "<red>[ Bannir ]</red>"
+  history:
+    title: "Historique de <player>"
+    empty: "<gray>Aucun signalement précédent.</gray>"
+  stats:
+    reporter: "<yellow><player> : <white><accuracy>%</white> de fiabilité (<actioned> sanctionnés, <rejected> rejetés, <total> au total)</yellow>"
+    staff: "<yellow><player> : <white><resolved></white> résolus, moyenne de <white><avg_minutes> min</white> entre prise en charge et résolution</yellow>"
+
+command:
+  reload-success: "<green>Configuration et traductions rechargées.</green>"
+  reload-failed: "<red>Échec du rechargement : <reason></red>"
+  no-permission: "<red>Vous n'avez pas la permission d'utiliser cette commande.</red>"
+  player-only: "<red>Cette commande ne peut être utilisée qu'en jeu.</red>"
+  unknown-player: "<red>Impossible de trouver le joueur '<player>'.</red>"
+  usage: "<gray>Utilisation : <usage></gray>"
+
+error:
+  generic: "<red>Une erreur inattendue s'est produite. Contactez un administrateur.</red>"

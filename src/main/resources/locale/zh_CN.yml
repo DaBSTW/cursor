@@ -1,0 +1,130 @@
+locale:
+  name: "简体中文"
+
+report:
+  cooldown-active: "<red>再次举报前请等待 <yellow><cooldown></yellow>。</red>"
+  daily-limit-reached: "<red>你已达到每日 <limit> 次举报的上限。</red>"
+  self-report-blocked: "<red>你不能举报自己。</red>"
+  target-offline: "<red>该玩家不在线。</red>"
+  target-not-found: "<red>找不到玩家 '<player>'。</red>"
+  duplicate-pending: "<red>你已经有一个针对 <player> 的待处理举报（工单 #<ticket_id>）。</red>"
+  submitted: "<green>✅ 举报 #<ticket_id> 已提交，谢谢。</green>"
+  cancelled: "<gray>举报已取消。</gray>"
+  book-title: "举报玩家"
+  rate-limited: "<red>你打开书本的速度太快了，请稍等片刻。</red>"
+  resolved: "<gray>你的举报 #<ticket_id> 已由管理团队处理。</gray>"
+  tool-name: "<yellow>举报玩家</yellow>"
+  tool-disabled: "<red>此服务器未启用举报道具。</red>"
+
+session:
+  invalid: "<red>此页面已失效，请重新使用 /report。</red>"
+  owner-mismatch: "<red>此会话不属于你。</red>"
+  expired: "<red>你的举报会话已过期，请重新使用 /report。</red>"
+
+book:
+  page:
+    target-confirm:
+      title: "<gold>你即将举报：</gold>"
+      subtitle: "<white><player></white>"
+      continue: "<green>[ 继续 ]</green>"
+      cancel: "<red>[ 取消 ]</red>"
+    category:
+      title: "<gold>类别</gold>"
+    subreason:
+      title: "<gold>子原因</gold>"
+    evidence:
+      title: "<gold>详细信息？</gold>"
+      add: "<yellow>[ 添加 ]</yellow>"
+      skip: "<gray>[ 跳过 ]</gray>"
+    summary:
+      title: "<gold>摘要</gold>"
+      target: "<white>玩家：<player></white>"
+      category: "<white>类别：<category></white>"
+      subreason: "<white>子原因：<sub_reason></white>"
+      evidence: "<white>证据：<evidence></white>"
+      confirm: "<green>[ ✔ 提交举报 ]</green>"
+      confirm-disabled: "<gray>[ ✔ 提交举报 ]（等待 <cooldown>）</gray>"
+      cancel: "<red>[ ✘ 取消 ]</red>"
+    result:
+      title: "<green>✅ 举报已提交</green>"
+      ticket: "<white>工单：#<ticket_id></white>"
+      close: "<gray>[ 关闭 ]</gray>"
+  select-target:
+    title: "<gold>你想举报谁？</gold>"
+    empty: "<gray>没有可举报的玩家。</gray>"
+    entry: "<white><player></white>"
+
+evidence:
+  prompt: "在此输入详细信息"
+  too-long: "<red>详细信息不能超过 <max> 个字符。</red>"
+
+staff:
+  notify:
+    high-priority: "<red>⚠ 新的高优先级举报：<player> — <category></red>"
+    view: "<yellow>[ 查看 ]</yellow>"
+    teleport: "<aqua>[ 传送 ]</aqua>"
+  claim:
+    success: "<green>你已认领举报 #<ticket_id>。</green>"
+    already-claimed: "<red>此举报已被 <reviewer> 认领。</red>"
+  resolve:
+    success: "<green>举报 #<ticket_id> 已处理：<resolution>。</green>"
+    already-resolved: "<red>此举报已被其他管理员处理。</red>"
+  mark-false:
+    success: "<green>举报 #<ticket_id> 已标记为虚假举报。</green>"
+  notifications:
+    enabled: "<green>举报通知已启用。</green>"
+    disabled: "<gray>举报通知已禁用。</gray>"
+  queue:
+    title: "举报队列"
+    filter: "<yellow>筛选：<white><status></white></yellow>"
+    lore:
+      category: "<gray>类别：<white><category></white></gray>"
+      priority: "<gray>优先级：<white><priority></white></gray>"
+      reporter: "<gray>举报人：<white><player></white></gray>"
+      reporters-count: "<yellow>该类别近期有 <count> 份举报</yellow>"
+  detail:
+    title: "举报 #<ticket_id>"
+    target: "<gray>被举报：<white><player></white></gray>"
+    reporter: "<gray>举报人：<white><player></white></gray>"
+    category: "<gray>类别：<white><category></white></gray>"
+    status: "<gray>状态：<white><status></white></gray>"
+    evidence: "<gray>证据：<white><evidence></white></gray>"
+    reporter-accuracy: "<yellow>举报人准确率：<white><accuracy>%</white>（共 <total> 次）</yellow>"
+    chat-context: "<gray>最近聊天：<white><context></white></gray>"
+    claim: "<green>[ 认领 ]</green>"
+    claimed-by: "<gray>认领人：<white><player></white></gray>"
+    unclaimed: "<gray>未认领</gray>"
+    teleport: "<aqua>[ 传送 ]</aqua>"
+    history: "<gray>[ 查看历史 ]</gray>"
+    resolve-sanction: "<green>[ 处理：制裁 ]</green>"
+    resolve-reject: "<red>[ 处理：驳回 ]</red>"
+    mark-false: "<dark_red>[ 标记为虚假 ]</dark_red>"
+    back: "<gray>[ 返回 ]</gray>"
+  resolve-menu:
+    title: "处理原因"
+    no-evidence: "<white>证据不足</white>"
+    not-infraction: "<white>不构成违规</white>"
+    duplicate: "<white>重复举报</white>"
+    banned: "<white>已制裁</white>"
+  sanction-menu:
+    title: "选择制裁方式"
+    kick: "<yellow>[ 踢出 ]</yellow>"
+    mute: "<gold>[ 禁言 ]</gold>"
+    ban: "<red>[ 封禁 ]</red>"
+  history:
+    title: "<player> 的历史记录"
+    empty: "<gray>没有以往的举报记录。</gray>"
+  stats:
+    reporter: "<yellow><player>：<white><accuracy>%</white> 准确率（<actioned> 次采纳，<rejected> 次驳回，共 <total> 次）</yellow>"
+    staff: "<yellow><player>：已处理 <white><resolved></white> 次，平均认领到处理耗时 <white><avg_minutes> 分钟</white></yellow>"
+
+command:
+  reload-success: "<green>配置和翻译已重新加载。</green>"
+  reload-failed: "<red>重新加载失败：<reason></red>"
+  no-permission: "<red>你没有权限使用此命令。</red>"
+  player-only: "<red>此命令只能在游戏中使用。</red>"
+  unknown-player: "<red>找不到玩家 '<player>'。</red>"
+  usage: "<gray>用法：<usage></gray>"
+
+error:
+  generic: "<red>发生了意外错误，请联系管理员。</red>"

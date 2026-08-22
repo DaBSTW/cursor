@@ -1,0 +1,130 @@
+locale:
+  name: "Deutsch"
+
+report:
+  cooldown-active: "<red>Du musst <yellow><cooldown></yellow> warten, bevor du erneut meldest.</red>"
+  daily-limit-reached: "<red>Du hast dein tägliches Limit von <limit> Meldungen erreicht.</red>"
+  self-report-blocked: "<red>Du kannst dich nicht selbst melden.</red>"
+  target-offline: "<red>Dieser Spieler ist nicht online.</red>"
+  target-not-found: "<red>Spieler '<player>' konnte nicht gefunden werden.</red>"
+  duplicate-pending: "<red>Du hast bereits eine offene Meldung gegen <player> (Ticket #<ticket_id>).</red>"
+  submitted: "<green>✅ Meldung #<ticket_id> gesendet. Danke.</green>"
+  cancelled: "<gray>Meldung abgebrochen.</gray>"
+  book-title: "Spieler melden"
+  rate-limited: "<red>Du öffnest das Buch zu schnell, warte einen Moment.</red>"
+  resolved: "<gray>Deine Meldung #<ticket_id> wurde vom Team bearbeitet.</gray>"
+  tool-name: "<yellow>Spieler melden</yellow>"
+  tool-disabled: "<red>Das Melde-Werkzeug ist auf diesem Server nicht aktiviert.</red>"
+
+session:
+  invalid: "<red>Diese Seite ist nicht mehr gültig, benutze erneut /report.</red>"
+  owner-mismatch: "<red>Diese Sitzung gehört dir nicht.</red>"
+  expired: "<red>Deine Melde-Sitzung ist abgelaufen, benutze erneut /report.</red>"
+
+book:
+  page:
+    target-confirm:
+      title: "<gold>Du bist dabei, zu melden:</gold>"
+      subtitle: "<white><player></white>"
+      continue: "<green>[ Weiter ]</green>"
+      cancel: "<red>[ Abbrechen ]</red>"
+    category:
+      title: "<gold>Kategorie</gold>"
+    subreason:
+      title: "<gold>Untergrund</gold>"
+    evidence:
+      title: "<gold>Details?</gold>"
+      add: "<yellow>[ Hinzufügen ]</yellow>"
+      skip: "<gray>[ Überspringen ]</gray>"
+    summary:
+      title: "<gold>Zusammenfassung</gold>"
+      target: "<white>Spieler: <player></white>"
+      category: "<white>Kategorie: <category></white>"
+      subreason: "<white>Untergrund: <sub_reason></white>"
+      evidence: "<white>Beweis: <evidence></white>"
+      confirm: "<green>[ ✔ Meldung senden ]</green>"
+      confirm-disabled: "<gray>[ ✔ Meldung senden ] (warte <cooldown>)</gray>"
+      cancel: "<red>[ ✘ Abbrechen ]</red>"
+    result:
+      title: "<green>✅ Meldung gesendet</green>"
+      ticket: "<white>Ticket: #<ticket_id></white>"
+      close: "<gray>[ Schließen ]</gray>"
+  select-target:
+    title: "<gold>Wen möchtest du melden?</gold>"
+    empty: "<gray>Keine Spieler zum Melden verfügbar.</gray>"
+    entry: "<white><player></white>"
+
+evidence:
+  prompt: "Gib hier die Details ein"
+  too-long: "<red>Details dürfen <max> Zeichen nicht überschreiten.</red>"
+
+staff:
+  notify:
+    high-priority: "<red>⚠ Neue Meldung mit hoher Priorität: <player> — <category></red>"
+    view: "<yellow>[ Ansehen ]</yellow>"
+    teleport: "<aqua>[ Teleportieren ]</aqua>"
+  claim:
+    success: "<green>Du hast Meldung #<ticket_id> übernommen.</green>"
+    already-claimed: "<red>Diese Meldung wurde bereits von <reviewer> übernommen.</red>"
+  resolve:
+    success: "<green>Meldung #<ticket_id> abgeschlossen: <resolution>.</green>"
+    already-resolved: "<red>Diese Meldung wurde bereits von einem anderen Teammitglied abgeschlossen.</red>"
+  mark-false:
+    success: "<green>Meldung #<ticket_id> als falsch markiert.</green>"
+  notifications:
+    enabled: "<green>Meldungsbenachrichtigungen aktiviert.</green>"
+    disabled: "<gray>Meldungsbenachrichtigungen deaktiviert.</gray>"
+  queue:
+    title: "Meldungswarteschlange"
+    filter: "<yellow>Filter: <white><status></white></yellow>"
+    lore:
+      category: "<gray>Kategorie: <white><category></white></gray>"
+      priority: "<gray>Priorität: <white><priority></white></gray>"
+      reporter: "<gray>Gemeldet von: <white><player></white></gray>"
+      reporters-count: "<yellow><count> aktuelle Meldungen in dieser Kategorie</yellow>"
+  detail:
+    title: "Meldung #<ticket_id>"
+    target: "<gray>Gemeldet: <white><player></white></gray>"
+    reporter: "<gray>Melder: <white><player></white></gray>"
+    category: "<gray>Kategorie: <white><category></white></gray>"
+    status: "<gray>Status: <white><status></white></gray>"
+    evidence: "<gray>Beweis: <white><evidence></white></gray>"
+    reporter-accuracy: "<yellow>Trefferquote des Melders: <white><accuracy>%</white> (<total> Meldungen)</yellow>"
+    chat-context: "<gray>Letzter Chat: <white><context></white></gray>"
+    claim: "<green>[ Übernehmen ]</green>"
+    claimed-by: "<gray>Übernommen von: <white><player></white></gray>"
+    unclaimed: "<gray>Nicht übernommen</gray>"
+    teleport: "<aqua>[ Teleportieren ]</aqua>"
+    history: "<gray>[ Verlauf ansehen ]</gray>"
+    resolve-sanction: "<green>[ Abschließen: Sanktionieren ]</green>"
+    resolve-reject: "<red>[ Abschließen: Ablehnen ]</red>"
+    mark-false: "<dark_red>[ Als falsch markieren ]</dark_red>"
+    back: "<gray>[ Zurück ]</gray>"
+  resolve-menu:
+    title: "Grund für den Abschluss"
+    no-evidence: "<white>Nicht genug Beweise</white>"
+    not-infraction: "<white>Kein Verstoß</white>"
+    duplicate: "<white>Duplikat</white>"
+    banned: "<white>Sanktioniert</white>"
+  sanction-menu:
+    title: "Sanktion wählen"
+    kick: "<yellow>[ Kicken ]</yellow>"
+    mute: "<gold>[ Stummschalten ]</gold>"
+    ban: "<red>[ Bannen ]</red>"
+  history:
+    title: "Verlauf für <player>"
+    empty: "<gray>Keine vorherigen Meldungen.</gray>"
+  stats:
+    reporter: "<yellow><player>: <white><accuracy>%</white> Trefferquote (<actioned> sanktioniert, <rejected> abgelehnt, <total> gesamt)</yellow>"
+    staff: "<yellow><player>: <white><resolved></white> abgeschlossen, im Schnitt <white><avg_minutes> Min.</white> bis zur Lösung</yellow>"
+
+command:
+  reload-success: "<green>Konfiguration und Übersetzungen neu geladen.</green>"
+  reload-failed: "<red>Neuladen fehlgeschlagen: <reason></red>"
+  no-permission: "<red>Du hast keine Berechtigung für diesen Befehl.</red>"
+  player-only: "<red>Dieser Befehl kann nur im Spiel verwendet werden.</red>"
+  unknown-player: "<red>Spieler '<player>' konnte nicht gefunden werden.</red>"
+  usage: "<gray>Verwendung: <usage></gray>"
+
+error:
+  generic: "<red>Ein unerwarteter Fehler ist aufgetreten. Kontaktiere einen Administrator.</red>"
