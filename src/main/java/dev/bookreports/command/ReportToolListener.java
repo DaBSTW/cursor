@@ -46,7 +46,7 @@ public final class ReportToolListener implements Listener {
         }
         event.setCancelled(true);
 
-        // Same opt-in kill switch as /report — see ReportCommand.
+        // Same lock as /report — see ReportCommand.
         if (updateChecker.serviceLocked() && !player.hasPermission("bookreports.admin")) {
             player.sendMessage(locale.get("report.service-unavailable"));
             return;

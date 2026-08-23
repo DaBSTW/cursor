@@ -127,23 +127,20 @@ class UpdateCheckerTest {
     }
 
     @Test
-    void serviceLockedIsFalseWhenTheLockSettingIsOffEvenWithAnUpdateAvailable() {
-        UpdateChecker checker = newChecker(TestConfigs.withLockWhenOutdated(false), "1.0.0");
+    void serviceLockedIsFalseUntilAnUpdateIsKnown() {
+        UpdateChecker checker = newChecker(TestConfigs.withUpdateChecker(true, "DaBSTW/cursor"), "1.0.0");
 
-        checker.applyCheckResult("1.1.0", null);
-
-        assertTrue(checker.updateAvailable());
         assertFalse(checker.serviceLocked());
     }
 
     @Test
-    void serviceLockedIsTrueOnlyWhenBothTheLockSettingIsOnAndAnUpdateIsAvailable() {
-        UpdateChecker checker = newChecker(TestConfigs.withLockWhenOutdated(true), "1.0.0");
-
-        assertFalse(checker.serviceLocked(), "no update known yet");
+    void serviceLockedIsUnconditionalOnceANewerVersionIsKnown() {
+        // The lock is not a separate toggle — it always mirrors updateAvailable().
+        UpdateChecker checker = newChecker(TestConfigs.withUpdateChecker(true, "DaBSTW/cursor"), "1.0.0");
 
         checker.applyCheckResult("1.1.0", null);
 
+        assertTrue(checker.updateAvailable());
         assertTrue(checker.serviceLocked());
     }
 

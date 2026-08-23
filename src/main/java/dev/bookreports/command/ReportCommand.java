@@ -59,8 +59,8 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(locale.get("command.player-only"));
             return true;
         }
-        // Opt-in kill switch (update-checker.lock-when-outdated, off by default) — see UpdateCheckerSettings.
-        // Admins are exempt: they're the ones who need /reportadmin update to still work.
+        // Unconditional while a newer version is known to exist — see UpdateCheckerSettings. Admins are
+        // exempt: they're the ones who need /reportadmin update to still work.
         if (updateChecker.serviceLocked() && !player.hasPermission("bookreports.admin")) {
             player.sendMessage(locale.get("report.service-unavailable"));
             return true;

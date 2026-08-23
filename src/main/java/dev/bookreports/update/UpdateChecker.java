@@ -129,12 +129,14 @@ public final class UpdateChecker {
     }
 
     /**
-     * {@code true} when {@code update-checker.lock-when-outdated} is on AND a newer version is known to exist — the
-     * signal {@code ReportCommand}/{@code ReportToolListener} gate the player-facing flow on. Off by default; see
-     * {@link UpdateCheckerSettings}.
+     * {@code true} whenever a newer version is known to exist — the signal {@code ReportCommand}/
+     * {@code ReportToolListener} gate the player-facing flow on. Unconditional, not configurable; see
+     * {@link UpdateCheckerSettings}. The only way around it is keeping BookReports current, or disabling the checker
+     * entirely ({@code update-checker.enabled: false}, which also means {@link #updateAvailable()} can never become
+     * {@code true} in the first place).
      */
     public boolean serviceLocked() {
-        return config.get().updateChecker().lockWhenOutdated() && updateAvailable();
+        return updateAvailable();
     }
 
     public Optional<String> latestKnownVersion() {

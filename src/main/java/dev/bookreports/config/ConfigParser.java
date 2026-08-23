@@ -174,7 +174,6 @@ public final class ConfigParser {
         String resource = section.getString("resource", "DaBSTW/cursor");
         int checkIntervalHours = section.getInt("check-interval-hours", 12);
         boolean notifyOpsOnJoin = section.getBoolean("notify-ops-on-join", true);
-        boolean lockWhenOutdated = section.getBoolean("lock-when-outdated", false);
         if (enabled && (resource == null || resource.isBlank())) {
             throw new ConfigurationException(
                     "'update-checker.resource' is required when 'update-checker.enabled' is true");
@@ -182,8 +181,7 @@ public final class ConfigParser {
         if (enabled && checkIntervalHours < 1) {
             throw new ConfigurationException("'update-checker.check-interval-hours' must be >= 1 when enabled");
         }
-        return new UpdateCheckerSettings(enabled, source, resource, checkIntervalHours, notifyOpsOnJoin,
-                lockWhenOutdated);
+        return new UpdateCheckerSettings(enabled, source, resource, checkIntervalHours, notifyOpsOnJoin);
     }
 
     private PunishmentSettings parsePunishments(ConfigurationSection section) {

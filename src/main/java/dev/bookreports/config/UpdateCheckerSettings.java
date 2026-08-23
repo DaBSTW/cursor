@@ -5,12 +5,12 @@ package dev.bookreports.config;
  * {@code "owner/repo"} for {@link UpdateSource#GITHUB}, a project slug or id for {@link UpdateSource#MODRINTH}.
  *
  * <p>
- * {@code lockWhenOutdated} is an opt-in, off-by-default kill switch: while a newer version is known to exist, the
- * player-facing report flow ({@code /report}, the report-tool item) refuses everyone without {@code bookreports.admin},
- * showing a plain "not available" message instead — {@code bookreports.admin} holders are unaffected and get the update
- * notice with a one-click updater. Defaults to {@code false} because most servers should not have their reporting
- * pipeline go dark just because a checker noticed a new tag.
+ * Whenever a newer version is known to exist, the player-facing report flow ({@code /report}, the report-tool item)
+ * refuses everyone without {@code bookreports.admin}, showing a plain "not available" message instead —
+ * {@code bookreports.admin} holders are unaffected and get the update notice with a one-click updater. This is
+ * unconditional (not configurable): the only way to avoid it is to keep BookReports up to date, or to disable the
+ * checker itself via {@code enabled: false}.
  */
 public record UpdateCheckerSettings(boolean enabled, UpdateSource source, String resource, int checkIntervalHours,
-        boolean notifyOpsOnJoin, boolean lockWhenOutdated) {
+        boolean notifyOpsOnJoin) {
 }

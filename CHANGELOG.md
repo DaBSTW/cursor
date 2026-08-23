@@ -52,12 +52,12 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
   and staging it in `plugins/update/` (Bukkit/Paper's own mechanism) —
   applied automatically the next time the server restarts. Never attempts a
   live class swap or a forced restart, both unsafe.
-- Optional kill switch, off by default: `update-checker.lock-when-outdated`
-  makes `/report` and the report-tool item refuse everyone without
-  `bookreports.admin` (a plain "not available" message) while a newer
+- `/report` and the report-tool item refuse everyone without
+  `bookreports.admin` (a plain "not available" message) whenever a newer
   version is known to exist — admins are unaffected and keep the one-click
-  updater. Left off by default since most servers should not have their
-  reporting pipeline go dark over a version mismatch alone.
+  updater. Unconditional, not configurable; the only way around it is
+  keeping BookReports current or turning the checker off entirely
+  (`update-checker.enabled: false`).
 - Public API: `BookReportsAPI` (services manager) plus `ReportCreateEvent`
   (cancelable), `ReportCreatedEvent`, `ReportClaimedEvent`,
   `ReportResolvedEvent`, `ReportFalseMarkedEvent`.

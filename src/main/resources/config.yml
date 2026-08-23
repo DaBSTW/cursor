@@ -82,19 +82,17 @@ coreprotect:
 # found. Never blocks startup and never throws on a network problem — a failed check is just silently retried on
 # the next interval. `source: github` reads GitHub Releases; `source: modrinth` reads a Modrinth project's
 # versions instead — `resource` is "owner/repo" for github, a project slug/id for modrinth.
+# IMPORTANT: whenever this check finds a newer version, /report and the report-tool item stop working for
+# everyone without bookreports.admin (they see a plain "not available" message) until the server is updated —
+# ops are unaffected and get a one-click updater ("/reportadmin update", also clickable from the join
+# notification). This is not configurable — the only way to avoid the lock is to keep BookReports up to date,
+# or to turn the checker off entirely below (enabled: false).
 update-checker:
   enabled: true
   source: github
   resource: "DaBSTW/cursor"
   check-interval-hours: 12
   notify-ops-on-join: true
-  # Opt-in kill switch, OFF by default. When true and a newer version is known to exist, /report and the
-  # report-tool item stop working for everyone without bookreports.admin (they see a plain "not available"
-  # message) until the server is updated — ops are unaffected and get a one-click updater
-  # ("/reportadmin update", also clickable from the join notification). Think carefully before enabling this
-  # on a live server: it takes the whole player-facing reporting pipeline down over a version mismatch, which
-  # most servers do not want just because a new tag exists.
-  lock-when-outdated: false
 
 placeholderapi: true
 

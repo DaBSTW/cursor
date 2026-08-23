@@ -42,7 +42,6 @@ class ConfigParserTest {
         assertEquals("DaBSTW/cursor", config.updateChecker().resource());
         assertEquals(12, config.updateChecker().checkIntervalHours());
         assertTrue(config.updateChecker().notifyOpsOnJoin());
-        assertFalse(config.updateChecker().lockWhenOutdated());
     }
 
     @Test
@@ -186,7 +185,6 @@ class ConfigParserTest {
                   resource: bookreports
                   check-interval-hours: 6
                   notify-ops-on-join: false
-                  lock-when-outdated: true
                 """));
 
         UpdateCheckerSettings updateChecker = parser.parse(yaml).updateChecker();
@@ -195,7 +193,23 @@ class ConfigParserTest {
         assertEquals("bookreports", updateChecker.resource());
         assertEquals(6, updateChecker.checkIntervalHours());
         assertFalse(updateChecker.notifyOpsOnJoin());
-        assertTrue(updateChecker.lockWhenOutdated());
+    }
+
+    @Test
+    void aLeftoverLockWhenOutdatedKeyFromAnOlderConfigIsSilentlyIgnored() {
+        // The lock is unconditional now — it used to be a toggle. A pre-existing config.yml with the old key
+        // must not break parsing.
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new java.io.StringReader("""
+                report:
+                  categories:
+                    other:
+                      display: "Other"
+                      priority: LOW
+                update-checker:
+                  lock-when-outdated: false
+                """));
+
+        assertTrue(parser.parse(yaml).updateChecker().enabled());
     }
 
     @Test
