@@ -4,6 +4,11 @@ All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning follows
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Everything from here down is new work on top of the frozen `v1.0.0` tag
+(`f4a33ac`) — nothing below has shipped yet.
+
 ## [1.0.0] — 2026-08-19
 
 Initial release, built out phase-by-phase per `ROADMAP.md`.
