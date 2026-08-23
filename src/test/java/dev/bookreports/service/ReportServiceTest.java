@@ -344,6 +344,6 @@ class ReportServiceTest {
                 new StaffSettings("ENTITY_EXPERIENCE_ORB_PICKUP", 15), new DiscordSettings(false, "", Priority.HIGH),
                 new PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
                 new CoreProtectSettings(true, 300, 20),
-                new UpdateCheckerSettings(false, UpdateSource.GITHUB, "DaBSTW/cursor", 12, true));
+                new UpdateCheckerSettings(false, UpdateSource.GITHUB, "DaBSTW/cursor", 12, true, false));
     }
 }

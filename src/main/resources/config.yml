@@ -88,6 +88,13 @@ update-checker:
   resource: "DaBSTW/cursor"
   check-interval-hours: 12
   notify-ops-on-join: true
+  # Opt-in kill switch, OFF by default. When true and a newer version is known to exist, /report and the
+  # report-tool item stop working for everyone without bookreports.admin (they see a plain "not available"
+  # message) until the server is updated — ops are unaffected and get a one-click updater
+  # ("/reportadmin update", also clickable from the join notification). Think carefully before enabling this
+  # on a live server: it takes the whole player-facing reporting pipeline down over a version mismatch, which
+  # most servers do not want just because a new tag exists.
+  lock-when-outdated: false
 
 placeholderapi: true
 

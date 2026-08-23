@@ -380,6 +380,7 @@ public interface BookReportsAPI {
 | `/reportadmin history <jugador>` | `bookreports.staff` | Historial completo. |
 | `/reportadmin notifications toggle` | `bookreports.staff.notify` | Activa/desactiva alertas. |
 | `/reportadmin checkupdate` | `bookreports.admin` | Chequea de inmediato si hay una versión nueva (GitHub/Modrinth). |
+| `/reportadmin update` | `bookreports.admin` | Descarga la última versión y la deja en `plugins/update/` para el próximo reinicio. |
 | `/reportsreload` | `bookreports.admin` | Recarga config y locale en caliente. |
 
 ---

@@ -47,6 +47,7 @@ import dev.bookreports.util.FoliaSchedulerAdapter;
 import dev.bookreports.util.SchedulerAdapter;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import java.io.File;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
@@ -104,8 +105,9 @@ public final class BookReportsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(chatContextTracker, this);
         BStatsMetrics.start(this, configManager::current);
 
-        updateChecker = new UpdateChecker(configManager::current, getPluginMeta().getVersion(), workerExecutor,
-                getLogger());
+        File stagedUpdateTarget = new File(getServer().getUpdateFolderFile(), getFile().getName());
+        updateChecker = new UpdateChecker(configManager::current, getPluginMeta().getVersion(), stagedUpdateTarget,
+                workerExecutor, getLogger());
         getServer().getPluginManager()
                 .registerEvents(new UpdateNotifyListener(updateChecker, localeManager, configManager::current), this);
         updateCheckLoop();
@@ -239,12 +241,11 @@ public final class BookReportsPlugin extends JavaPlugin {
     private void registerBookFlow() {
         BookBuilder books = new BookBuilder(localeManager);
         RateLimiter rateLimiter = new RateLimiter(Duration.ofSeconds(1));
-        getServer().getPluginManager().registerEvents(
-                new ReportToolListener(configManager::current, sessionManager, localeManager, books, rateLimiter),
-                this);
+        getServer().getPluginManager().registerEvents(new ReportToolListener(configManager::current, sessionManager,
+                localeManager, books, rateLimiter, updateChecker), this);
 
         reportCommandAdapter.bind(new ReportCommand(sessionManager, configManager::current, localeManager, books,
-                rateLimiter, reportService, scheduler));
+                rateLimiter, reportService, scheduler, updateChecker));
         targetCommandAdapter.bind(new SelectTargetCommand(sessionManager, localeManager, books));
         selectCommandAdapter.bind(new SelectOptionCommand(sessionManager, configManager::current, localeManager, books,
                 reportService, anvilInputGUI, chatContextTracker, scheduler, getLogger()));

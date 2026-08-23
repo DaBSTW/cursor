@@ -15,6 +15,7 @@ report:
   resolved: "<gray>Votre signalement #<ticket_id> a été examiné par l'équipe.</gray>"
   tool-name: "<yellow>Signaler un joueur</yellow>"
   tool-disabled: "<red>L'objet de signalement n'est pas activé sur ce serveur.</red>"
+  service-unavailable: "<red>Ce service n'est pas disponible pour le moment. Réessayez plus tard.</red>"
   status:
     title: "<gold>Vos signalements récents :</gold>"
     empty: "<gray>Vous n'avez soumis aucun signalement.</gray>"
@@ -126,8 +127,10 @@ staff:
     staff: "<yellow><player> : <white><resolved></white> résolus, moyenne de <white><avg_minutes> min</white> entre prise en charge et résolution</yellow>"
 
 update:
-  notify: "<yellow>⚠ Une nouvelle version de BookReports est disponible : <white><latest></white> (vous avez <white><current></white>) — <white><url></white></yellow>"
+  notify: "<yellow>⚠ Une nouvelle version de BookReports est disponible : <white><latest></white> (vous avez <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Mettre à jour]</u></green></click> <gray>(<url>)</gray></yellow>"
   up-to-date: "<green>BookReports est à jour (<white><current></white>).</green>"
+  staged: "<green>✅ BookReports <white><latest></white> téléchargé et préparé — il sera installé automatiquement au prochain redémarrage du serveur.</green>"
+  download-failed: "<red>Impossible de télécharger la mise à jour automatiquement. Téléchargez-la manuellement : <white><url></white></red>"
 
 command:
   reload-success: "<green>Configuration et traductions rechargées.</green>"

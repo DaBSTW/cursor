@@ -3,6 +3,8 @@ package dev.bookreports.command;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.MockPlugin;
@@ -25,6 +27,7 @@ import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
 import dev.bookreports.storage.model.ReportStatus;
+import dev.bookreports.update.UpdateChecker;
 import dev.bookreports.util.ImmediateSchedulerAdapter;
 import java.time.Clock;
 import java.time.Duration;
@@ -48,6 +51,7 @@ class ReportCommandTest {
     private PlayerMock reporter;
     private HikariDataSource dataSource;
     private ReportDao reportDao;
+    private UpdateChecker updateChecker;
 
     @BeforeEach
     void setUp() {
@@ -69,8 +73,9 @@ class ReportCommandTest {
                 new PriorityCalculator(TestConfigs::minimal, clock), TestConfigs::minimal, server.getPluginManager(),
                 new ImmediateSchedulerAdapter(), Runnable::run, clock, Logger.getLogger("BookReportsTest"));
 
+        updateChecker = mock(UpdateChecker.class);
         command = new ReportCommand(sessions, TestConfigs::minimal, locale, books, rateLimiter, reportService,
-                new ImmediateSchedulerAdapter());
+                new ImmediateSchedulerAdapter(), updateChecker);
 
         reporter = server.addPlayer("Reporter");
     }
@@ -182,5 +187,28 @@ class ReportCommandTest {
         return new Report(0, UUID.randomUUID(), reporterId, "Reporter", UUID.randomUUID(), "Target", categoryId, null,
                 null, "default", ReportStatus.PENDING, Priority.LOW, null, null, Instant.now(), null, null, 0, null,
                 null, null, null);
+    }
+
+    @Test
+    void lockedServiceBlocksNonAdminPlayersFromEveryEntryPoint() {
+        when(updateChecker.serviceLocked()).thenReturn(true);
+
+        command.onCommand(reporter, null, "report", new String[]{"status"});
+
+        String plain = PlainTextComponentSerializer.plainText().serialize(reporter.nextComponentMessage());
+        assertTrue(plain.contains("not available"));
+    }
+
+    @Test
+    void lockedServiceDoesNotBlockAdmins() {
+        when(updateChecker.serviceLocked()).thenReturn(true);
+        reporter.setOp(true);
+
+        boolean handled = command.onCommand(reporter, null, "report", new String[]{"status"});
+
+        assertTrue(handled);
+        // Reaches the real status handler (empty ticket list) rather than being turned away at the door.
+        String plain = PlainTextComponentSerializer.plainText().serialize(reporter.nextComponentMessage());
+        assertTrue(plain.contains("haven't submitted"));
     }
 }

@@ -15,6 +15,7 @@ report:
   resolved: "<gray>Tu reporte #<ticket_id> ha sido revisado por el staff.</gray>"
   tool-name: "<yellow>Reportar Jugador</yellow>"
   tool-disabled: "<red>El item de reporte no está habilitado en este servidor.</red>"
+  service-unavailable: "<red>Este servicio no está disponible en este momento. Intentalo más tarde.</red>"
   status:
     title: "<gold>Tus reportes recientes:</gold>"
     empty: "<gray>No has enviado ningún reporte.</gray>"
@@ -126,8 +127,10 @@ staff:
     staff: "<yellow><player>: <white><resolved></white> resueltos, promedio <white><avg_minutes> min</white> de reclamo a resolución</yellow>"
 
 update:
-  notify: "<yellow>⚠ Hay una nueva versión de BookReports disponible: <white><latest></white> (tienes <white><current></white>) — <white><url></white></yellow>"
+  notify: "<yellow>⚠ Hay una nueva versión de BookReports disponible: <white><latest></white> (tenés <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Actualizar ahora]</u></green></click> <gray>(<url>)</gray></yellow>"
   up-to-date: "<green>BookReports está actualizado (<white><current></white>).</green>"
+  staged: "<green>✅ BookReports <white><latest></white> descargado y preparado — se instalará automáticamente la próxima vez que se reinicie el servidor.</green>"
+  download-failed: "<red>No se pudo descargar la actualización automáticamente. Descargala manualmente: <white><url></white></red>"
 
 command:
   reload-success: "<green>Configuración y traducciones recargadas.</green>"

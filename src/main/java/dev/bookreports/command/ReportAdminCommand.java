@@ -75,8 +75,9 @@ public final class ReportAdminCommand implements CommandExecutor {
             case "notifications" -> notificationsToggle(sender, args);
             case "stats" -> stats(sender, args);
             case "checkupdate" -> checkUpdate(sender);
-            default -> sender.sendMessage(locale.get("command.usage",
-                    Map.of("usage", "/reportadmin <list|view|claim|resolve|history|notifications|stats|checkupdate>")));
+            case "update" -> applyUpdate(sender);
+            default -> sender.sendMessage(locale.get("command.usage", Map.of("usage",
+                    "/reportadmin <list|view|claim|resolve|history|notifications|stats|checkupdate|update>")));
         }
         return true;
     }
@@ -258,6 +259,31 @@ public final class ReportAdminCommand implements CommandExecutor {
                         updateChecker.currentVersion(), "url", updateChecker.releasesPageUrl())));
             } else {
                 sender.sendMessage(locale.get("update.up-to-date", Map.of("current", updateChecker.currentVersion())));
+            }
+        }));
+    }
+
+    /**
+     * The "one click" side of the update flow: downloads the known-latest jar and stages it in {@code
+     * plugins/update/} — Bukkit/Paper's own mechanism swaps it in on the next natural restart. Never restarts the
+     * server itself; see {@code UpdateChecker#downloadAndStageUpdate}.
+     */
+    private void applyUpdate(CommandSender sender) {
+        if (!sender.hasPermission("bookreports.admin")) {
+            sender.sendMessage(locale.get("command.no-permission"));
+            return;
+        }
+        if (!updateChecker.updateAvailable()) {
+            sender.sendMessage(locale.get("update.up-to-date", Map.of("current", updateChecker.currentVersion())));
+            return;
+        }
+        updateChecker.downloadAndStageUpdate().thenAccept(staged -> runOnMain(() -> {
+            String latest = updateChecker.latestKnownVersion().orElse("?");
+            if (staged) {
+                sender.sendMessage(locale.get("update.staged", Map.of("latest", latest)));
+            } else {
+                sender.sendMessage(
+                        locale.get("update.download-failed", Map.of("url", updateChecker.releasesPageUrl())));
             }
         }));
     }

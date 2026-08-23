@@ -138,6 +138,7 @@ Añadir una categoría nueva es añadir una entrada al YAML y ejecutar `/reports
 | `/reportadmin stats staff <jugador>` | `bookreports.staff` | Reportes resueltos y tiempo promedio de un staff |
 | `/reportsreload` | `bookreports.admin` | Recarga config y traducciones en caliente |
 | `/reportadmin checkupdate` | `bookreports.admin` | Chequea de inmediato si hay una versión nueva |
+| `/reportadmin update` | `bookreports.admin` | Descarga y prepara la última versión (un clic desde el aviso en el chat) |
 
 ---
 
@@ -175,7 +176,9 @@ Todas opcionales — si el plugin no está presente, la función simplemente se 
 - **Velocity / BungeeCord** — panel de staff unificado en toda la red sobre MySQL compartido
 - **LuckPerms / Vault** — permisos estándar
 - **bStats** — estadísticas de uso anónimas y agregadas (servidor, versión, config), desactivable con `metrics.enabled: false`
-- **Chequeo automático de versión** — avisa por consola (y opcionalmente a los ops al conectarse) si hay una versión más nueva disponible en GitHub Releases o Modrinth, configurable en `update-checker:`. Nunca bloquea el arranque ni falla si no hay red.
+- **Chequeo automático de versión** — avisa por consola (y opcionalmente a los ops al conectarse, con un texto clicable) si hay una versión más nueva disponible en GitHub Releases o Modrinth, configurable en `update-checker:`. Nunca bloquea el arranque ni falla si no hay red.
+  - **Actualización con un clic**: el aviso a los ops incluye un `[Actualizar ahora]` clicable — al tocarlo, el plugin descarga el jar nuevo y lo deja preparado en `plugins/update/` (el mecanismo propio de Bukkit/Paper), listo para instalarse solo la próxima vez que el servidor reinicie. Nunca reinicia el servidor por su cuenta ni reemplaza el jar en caliente — eso no es seguro de hacer con el servidor corriendo.
+  - **Bloqueo opcional por versión desactualizada** (`update-checker.lock-when-outdated`, **apagado por defecto**): si lo activás, mientras haya una versión más nueva detectada, `/report` y el ítem de reporte dejan de funcionar para cualquiera sin `bookreports.admin` (ven un simple "servicio no disponible"), mientras que los ops siguen con acceso normal más el aviso de actualización. Pensalo bien antes de activarlo en un servidor en producción: apaga todo el flujo de reportes de los jugadores solo por un desfasaje de versión, algo que la mayoría de los servidores no va a querer de entrada.
 
 ---
 

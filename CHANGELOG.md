@@ -47,6 +47,17 @@ Initial release, built out phase-by-phase per `ROADMAP.md`.
   available on GitHub Releases or Modrinth. `/reportadmin checkupdate`
   triggers an on-demand check. Never blocks startup and never throws on a
   network problem.
+- One-click updates for ops: the update notification includes a clickable
+  `[Update now]` that runs `/reportadmin update`, downloading the new jar
+  and staging it in `plugins/update/` (Bukkit/Paper's own mechanism) —
+  applied automatically the next time the server restarts. Never attempts a
+  live class swap or a forced restart, both unsafe.
+- Optional kill switch, off by default: `update-checker.lock-when-outdated`
+  makes `/report` and the report-tool item refuse everyone without
+  `bookreports.admin` (a plain "not available" message) while a newer
+  version is known to exist — admins are unaffected and keep the one-click
+  updater. Left off by default since most servers should not have their
+  reporting pipeline go dark over a version mismatch alone.
 - Public API: `BookReportsAPI` (services manager) plus `ReportCreateEvent`
   (cancelable), `ReportCreatedEvent`, `ReportClaimedEvent`,
   `ReportResolvedEvent`, `ReportFalseMarkedEvent`.

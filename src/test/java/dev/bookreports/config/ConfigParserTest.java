@@ -42,6 +42,7 @@ class ConfigParserTest {
         assertEquals("DaBSTW/cursor", config.updateChecker().resource());
         assertEquals(12, config.updateChecker().checkIntervalHours());
         assertTrue(config.updateChecker().notifyOpsOnJoin());
+        assertFalse(config.updateChecker().lockWhenOutdated());
     }
 
     @Test
@@ -185,6 +186,7 @@ class ConfigParserTest {
                   resource: bookreports
                   check-interval-hours: 6
                   notify-ops-on-join: false
+                  lock-when-outdated: true
                 """));
 
         UpdateCheckerSettings updateChecker = parser.parse(yaml).updateChecker();
@@ -193,6 +195,7 @@ class ConfigParserTest {
         assertEquals("bookreports", updateChecker.resource());
         assertEquals(6, updateChecker.checkIntervalHours());
         assertFalse(updateChecker.notifyOpsOnJoin());
+        assertTrue(updateChecker.lockWhenOutdated());
     }
 
     @Test

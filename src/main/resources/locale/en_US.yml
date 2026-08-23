@@ -15,6 +15,7 @@ report:
   resolved: "<gray>Your report #<ticket_id> has been reviewed by staff.</gray>"
   tool-name: "<yellow>Report Player</yellow>"
   tool-disabled: "<red>The report tool item is not enabled on this server.</red>"
+  service-unavailable: "<red>This service is not available right now. Please try again later.</red>"
   status:
     title: "<gold>Your recent reports:</gold>"
     empty: "<gray>You haven't submitted any reports.</gray>"
@@ -126,8 +127,10 @@ staff:
     staff: "<yellow><player>: <white><resolved></white> resolved, avg <white><avg_minutes> min</white> claim-to-resolve</yellow>"
 
 update:
-  notify: "<yellow>⚠ A new BookReports version is available: <white><latest></white> (you have <white><current></white>) — <white><url></white></yellow>"
+  notify: "<yellow>⚠ A new BookReports version is available: <white><latest></white> (you have <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Update now]</u></green></click> <gray>(<url>)</gray></yellow>"
   up-to-date: "<green>BookReports is up to date (<white><current></white>).</green>"
+  staged: "<green>✅ BookReports <white><latest></white> downloaded and staged — it will be installed automatically the next time the server restarts.</green>"
+  download-failed: "<red>Could not download the update automatically. Get it manually: <white><url></white></red>"
 
 command:
   reload-success: "<green>Configuration and translations reloaded.</green>"

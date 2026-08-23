@@ -110,6 +110,6 @@ class PriorityCalculatorTest {
                 new dev.bookreports.config.PunishmentSettings("7d", "1h"), true, true, "es_ES", "default",
                 new dev.bookreports.config.CoreProtectSettings(true, 300, 20),
                 new dev.bookreports.config.UpdateCheckerSettings(false, dev.bookreports.config.UpdateSource.GITHUB,
-                        "DaBSTW/cursor", 12, true));
+                        "DaBSTW/cursor", 12, true, false));
     }
 }

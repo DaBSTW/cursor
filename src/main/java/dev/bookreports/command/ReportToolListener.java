@@ -5,6 +5,7 @@ import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
 import dev.bookreports.session.ReportSession;
 import dev.bookreports.session.SessionManager;
+import dev.bookreports.update.UpdateChecker;
 import java.util.Objects;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
@@ -21,14 +22,16 @@ public final class ReportToolListener implements Listener {
     private final LocaleManager locale;
     private final BookBuilder books;
     private final RateLimiter rateLimiter;
+    private final UpdateChecker updateChecker;
 
     public ReportToolListener(Supplier<BookReportsConfig> config, SessionManager sessions, LocaleManager locale,
-            BookBuilder books, RateLimiter rateLimiter) {
+            BookBuilder books, RateLimiter rateLimiter, UpdateChecker updateChecker) {
         this.config = Objects.requireNonNull(config, "config");
         this.sessions = Objects.requireNonNull(sessions, "sessions");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.books = Objects.requireNonNull(books, "books");
         this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter");
+        this.updateChecker = Objects.requireNonNull(updateChecker, "updateChecker");
     }
 
     @EventHandler
@@ -43,6 +46,11 @@ public final class ReportToolListener implements Listener {
         }
         event.setCancelled(true);
 
+        // Same opt-in kill switch as /report — see ReportCommand.
+        if (updateChecker.serviceLocked() && !player.hasPermission("bookreports.admin")) {
+            player.sendMessage(locale.get("report.service-unavailable"));
+            return;
+        }
         if (!rateLimiter.tryAcquire(player.getUniqueId())) {
             player.sendMessage(locale.get("report.rate-limited"));
             return;

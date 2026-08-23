@@ -15,6 +15,7 @@ report:
   resolved: "<gray>Deine Meldung #<ticket_id> wurde vom Team bearbeitet.</gray>"
   tool-name: "<yellow>Spieler melden</yellow>"
   tool-disabled: "<red>Das Melde-Werkzeug ist auf diesem Server nicht aktiviert.</red>"
+  service-unavailable: "<red>Dieser Dienst ist gerade nicht verfügbar. Bitte versuche es später erneut.</red>"
   status:
     title: "<gold>Deine letzten Meldungen:</gold>"
     empty: "<gray>Du hast noch keine Meldungen abgeschickt.</gray>"
@@ -126,8 +127,10 @@ staff:
     staff: "<yellow><player>: <white><resolved></white> abgeschlossen, im Schnitt <white><avg_minutes> Min.</white> bis zur Lösung</yellow>"
 
 update:
-  notify: "<yellow>⚠ Eine neue BookReports-Version ist verfügbar: <white><latest></white> (du hast <white><current></white>) — <white><url></white></yellow>"
+  notify: "<yellow>⚠ Eine neue BookReports-Version ist verfügbar: <white><latest></white> (du hast <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Jetzt aktualisieren]</u></green></click> <gray>(<url>)</gray></yellow>"
   up-to-date: "<green>BookReports ist aktuell (<white><current></white>).</green>"
+  staged: "<green>✅ BookReports <white><latest></white> heruntergeladen und bereitgestellt — wird beim nächsten Serverneustart automatisch installiert.</green>"
+  download-failed: "<red>Das Update konnte nicht automatisch heruntergeladen werden. Manuell herunterladen: <white><url></white></red>"
 
 command:
   reload-success: "<green>Konfiguration und Übersetzungen neu geladen.</green>"

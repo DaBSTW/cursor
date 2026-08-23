@@ -7,6 +7,7 @@ import dev.bookreports.service.ReportService;
 import dev.bookreports.session.ReportSession;
 import dev.bookreports.session.SessionManager;
 import dev.bookreports.storage.model.Report;
+import dev.bookreports.update.UpdateChecker;
 import dev.bookreports.util.SchedulerAdapter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,9 +38,11 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
     private final RateLimiter rateLimiter;
     private final ReportService reportService;
     private final SchedulerAdapter scheduler;
+    private final UpdateChecker updateChecker;
 
     public ReportCommand(SessionManager sessions, Supplier<BookReportsConfig> config, LocaleManager locale,
-            BookBuilder books, RateLimiter rateLimiter, ReportService reportService, SchedulerAdapter scheduler) {
+            BookBuilder books, RateLimiter rateLimiter, ReportService reportService, SchedulerAdapter scheduler,
+            UpdateChecker updateChecker) {
         this.sessions = Objects.requireNonNull(sessions, "sessions");
         this.config = Objects.requireNonNull(config, "config");
         this.locale = Objects.requireNonNull(locale, "locale");
@@ -47,12 +50,19 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
         this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter");
         this.reportService = Objects.requireNonNull(reportService, "reportService");
         this.scheduler = Objects.requireNonNull(scheduler, "scheduler");
+        this.updateChecker = Objects.requireNonNull(updateChecker, "updateChecker");
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage(locale.get("command.player-only"));
+            return true;
+        }
+        // Opt-in kill switch (update-checker.lock-when-outdated, off by default) — see UpdateCheckerSettings.
+        // Admins are exempt: they're the ones who need /reportadmin update to still work.
+        if (updateChecker.serviceLocked() && !player.hasPermission("bookreports.admin")) {
+            player.sendMessage(locale.get("report.service-unavailable"));
             return true;
         }
         if (args.length == 1 && "tool".equalsIgnoreCase(args[0])) {

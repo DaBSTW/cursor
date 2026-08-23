@@ -15,6 +15,7 @@ report:
   resolved: "<gray>Ваша жалоба #<ticket_id> была рассмотрена администрацией.</gray>"
   tool-name: "<yellow>Пожаловаться на игрока</yellow>"
   tool-disabled: "<red>Предмет для жалоб отключён на этом сервере.</red>"
+  service-unavailable: "<red>Эта служба сейчас недоступна. Попробуйте позже.</red>"
   status:
     title: "<gold>Ваши недавние жалобы:</gold>"
     empty: "<gray>Вы ещё не отправляли жалоб.</gray>"
@@ -126,8 +127,10 @@ staff:
     staff: "<yellow><player>: <white><resolved></white> закрыто, в среднем <white><avg_minutes> мин.</white> от взятия в работу до решения</yellow>"
 
 update:
-  notify: "<yellow>⚠ Доступна новая версия BookReports: <white><latest></white> (у вас <white><current></white>) — <white><url></white></yellow>"
+  notify: "<yellow>⚠ Доступна новая версия BookReports: <white><latest></white> (у вас <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Обновить сейчас]</u></green></click> <gray>(<url>)</gray></yellow>"
   up-to-date: "<green>BookReports обновлён (<white><current></white>).</green>"
+  staged: "<green>✅ BookReports <white><latest></white> загружен и подготовлен — будет установлен автоматически при следующем перезапуске сервера.</green>"
+  download-failed: "<red>Не удалось автоматически загрузить обновление. Загрузите вручную: <white><url></white></red>"
 
 command:
   reload-success: "<green>Конфигурация и переводы перезагружены.</green>"
