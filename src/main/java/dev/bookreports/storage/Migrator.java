@@ -31,7 +31,8 @@ public final class Migrator {
     private static final List<Migration> MIGRATIONS = List.of(new Migration(1, "V1__init.sql"),
             new Migration(2, "V2__add_claim_version.sql"), new Migration(3, "V3__staff_prefs.sql"),
             new Migration(4, "V4__chat_context.sql"), new Migration(5, "V5__sanction_audit.sql"),
-            new Migration(6, "V6__coreprotect_context.sql"));
+            new Migration(6, "V6__coreprotect_context.sql"), new Migration(7, "V7__report_locations.sql"),
+            new Migration(8, "V8__report_notes.sql"), new Migration(9, "V9__report_archive.sql"));
 
     private final DataSource dataSource;
     private final StorageType storageType;

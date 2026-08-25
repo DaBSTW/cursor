@@ -10,6 +10,13 @@ public final class TextSanitizer {
     /** Max length for report evidence text, enforced client-side (anvil) and server-side alike. */
     public static final int EVIDENCE_MAX_LENGTH = 100;
 
+    /**
+     * Minimum length for evidence text that a reporter actually chose to type — a single stray character isn't
+     * evidence, and rejecting it before submission (SelectOptionCommand) saves a full report round trip. Only applies
+     * when they typed something at all; skipping the evidence step entirely is always allowed.
+     */
+    public static final int EVIDENCE_MIN_LENGTH = 5;
+
     private TextSanitizer() {
     }
 

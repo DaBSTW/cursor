@@ -2,6 +2,7 @@ package dev.bookreports.gui;
 
 import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.LocaleManager;
+import dev.bookreports.integration.vault.VaultBridge;
 import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
@@ -19,8 +20,10 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -51,6 +54,7 @@ public final class ReportQueueView extends PaginatedView {
     private final Executor executor;
     private final AnvilInputGUI anvilInputGUI;
     private final Consumer<Report> onSelect;
+    private final Optional<VaultBridge> vaultBridge;
     private int statusFilterIndex;
     private int priorityFilterIndex;
     private String categoryFilter;
@@ -59,7 +63,8 @@ public final class ReportQueueView extends PaginatedView {
     private List<Report> currentPageReports = List.of();
 
     public ReportQueueView(Plugin plugin, Player viewer, ReportDao reportDao, Supplier<BookReportsConfig> config,
-            LocaleManager locale, Executor executor, AnvilInputGUI anvilInputGUI, Consumer<Report> onSelect) {
+            LocaleManager locale, Executor executor, AnvilInputGUI anvilInputGUI, Consumer<Report> onSelect,
+            Optional<VaultBridge> vaultBridge) {
         super(plugin, viewer);
         this.reportDao = Objects.requireNonNull(reportDao, "reportDao");
         this.config = Objects.requireNonNull(config, "config");
@@ -67,6 +72,7 @@ public final class ReportQueueView extends PaginatedView {
         this.executor = Objects.requireNonNull(executor, "executor");
         this.anvilInputGUI = Objects.requireNonNull(anvilInputGUI, "anvilInputGUI");
         this.onSelect = Objects.requireNonNull(onSelect, "onSelect");
+        this.vaultBridge = Objects.requireNonNull(vaultBridge, "vaultBridge");
     }
 
     private ReportStatus statusFilter() {
@@ -180,7 +186,7 @@ public final class ReportQueueView extends PaginatedView {
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(Bukkit.getOfflinePlayer(report.targetUuid()));
-            meta.displayName(Component.text(report.targetName()));
+            meta.displayName(decoratedName(report.targetUuid(), report.targetName()));
             List<Component> lore = new ArrayList<>(
                     List.of(locale.get("staff.queue.lore.category", Map.of("category", report.categoryId())),
                             locale.get("staff.queue.lore.priority", Map.of("priority", report.priority().name())),
@@ -194,6 +200,25 @@ public final class ReportQueueView extends PaginatedView {
             head.setItemMeta(meta);
         }
         return head;
+    }
+
+    /**
+     * {@code name} with the player's Vault rank prefix/suffix around it, when a Vault {@code Chat} provider is active —
+     * purely cosmetic, so a lookup failure or a missing bridge just falls back to the plain name. Legacy
+     * ({@code §}-coded) prefix/suffix strings are the norm across permission plugins, hence the legacy deserializer
+     * rather than MiniMessage here.
+     */
+    private Component decoratedName(UUID playerUuid, String name) {
+        if (vaultBridge.isEmpty()) {
+            return Component.text(name);
+        }
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerUuid);
+        String prefix = vaultBridge.get().prefix(player);
+        String suffix = vaultBridge.get().suffix(player);
+        if (prefix.isEmpty() && suffix.isEmpty()) {
+            return Component.text(name);
+        }
+        return LegacyComponentSerializer.legacySection().deserialize(prefix + name + suffix);
     }
 
     /** "3 reports in the last 10 min" — the consensus that likely triggered the escalation to HIGH. */

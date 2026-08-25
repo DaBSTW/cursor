@@ -73,4 +73,18 @@ public interface ReportDao {
 
     /** How many reports this reviewer has resolved, and their average claim-to-resolution time. */
     StaffStats staffStats(UUID reviewerUuid);
+
+    /**
+     * Sets or clears the archived flag — an archived report drops out of every {@code findByStatus} queue view but
+     * stays reachable via {@link #findById}/{@link #findByUuid}, and its notes/sanction history are untouched. Returns
+     * {@code false} if no row matched {@code id}.
+     */
+    boolean setArchived(long id, boolean archived);
+
+    /**
+     * Permanently deletes a report and its notes. Irreversible — {@link #setArchived} is almost always what staff
+     * actually want; this is for the rare case of genuinely removing a mistaken or abusive entry. Returns {@code false}
+     * if no row matched {@code id}.
+     */
+    boolean purge(long id);
 }

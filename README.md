@@ -126,7 +126,7 @@ Todas opcionales — si el plugin correspondiente no está instalado, la funció
 | **PlaceholderAPI** | `%bookreports_pending_count%`, `%bookreports_my_cooldown%`, `%bookreports_target_report_count%` |
 | **Discord** | Webhook que avisa al staff offline al crearse un reporte de alta prioridad, y de nuevo al resolverse |
 | **Velocity / BungeeCord** | Panel de staff unificado en toda la red, sobre una base de datos MySQL compartida |
-| **LuckPerms / Vault** | Permisos estándar de Bukkit, sin sorpresas |
+| **Vault** (+ LuckPerms u otro) | Muestra el prefijo/sufijo de rango junto al nombre en la cola de staff y el detalle del reporte |
 | **bStats** | Estadísticas de uso anónimas y agregadas, desactivable con `metrics.enabled: false` |
 
 ---

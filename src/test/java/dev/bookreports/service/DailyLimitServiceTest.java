@@ -118,7 +118,7 @@ class DailyLimitServiceTest {
     private void insertReport(UUID reporter, Instant createdAt) {
         reportDao.insert(new Report(0, UUID.randomUUID(), reporter, "Reporter", UUID.randomUUID(), "Target", "hacks",
                 null, null, "default", ReportStatus.PENDING, Priority.HIGH, null, null, createdAt, null, null, 0, null,
-                null, null, null));
+                null, null, null, null, null, false));
     }
 
     private BookReportsConfig configWithDailyLimit(int dailyLimit) {

@@ -8,10 +8,14 @@ import java.util.UUID;
  *
  * <p>
  * {@code chatContext} is the target's recently captured chat lines (nullable — empty for callers, such as
- * {@code BookReportsAPI}, that never went through the book flow's chat tracker).
+ * {@code BookReportsAPI}, that never went through the book flow's chat tracker). {@code reporterLocation}/
+ * {@code targetLocation} are {@link dev.bookreports.util.LocationCodec}-encoded snapshots (nullable — the caller
+ * decides whether it has a live {@code Location} to capture; {@code targetLocation} is naturally absent for an offline
+ * target).
  */
 public record SubmitReportRequest(UUID reporterUuid, String reporterName, UUID targetUuid, String targetName,
-        String categoryId, String subReasonId, String evidenceText, String server, String chatContext) {
+        String categoryId, String subReasonId, String evidenceText, String server, String chatContext,
+        String reporterLocation, String targetLocation) {
 
     public SubmitReportRequest {
         Objects.requireNonNull(reporterUuid, "reporterUuid");

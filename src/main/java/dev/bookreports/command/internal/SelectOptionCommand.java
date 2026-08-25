@@ -14,7 +14,9 @@ import dev.bookreports.session.ReportState;
 import dev.bookreports.session.SessionManager;
 import dev.bookreports.session.SessionTransitions;
 import dev.bookreports.storage.model.Report;
+import dev.bookreports.util.LocationCodec;
 import dev.bookreports.util.SchedulerAdapter;
+import dev.bookreports.util.TextSanitizer;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -183,11 +185,23 @@ public final class SelectOptionCommand implements CommandExecutor, TabCompleter 
         }
     }
 
-    private void onEvidenceCaptured(Player player, ReportSession expectedSession, Optional<String> evidence) {
+    /** Package-private: lets tests drive the minimum-length check directly without simulating a full anvil click. */
+    void onEvidenceCaptured(Player player, ReportSession expectedSession, Optional<String> evidence) {
         ReportSession current = sessions.find(player.getUniqueId()).orElse(null);
         if (current == null || !current.sessionId().equals(expectedSession.sessionId())
                 || current.state() != ReportState.EVIDENCE) {
             return;
+        }
+        // Only enforced when the reporter actually typed something — "Skip" (evidence.isEmpty()) is always fine,
+        // a half-typed stray character is not. Re-prompts with the same anvil rather than rejecting the whole flow.
+        if (evidence.isPresent()) {
+            String sanitized = TextSanitizer.stripAndTruncate(evidence.get(), TextSanitizer.EVIDENCE_MAX_LENGTH);
+            if (sanitized.length() < TextSanitizer.EVIDENCE_MIN_LENGTH) {
+                player.sendMessage(locale.get("evidence.too-short",
+                        Map.of("min", String.valueOf(TextSanitizer.EVIDENCE_MIN_LENGTH))));
+                anvilInputGUI.open(player, retry -> onEvidenceCaptured(player, current, retry));
+                return;
+            }
         }
         ReportSession next = current.withEvidence(evidence.orElse(null), ReportState.SUMMARY);
         sessions.replace(next);
@@ -210,9 +224,15 @@ public final class SelectOptionCommand implements CommandExecutor, TabCompleter 
 
     private void submitReport(Player player, ReportSession session) {
         String targetName = targetName(session);
+        String reporterLocation = LocationCodec.encode(player.getLocation());
+        // Null when the target went offline between confirming and submitting — an edge case, not an error;
+        // the report still goes through, it just won't have an incident-location snapshot to teleport to.
+        Player targetPlayer = Bukkit.getPlayer(session.targetId());
+        String targetLocation = targetPlayer != null ? LocationCodec.encode(targetPlayer.getLocation()) : null;
         SubmitReportRequest request = new SubmitReportRequest(player.getUniqueId(), player.getName(),
                 session.targetId(), targetName, session.categoryId(), session.subReasonId(), session.evidenceText(),
-                config.get().serverId(), chatContextTracker.recentContext(session.targetId()));
+                config.get().serverId(), chatContextTracker.recentContext(session.targetId()), reporterLocation,
+                targetLocation);
 
         reportService.submitReport(request).whenComplete((report, error) -> scheduler.runGlobal(() -> {
             sessions.invalidate(player.getUniqueId());

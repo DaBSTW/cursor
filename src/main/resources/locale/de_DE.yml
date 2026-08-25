@@ -62,6 +62,7 @@ book:
 evidence:
   prompt: "Gib hier die Details ein"
   too-long: "<red>Details dürfen <max> Zeichen nicht überschreiten.</red>"
+  too-short: "<red>Bitte schreibe mindestens <min> Zeichen, damit das Team etwas zum Arbeiten hat.</red>"
 
 staff:
   notify:
@@ -94,6 +95,9 @@ staff:
     reporter: "<gray>Melder: <white><player></white></gray>"
     category: "<gray>Kategorie: <white><category></white></gray>"
     status: "<gray>Status: <white><status></white></gray>"
+    live-status: "<gray>Live-Status: <white><gamemode></white> — ❤ <white><health>/<max_health></white></gray>"
+    live-status-effects: "<gray>Aktive Effekte: <white><effects></white></gray>"
+    live-status-offline: "<gray>Der Spieler ist offline</gray>"
     evidence: "<gray>Beweis: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Trefferquote des Melders: <white><accuracy>%</white> (<total> Meldungen)</yellow>"
     chat-context: "<gray>Letzter Chat: <white><context></white></gray>"
@@ -104,9 +108,13 @@ staff:
     unclaimed: "<gray>Nicht übernommen</gray>"
     teleport: "<aqua>[ Teleportieren ]</aqua>"
     history: "<gray>[ Verlauf ansehen ]</gray>"
+    teleport-incident: "<gold>[ Zum Vorfallsort teleportieren ]</gold>"
+    no-location: "<red>Für diese Meldung wurde kein Standort erfasst.</red>"
+    distance: "<gray>Abstand Melder ↔ Gemeldeter bei Meldung: <white><distance> Blöcke</white></gray>"
     resolve-sanction: "<green>[ Abschließen: Sanktionieren ]</green>"
     resolve-reject: "<red>[ Abschließen: Ablehnen ]</red>"
     mark-false: "<dark_red>[ Als falsch markieren ]</dark_red>"
+    notes: "<gold>[ Team-Notizen ]</gold>"
     back: "<gray>[ Zurück ]</gray>"
   resolve-menu:
     title: "Grund für den Abschluss"
@@ -125,6 +133,15 @@ staff:
   stats:
     reporter: "<yellow><player>: <white><accuracy>%</white> Trefferquote (<actioned> sanktioniert, <rejected> abgelehnt, <total> gesamt)</yellow>"
     staff: "<yellow><player>: <white><resolved></white> abgeschlossen, im Schnitt <white><avg_minutes> Min.</white> bis zur Lösung</yellow>"
+  note:
+    added: "<green>Notiz zu Meldung #<ticket_id> hinzugefügt.</green>"
+    title: "<yellow>Notizen zu Meldung #<ticket_id>:</yellow>"
+    empty: "<gray>Noch keine Notizen.</gray>"
+  archive:
+    archived: "<green>Meldung #<ticket_id> archiviert — aus der Warteschlange ausgeblendet, weiterhin direkt einsehbar.</green>"
+    restored: "<green>Meldung #<ticket_id> in die Warteschlange zurückgeholt.</green>"
+  purge:
+    success: "<green>Meldung #<ticket_id> endgültig gelöscht.</green>"
 
 update:
   notify: "<yellow>⚠ Eine neue BookReports-Version ist verfügbar: <white><latest></white> (du hast <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Jetzt aktualisieren]</u></green></click> <gray>(<url>)</gray></yellow>"

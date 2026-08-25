@@ -62,6 +62,7 @@ book:
 evidence:
   prompt: "Введите подробности здесь"
   too-long: "<red>Подробности не могут превышать <max> символов.</red>"
+  too-short: "<red>Напишите не менее <min> символов, чтобы у персонала было с чем работать.</red>"
 
 staff:
   notify:
@@ -94,6 +95,9 @@ staff:
     reporter: "<gray>Заявитель: <white><player></white></gray>"
     category: "<gray>Категория: <white><category></white></gray>"
     status: "<gray>Статус: <white><status></white></gray>"
+    live-status: "<gray>Статус сейчас: <white><gamemode></white> — ❤ <white><health>/<max_health></white></gray>"
+    live-status-effects: "<gray>Активные эффекты: <white><effects></white></gray>"
+    live-status-offline: "<gray>Игрок сейчас не в сети</gray>"
     evidence: "<gray>Доказательства: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Точность заявителя: <white><accuracy>%</white> (<total> жалоб)</yellow>"
     chat-context: "<gray>Недавний чат: <white><context></white></gray>"
@@ -104,9 +108,13 @@ staff:
     unclaimed: "<gray>Не взято в работу</gray>"
     teleport: "<aqua>[ Телепорт ]</aqua>"
     history: "<gray>[ Смотреть историю ]</gray>"
+    teleport-incident: "<gold>[ Телепорт к месту нарушения ]</gold>"
+    no-location: "<red>Для этой жалобы не было записано местоположение.</red>"
+    distance: "<gray>Расстояние заявитель ↔ нарушитель при подаче: <white><distance> блоков</white></gray>"
     resolve-sanction: "<green>[ Решить: Наказать ]</green>"
     resolve-reject: "<red>[ Решить: Отклонить ]</red>"
     mark-false: "<dark_red>[ Пометить как ложную ]</dark_red>"
+    notes: "<gold>[ Заметки персонала ]</gold>"
     back: "<gray>[ Назад ]</gray>"
   resolve-menu:
     title: "Причина решения"
@@ -125,6 +133,15 @@ staff:
   stats:
     reporter: "<yellow><player>: <white><accuracy>%</white> точности (<actioned> с наказанием, <rejected> отклонено, <total> всего)</yellow>"
     staff: "<yellow><player>: <white><resolved></white> закрыто, в среднем <white><avg_minutes> мин.</white> от взятия в работу до решения</yellow>"
+  note:
+    added: "<green>Заметка добавлена к жалобе #<ticket_id>.</green>"
+    title: "<yellow>Заметки к жалобе #<ticket_id>:</yellow>"
+    empty: "<gray>Заметок пока нет.</gray>"
+  archive:
+    archived: "<green>Жалоба #<ticket_id> в архиве — скрыта из очереди, но доступна напрямую.</green>"
+    restored: "<green>Жалоба #<ticket_id> возвращена в очередь.</green>"
+  purge:
+    success: "<green>Жалоба #<ticket_id> удалена навсегда.</green>"
 
 update:
   notify: "<yellow>⚠ Доступна новая версия BookReports: <white><latest></white> (у вас <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Обновить сейчас]</u></green></click> <gray>(<url>)</gray></yellow>"

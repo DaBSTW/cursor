@@ -6,6 +6,7 @@ import dev.bookreports.gui.AnvilInputGUI;
 import dev.bookreports.gui.ReportDetailView;
 import dev.bookreports.gui.ReportQueueView;
 import dev.bookreports.integration.punishment.PunishmentBridge;
+import dev.bookreports.integration.vault.VaultBridge;
 import dev.bookreports.service.ReportService;
 import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.Report;
@@ -13,6 +14,7 @@ import dev.bookreports.storage.model.ReportStatus;
 import dev.bookreports.storage.model.ReporterStats;
 import dev.bookreports.storage.model.StaffStats;
 import dev.bookreports.update.UpdateChecker;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +42,7 @@ public final class ReportAdminCommand implements CommandExecutor {
     private final Supplier<BookReportsConfig> config;
     private final StaffNotificationService notifications;
     private final Optional<PunishmentBridge> punishmentBridge;
+    private final Optional<VaultBridge> vaultBridge;
     private final Executor executor;
     private final AnvilInputGUI anvilInputGUI;
     private final UpdateChecker updateChecker;
@@ -47,7 +50,7 @@ public final class ReportAdminCommand implements CommandExecutor {
     public ReportAdminCommand(Plugin plugin, LocaleManager locale, ReportService reportService, ReportDao reportDao,
             Supplier<BookReportsConfig> config, StaffNotificationService notifications,
             Optional<PunishmentBridge> punishmentBridge, Executor executor, AnvilInputGUI anvilInputGUI,
-            UpdateChecker updateChecker) {
+            UpdateChecker updateChecker, Optional<VaultBridge> vaultBridge) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.locale = Objects.requireNonNull(locale, "locale");
         this.reportService = Objects.requireNonNull(reportService, "reportService");
@@ -58,6 +61,7 @@ public final class ReportAdminCommand implements CommandExecutor {
         this.executor = Objects.requireNonNull(executor, "executor");
         this.anvilInputGUI = Objects.requireNonNull(anvilInputGUI, "anvilInputGUI");
         this.updateChecker = Objects.requireNonNull(updateChecker, "updateChecker");
+        this.vaultBridge = Objects.requireNonNull(vaultBridge, "vaultBridge");
     }
 
     @Override
@@ -74,10 +78,17 @@ public final class ReportAdminCommand implements CommandExecutor {
             case "history" -> history(sender, args);
             case "notifications" -> notificationsToggle(sender, args);
             case "stats" -> stats(sender, args);
+            case "note" -> addNote(sender, args);
+            case "notes" -> viewNotes(sender, args);
+            case "archive" -> setArchived(sender, args, true);
+            case "unarchive" -> setArchived(sender, args, false);
+            case "purge" -> purge(sender, args);
             case "checkupdate" -> checkUpdate(sender);
             case "update" -> applyUpdate(sender);
-            default -> sender.sendMessage(locale.get("command.usage", Map.of("usage",
-                    "/reportadmin <list|view|claim|resolve|history|notifications|stats|checkupdate|update>")));
+            default -> sender.sendMessage(locale.get("command.usage",
+                    Map.of("usage",
+                            "/reportadmin <list|view|claim|resolve|history|notifications|stats|note|notes|archive|"
+                                    + "unarchive|purge|checkupdate|update>")));
         }
         return true;
     }
@@ -103,9 +114,9 @@ public final class ReportAdminCommand implements CommandExecutor {
         ReportQueueView queue = new ReportQueueView(plugin, player, reportDao, config, locale, executor, anvilInputGUI,
                 report -> {
                     ReportDetailView detail = new ReportDetailView(plugin, player, locale, reportService,
-                            punishmentBridge, config, report, () -> queueRef[0].open(0));
+                            punishmentBridge, config, report, () -> queueRef[0].open(0), vaultBridge);
                     detail.open();
-                });
+                }, vaultBridge);
         queueRef[0] = queue;
         queue.open(0);
     }
@@ -245,6 +256,98 @@ public final class ReportAdminCommand implements CommandExecutor {
                                 String.format(Locale.ROOT, "%.1f", stats.avgResolutionMinutes())))));
             }
         });
+    }
+
+    /**
+     * Appends a persistent note to a report — independent of, and in addition to, the free-text resolution note set
+     * once at resolution time. Any staff member can leave any number of these over a report's whole lifetime.
+     */
+    private void addNote(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("bookreports.staff")) {
+            sender.sendMessage(locale.get("command.no-permission"));
+            return;
+        }
+        if (args.length < 3) {
+            sender.sendMessage(locale.get("command.usage", Map.of("usage", "/reportadmin note <id> <text>")));
+            return;
+        }
+        parseId(sender, args).ifPresent(id -> {
+            String text = String.join(" ", Arrays.asList(args).subList(2, args.length));
+            reportService.addNote(id, reviewerUuid(sender), senderName(sender), text)
+                    .whenComplete((note, error) -> runOnMain(() -> {
+                        if (error != null) {
+                            sender.sendMessage(locale.get("error.generic"));
+                            return;
+                        }
+                        sender.sendMessage(locale.get("staff.note.added", Map.of("ticket_id", String.valueOf(id))));
+                    }));
+        });
+    }
+
+    private void viewNotes(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("bookreports.staff")) {
+            sender.sendMessage(locale.get("command.no-permission"));
+            return;
+        }
+        parseId(sender, args)
+                .ifPresent(id -> reportService.getNotes(id).whenComplete((notes, error) -> runOnMain(() -> {
+                    if (error != null) {
+                        sender.sendMessage(locale.get("error.generic"));
+                        return;
+                    }
+                    if (notes.isEmpty()) {
+                        sender.sendMessage(locale.get("staff.note.empty"));
+                        return;
+                    }
+                    sender.sendMessage(locale.get("staff.note.title", Map.of("ticket_id", String.valueOf(id))));
+                    for (var note : notes) {
+                        sender.sendMessage(Component.text(note.authorName() + ": " + note.noteText()));
+                    }
+                })));
+    }
+
+    /**
+     * Hides (or restores) a report from every staff-queue view without deleting it — the report, its notes and its
+     * sanction audit trail all stay intact and reachable by direct id/uuid lookup ({@code /reportadmin view}).
+     */
+    private void setArchived(CommandSender sender, String[] args, boolean archived) {
+        if (!sender.hasPermission("bookreports.staff.resolve")) {
+            sender.sendMessage(locale.get("command.no-permission"));
+            return;
+        }
+        parseId(sender, args).ifPresent(
+                id -> reportService.setArchived(id, archived).whenComplete((updated, error) -> runOnMain(() -> {
+                    if (error != null || !Boolean.TRUE.equals(updated)) {
+                        sender.sendMessage(locale.get("error.generic"));
+                        return;
+                    }
+                    String key = archived ? "staff.archive.archived" : "staff.archive.restored";
+                    sender.sendMessage(locale.get(key, Map.of("ticket_id", String.valueOf(id))));
+                })));
+    }
+
+    /**
+     * Permanently deletes a report and its notes — irreversible, {@code bookreports.admin}-only, and logged so there's
+     * an audit trail of who removed what, since the report itself won't exist to ask afterwards.
+     */
+    private void purge(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("bookreports.admin")) {
+            sender.sendMessage(locale.get("command.no-permission"));
+            return;
+        }
+        parseId(sender, args).ifPresent(id -> reportService.purge(id).whenComplete((purged, error) -> runOnMain(() -> {
+            if (error != null || !Boolean.TRUE.equals(purged)) {
+                sender.sendMessage(locale.get("error.generic"));
+                return;
+            }
+            plugin.getLogger().info(
+                    "Report id=" + id + " permanently purged by " + senderName(sender) + " via /reportadmin purge");
+            sender.sendMessage(locale.get("staff.purge.success", Map.of("ticket_id", String.valueOf(id))));
+        })));
+    }
+
+    private String senderName(CommandSender sender) {
+        return sender instanceof Player player ? player.getName() : "Console";
     }
 
     /** Forces an on-demand check rather than waiting for the next scheduled interval — mainly for admins to verify. */

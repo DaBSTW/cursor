@@ -26,6 +26,8 @@ import dev.bookreports.integration.placeholder.PlaceholderExpansionImpl;
 import dev.bookreports.integration.proxy.ProxySyncChannel;
 import dev.bookreports.integration.punishment.PunishmentBridge;
 import dev.bookreports.integration.punishment.PunishmentBridges;
+import dev.bookreports.integration.vault.VaultBridge;
+import dev.bookreports.integration.vault.VaultBridges;
 import dev.bookreports.service.CooldownService;
 import dev.bookreports.service.DailyLimitService;
 import dev.bookreports.service.PriorityCalculator;
@@ -35,9 +37,11 @@ import dev.bookreports.storage.StorageException;
 import dev.bookreports.storage.StorageManager;
 import dev.bookreports.storage.dao.JdbcPenaltyDao;
 import dev.bookreports.storage.dao.JdbcReportDao;
+import dev.bookreports.storage.dao.JdbcReportNoteDao;
 import dev.bookreports.storage.dao.JdbcStaffPrefsDao;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
+import dev.bookreports.storage.dao.ReportNoteDao;
 import dev.bookreports.storage.dao.StaffPrefsDao;
 import dev.bookreports.update.UpdateChecker;
 import dev.bookreports.update.UpdateNotifyListener;
@@ -208,6 +212,7 @@ public final class BookReportsPlugin extends JavaPlugin {
     private void startServices() {
         ReportDao reportDao = new JdbcReportDao(dataSource);
         PenaltyDao penaltyDao = new JdbcPenaltyDao(dataSource);
+        ReportNoteDao reportNoteDao = new JdbcReportNoteDao(dataSource);
         StaffPrefsDao staffPrefsDao = new JdbcStaffPrefsDao(dataSource);
         Clock clock = Clock.systemUTC();
 
@@ -220,9 +225,12 @@ public final class BookReportsPlugin extends JavaPlugin {
                 coreProtectSettings.lookbackSeconds(), coreProtectSettings.maxEntries());
         coreProtectBridge.ifPresent(bridge -> getLogger().info("CoreProtect bridge active."));
 
+        Optional<PunishmentBridge> punishmentBridge = PunishmentBridges.detect(getServer().getPluginManager());
+        punishmentBridge.ifPresent(bridge -> getLogger().info("Punishment bridge active: " + bridge.name()));
+
         reportService = new ReportService(reportDao, penaltyDao, cooldownService, dailyLimitService, priorityCalculator,
                 configManager::current, getServer().getPluginManager(), scheduler, workerExecutor, clock, getLogger(),
-                coreProtectBridge);
+                coreProtectBridge, punishmentBridge, reportNoteDao);
 
         BookReportsAPI api = new BookReportsApiImpl(reportService, configManager::current, workerExecutor);
         getServer().getServicesManager().register(BookReportsAPI.class, api, this, ServicePriority.Normal);
@@ -232,7 +240,7 @@ public final class BookReportsPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(anvilInputGUI, this);
 
         registerBookFlow();
-        registerStaffPanel(reportDao, staffPrefsDao);
+        registerStaffPanel(reportDao, staffPrefsDao, punishmentBridge);
         registerIntegrations(reportDao, cooldownService);
         releaseStaleClaimsLoop();
     }
@@ -251,14 +259,16 @@ public final class BookReportsPlugin extends JavaPlugin {
                 reportService, anvilInputGUI, chatContextTracker, scheduler, getLogger()));
     }
 
-    private void registerStaffPanel(ReportDao reportDao, StaffPrefsDao staffPrefsDao) {
+    private void registerStaffPanel(ReportDao reportDao, StaffPrefsDao staffPrefsDao,
+            Optional<PunishmentBridge> punishmentBridge) {
         StaffNotificationService notifications = new StaffNotificationService(configManager::current, localeManager,
                 staffPrefsDao, workerExecutor, getLogger());
         getServer().getPluginManager().registerEvents(notifications, this);
-        Optional<PunishmentBridge> punishmentBridge = PunishmentBridges.detect(getServer().getPluginManager());
-        punishmentBridge.ifPresent(bridge -> getLogger().info("Punishment bridge active: " + bridge.name()));
-        reportAdminCommandAdapter.bind(new ReportAdminCommand(this, localeManager, reportService, reportDao,
-                configManager::current, notifications, punishmentBridge, workerExecutor, anvilInputGUI, updateChecker));
+        Optional<VaultBridge> vaultBridge = VaultBridges.detect(getServer().getPluginManager());
+        vaultBridge.ifPresent(bridge -> getLogger().info("Vault Chat bridge active."));
+        reportAdminCommandAdapter
+                .bind(new ReportAdminCommand(this, localeManager, reportService, reportDao, configManager::current,
+                        notifications, punishmentBridge, workerExecutor, anvilInputGUI, updateChecker, vaultBridge));
     }
 
     /** Every integration here is soft-depend (SPECS.md §11/§6) — absent, it's simply never registered. */

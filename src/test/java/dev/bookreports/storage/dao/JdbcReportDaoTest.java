@@ -10,6 +10,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import dev.bookreports.storage.TestDatabases;
 import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
+import dev.bookreports.storage.model.ReportNote;
 import dev.bookreports.storage.model.ReportStatus;
 import java.time.Instant;
 import java.util.List;
@@ -52,11 +53,35 @@ class JdbcReportDaoTest {
     void chatContextRoundTripsThroughInsertAndRead() {
         Report withContext = new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", UUID.randomUUID(),
                 "Target", "chat_abuse", null, null, "default", ReportStatus.PENDING, Priority.MEDIUM, null, null,
-                Instant.now(), null, null, 0, "hello | world", null, null, null);
+                Instant.now(), null, null, 0, "hello | world", null, null, null, null, null, false);
 
         Report inserted = dao.insert(withContext);
 
         assertEquals("hello | world", dao.findById(inserted.id()).orElseThrow().chatContext());
+    }
+
+    @Test
+    void locationsRoundTripThroughInsertAndRead() {
+        Report withLocations = new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", UUID.randomUUID(),
+                "Target", "hacks", null, null, "default", ReportStatus.PENDING, Priority.MEDIUM, null, null,
+                Instant.now(), null, null, 0, null, null, null, null, "world;100.0;64.0;-200.0;0.0;0.0",
+                "world;95.0;64.0;-198.0;90.0;0.0", false);
+
+        Report inserted = dao.insert(withLocations);
+        Report reread = dao.findById(inserted.id()).orElseThrow();
+
+        assertEquals("world;100.0;64.0;-200.0;0.0;0.0", reread.targetLocation());
+        assertEquals("world;95.0;64.0;-198.0;90.0;0.0", reread.reporterLocation());
+    }
+
+    @Test
+    void locationsAreNullWhenNeverCaptured() {
+        Report inserted = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+
+        Report reread = dao.findById(inserted.id()).orElseThrow();
+
+        assertNull(reread.targetLocation());
+        assertNull(reread.reporterLocation());
     }
 
     @Test
@@ -102,7 +127,7 @@ class JdbcReportDaoTest {
         Report hacks = dao.insert(draft(UUID.randomUUID(), target));
         Report other = dao.insert(new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target",
                 "chat_abuse", null, null, "default", ReportStatus.PENDING, Priority.LOW, null, null, Instant.now(),
-                null, null, 0, null, null, null, null));
+                null, null, 0, null, null, null, null, null, null, false));
 
         List<Report> hacksOnly = dao.findByStatus(ReportStatus.PENDING, "hacks", 0, 10);
 
@@ -115,7 +140,7 @@ class JdbcReportDaoTest {
     private Report draftWithPriority(UUID target, Priority priority) {
         return new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Target", "hacks", null, null,
                 "default", ReportStatus.PENDING, priority, null, null, Instant.now(), null, null, 0, null, null, null,
-                null);
+                null, null, null, false);
     }
 
     @Test
@@ -263,7 +288,7 @@ class JdbcReportDaoTest {
     private Report draft(UUID reporter, UUID target) {
         return new Report(0, UUID.randomUUID(), reporter, "Reporter", target, "Target", "hacks", "killaura", null,
                 "default", ReportStatus.PENDING, Priority.HIGH, null, null, Instant.now(), null, null, 0, null, null,
-                null, null);
+                null, null, null, null, false);
     }
 
     @Test
@@ -310,7 +335,7 @@ class JdbcReportDaoTest {
         UUID reviewer = UUID.randomUUID();
         Report matching = dao.insert(new Report(0, UUID.randomUUID(), UUID.randomUUID(), "Reporter", target, "Steve",
                 "hacks", null, null, "default", ReportStatus.PENDING, Priority.HIGH, null, null, Instant.now(), null,
-                null, 0, null, null, null, null));
+                null, 0, null, null, null, null, null, null, false));
         dao.claim(matching.id(), reviewer, Instant.now());
         dao.insert(draftWithPriority(UUID.randomUUID(), Priority.LOW));
 
@@ -327,5 +352,60 @@ class JdbcReportDaoTest {
         assertEquals(1, byClaimedBy.size());
         assertEquals(matching.id(), byClaimedBy.get(0).id());
         assertTrue(dao.findByStatus(ReportStatus.IN_REVIEW, null, null, null, UUID.randomUUID(), 0, 10).isEmpty());
+    }
+
+    @Test
+    void setArchivedHidesAReportFromFindByStatusButNotFromDirectLookup() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        assertEquals(1, dao.findByStatus(ReportStatus.PENDING, 0, 10).size());
+
+        boolean updated = dao.setArchived(report.id(), true);
+
+        assertTrue(updated);
+        assertTrue(dao.findByStatus(ReportStatus.PENDING, 0, 10).isEmpty());
+        assertTrue(dao.findById(report.id()).orElseThrow().archived());
+    }
+
+    @Test
+    void setArchivedCanBeReversed() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        dao.setArchived(report.id(), true);
+
+        boolean restored = dao.setArchived(report.id(), false);
+
+        assertTrue(restored);
+        assertEquals(1, dao.findByStatus(ReportStatus.PENDING, 0, 10).size());
+        assertFalse(dao.findById(report.id()).orElseThrow().archived());
+    }
+
+    @Test
+    void setArchivedReturnsFalseForAnUnknownId() {
+        assertFalse(dao.setArchived(999, true));
+    }
+
+    @Test
+    void purgeDeletesTheReportPermanently() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+
+        boolean purged = dao.purge(report.id());
+
+        assertTrue(purged);
+        assertTrue(dao.findById(report.id()).isEmpty());
+    }
+
+    @Test
+    void purgeReturnsFalseForAnUnknownId() {
+        assertFalse(dao.purge(999));
+    }
+
+    @Test
+    void purgeAlsoDeletesTheReportsNotes() {
+        Report report = dao.insert(draft(UUID.randomUUID(), UUID.randomUUID()));
+        ReportNoteDao noteDao = new JdbcReportNoteDao(dataSource);
+        noteDao.insert(new ReportNote(0, report.id(), UUID.randomUUID(), "Steve", "a note", Instant.now()));
+
+        dao.purge(report.id());
+
+        assertTrue(noteDao.findByReport(report.id()).isEmpty());
     }
 }

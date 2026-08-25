@@ -10,11 +10,14 @@ import dev.bookreports.config.BookReportsConfig;
 import dev.bookreports.config.FalseReportPenaltySettings;
 import dev.bookreports.config.ReportCategory;
 import dev.bookreports.integration.coreprotect.CoreProtectBridge;
+import dev.bookreports.integration.punishment.PunishmentBridge;
 import dev.bookreports.storage.StorageException;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
+import dev.bookreports.storage.dao.ReportNoteDao;
 import dev.bookreports.storage.model.Priority;
 import dev.bookreports.storage.model.Report;
+import dev.bookreports.storage.model.ReportNote;
 import dev.bookreports.storage.model.ReportPenalty;
 import dev.bookreports.storage.model.ReportStatus;
 import dev.bookreports.storage.model.ReporterStats;
@@ -57,19 +60,31 @@ public final class ReportService {
     private final Clock clock;
     private final Logger logger;
     private final Optional<CoreProtectBridge> coreProtectBridge;
+    private final Optional<PunishmentBridge> punishmentBridge;
+    private final ReportNoteDao reportNoteDao;
 
     public ReportService(ReportDao reportDao, PenaltyDao penaltyDao, CooldownService cooldownService,
             DailyLimitService dailyLimitService, PriorityCalculator priorityCalculator,
             Supplier<BookReportsConfig> config, PluginManager pluginManager, SchedulerAdapter scheduler,
-            Executor executor, Clock clock, Logger logger) {
+            Executor executor, Clock clock, Logger logger, ReportNoteDao reportNoteDao) {
         this(reportDao, penaltyDao, cooldownService, dailyLimitService, priorityCalculator, config, pluginManager,
-                scheduler, executor, clock, logger, Optional.empty());
+                scheduler, executor, clock, logger, Optional.empty(), reportNoteDao);
     }
 
     public ReportService(ReportDao reportDao, PenaltyDao penaltyDao, CooldownService cooldownService,
             DailyLimitService dailyLimitService, PriorityCalculator priorityCalculator,
             Supplier<BookReportsConfig> config, PluginManager pluginManager, SchedulerAdapter scheduler,
-            Executor executor, Clock clock, Logger logger, Optional<CoreProtectBridge> coreProtectBridge) {
+            Executor executor, Clock clock, Logger logger, Optional<CoreProtectBridge> coreProtectBridge,
+            ReportNoteDao reportNoteDao) {
+        this(reportDao, penaltyDao, cooldownService, dailyLimitService, priorityCalculator, config, pluginManager,
+                scheduler, executor, clock, logger, coreProtectBridge, Optional.empty(), reportNoteDao);
+    }
+
+    public ReportService(ReportDao reportDao, PenaltyDao penaltyDao, CooldownService cooldownService,
+            DailyLimitService dailyLimitService, PriorityCalculator priorityCalculator,
+            Supplier<BookReportsConfig> config, PluginManager pluginManager, SchedulerAdapter scheduler,
+            Executor executor, Clock clock, Logger logger, Optional<CoreProtectBridge> coreProtectBridge,
+            Optional<PunishmentBridge> punishmentBridge, ReportNoteDao reportNoteDao) {
         this.reportDao = Objects.requireNonNull(reportDao, "reportDao");
         this.penaltyDao = Objects.requireNonNull(penaltyDao, "penaltyDao");
         this.cooldownService = Objects.requireNonNull(cooldownService, "cooldownService");
@@ -82,6 +97,8 @@ public final class ReportService {
         this.clock = Objects.requireNonNull(clock, "clock");
         this.logger = Objects.requireNonNull(logger, "logger");
         this.coreProtectBridge = Objects.requireNonNull(coreProtectBridge, "coreProtectBridge");
+        this.punishmentBridge = Objects.requireNonNull(punishmentBridge, "punishmentBridge");
+        this.reportNoteDao = Objects.requireNonNull(reportNoteDao, "reportNoteDao");
     }
 
     /**
@@ -150,7 +167,8 @@ public final class ReportService {
 
         return new Report(0, UUID.randomUUID(), reporterUuid, request.reporterName(), targetUuid, request.targetName(),
                 request.categoryId(), request.subReasonId(), evidenceText, request.server(), ReportStatus.PENDING,
-                priority, null, null, clock.instant(), null, null, 0, chatContext, null, null, coreProtectContext);
+                priority, null, null, clock.instant(), null, null, 0, chatContext, null, null, coreProtectContext,
+                request.targetLocation(), request.reporterLocation(), false);
     }
 
     /**
@@ -296,9 +314,74 @@ public final class ReportService {
                         () -> new StorageException("Report id=" + reportId + " vanished right after updateStatus"));
                 penaltyDao.insert(new ReportPenalty(0, report.reporterUuid(), "FALSE_REPORT", clock.instant(), null));
                 scheduler.runGlobal(() -> pluginManager.callEvent(new ReportFalseMarkedEvent(report, reviewerUuid)));
+                autoMuteIfAbusive(report);
             }
             return updated;
         }, executor);
+    }
+
+    /**
+     * Wires {@code false-report-penalty.mute-minutes} (parsed by {@code ConfigParser} but, until now, never actually
+     * consumed) into a real punishment: the moment a reporter's false-report count crosses
+     * {@code threshold-in-30-days}, a connected {@link PunishmentBridge} mutes them automatically — no staff member has
+     * to remember to do it by hand. Fires exactly once per crossing, not on every subsequent false report past the
+     * threshold, and is entirely best-effort: a missing bridge, a disabled setting, or the mute call itself failing
+     * never blocks or fails {@link #markFalse}.
+     */
+    private void autoMuteIfAbusive(Report report) {
+        FalseReportPenaltySettings penalty = config.get().falseReportPenalty();
+        if (!penalty.enabled() || !penalty.muteEnabled() || punishmentBridge.isEmpty()) {
+            return;
+        }
+        Instant since = clock.instant().minus(Duration.ofDays(30));
+        int falseReports = penaltyDao.countByPlayerSince(report.reporterUuid(), "FALSE_REPORT", since);
+        if (falseReports != penalty.thresholdIn30Days()) {
+            return;
+        }
+        PunishmentBridge bridge = punishmentBridge.get();
+        scheduler.runGlobal(() -> {
+            try {
+                bridge.mute(report.reporterName(), penalty.muteMinutes() + "m",
+                        "Automatic: " + falseReports + " false reports in the last 30 days", "BookReports");
+                logger.info("Auto-muted abusive reporter " + report.reporterName() + " for " + penalty.muteMinutes()
+                        + "m (" + falseReports + " false reports in 30 days)");
+            } catch (RuntimeException e) {
+                logger.log(Level.WARNING, "Auto-mute failed for reporter=" + report.reporterName(), e);
+            }
+        });
+    }
+
+    /**
+     * Appends a persistent staff note to a report — independent of, and in addition to, the single resolution note set
+     * once at resolution time. A report can carry any number of these over its whole lifetime.
+     */
+    public CompletableFuture<ReportNote> addNote(long reportId, UUID authorUuid, String authorName, String noteText) {
+        String sanitized = TextSanitizer.stripAndTruncate(noteText, TextSanitizer.EVIDENCE_MAX_LENGTH);
+        return CompletableFuture.supplyAsync(
+                () -> reportNoteDao
+                        .insert(new ReportNote(0, reportId, authorUuid, authorName, sanitized, clock.instant())),
+                executor);
+    }
+
+    /** Oldest first — backs the report detail view's notes button and {@code /reportadmin note}. */
+    public CompletableFuture<List<ReportNote>> getNotes(long reportId) {
+        return CompletableFuture.supplyAsync(() -> reportNoteDao.findByReport(reportId), executor);
+    }
+
+    /**
+     * Hides a report from every staff-queue view without deleting it — see {@link ReportDao#setArchived}. Returns
+     * {@code false} if no row matched {@code reportId}.
+     */
+    public CompletableFuture<Boolean> setArchived(long reportId, boolean archived) {
+        return CompletableFuture.supplyAsync(() -> reportDao.setArchived(reportId, archived), executor);
+    }
+
+    /**
+     * Permanently deletes a report and its notes — irreversible, see {@link ReportDao#purge}. Returns {@code false} if
+     * no row matched {@code reportId}.
+     */
+    public CompletableFuture<Boolean> purge(long reportId) {
+        return CompletableFuture.supplyAsync(() -> reportDao.purge(reportId), executor);
     }
 
     /**

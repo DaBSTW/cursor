@@ -9,6 +9,32 @@ All notable changes to this project are documented here. Format follows
 Everything from here down is new work on top of the frozen `v1.0.0` tag
 (`f4a33ac`) — nothing below has shipped yet.
 
+### Added
+- Automatic mute for abusive reporters: `false-report-penalty.mute-minutes` (parsed since 1.0.0 but never wired
+  up) now actually dispatches through the connected punishment bridge the moment a reporter's false-report count
+  crosses `threshold-in-30-days`. Fires once per crossing, not on every subsequent false report.
+- Live target status in the report detail view: gamemode, health and active potion effects, computed on open
+  rather than stored — always current, costs nothing when the target is already online.
+- Offline-player reporting: `/report <nick>` now resolves a player who isn't currently online (gated by
+  `hasPlayedBefore()`), matching the existing offline-lookup pattern used by `/reportadmin history`/`stats`.
+- Incident-location snapshot: both the target's and the reporter's position are captured at submission time and
+  stored as a single compact string (same pattern as `chat_context`). The report detail view gained a
+  "Teleport to incident location" button (separate from the existing live "Teleport", which follows the target
+  wherever they are now) and a reporter↔target distance line — a credibility signal TigerReports doesn't surface.
+- Persistent staff notes: `/reportadmin note <id> <text>` appends a timestamped note to a report, independent of
+  the single resolution note; `/reportadmin notes <id>` (also a button in the detail view) lists them.
+- Archive and purge: `/reportadmin archive <id>` hides an already-resolved report from the staff queue without
+  deleting it (still reachable via `view`/`history`); `/reportadmin unarchive <id>` reverses it;
+  `/reportadmin purge <id>` (`bookreports.admin`-only, logged) permanently deletes a report and its notes.
+- Minimum evidence length: typed evidence shorter than 5 characters re-prompts instead of being accepted —
+  never applies to "Skip".
+- Vault integration (`Chat` service): when Vault plus a permission plugin that registers one (LuckPerms, etc.)
+  are both present, rank prefix/suffix show next to player names in the staff queue and report detail view.
+
+### Changed
+- `Report`, `SubmitReportRequest` and `ReportDao` all gained new fields/methods for the above — additive only, no
+  existing column or method signature was removed.
+
 ## [1.0.0] — 2026-08-19
 
 Initial release, built out phase-by-phase per `ROADMAP.md`.

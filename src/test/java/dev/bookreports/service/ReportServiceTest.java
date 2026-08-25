@@ -27,9 +27,11 @@ import dev.bookreports.config.StaffSettings;
 import dev.bookreports.config.StorageType;
 import dev.bookreports.config.UpdateCheckerSettings;
 import dev.bookreports.config.UpdateSource;
+import dev.bookreports.integration.punishment.PunishmentBridge;
 import dev.bookreports.storage.TestDatabases;
 import dev.bookreports.storage.dao.JdbcPenaltyDao;
 import dev.bookreports.storage.dao.JdbcReportDao;
+import dev.bookreports.storage.dao.JdbcReportNoteDao;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.Priority;
@@ -43,6 +45,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +114,7 @@ class ReportServiceTest {
         service = new ReportService(reportDao, penaltyDao, new CooldownService(clock),
                 new DailyLimitService(reportDao, () -> config, clock), new PriorityCalculator(() -> config, clock),
                 () -> config, server.getPluginManager(), new ImmediateSchedulerAdapter(), Runnable::run, clock,
-                Logger.getLogger("BookReportsTest"));
+                Logger.getLogger("BookReportsTest"), new JdbcReportNoteDao(dataSource));
     }
 
     @AfterEach
@@ -134,7 +137,7 @@ class ReportServiceTest {
     void evidenceTextIsSanitizedServerSideEvenWhenTheCallerDoesNotGoThroughTheAnvilGui() {
         String malicious = "&c".repeat(60) + "still too long after stripping the color codes above";
         SubmitReportRequest request = new SubmitReportRequest(UUID.randomUUID(), "Reporter", UUID.randomUUID(),
-                "Target", "hacks", "killaura", malicious, "default", null);
+                "Target", "hacks", "killaura", malicious, "default", null, null, null);
 
         Report report = submit(request);
 
@@ -146,7 +149,7 @@ class ReportServiceTest {
     void chatContextIsSanitizedAndCappedServerSide() {
         String longChat = "&c".repeat(60) + "x".repeat(600);
         SubmitReportRequest request = new SubmitReportRequest(UUID.randomUUID(), "Reporter", UUID.randomUUID(),
-                "Target", "hacks", "killaura", "evidence", "default", longChat);
+                "Target", "hacks", "killaura", "evidence", "default", longChat, null, null);
 
         Report report = submit(request);
 
@@ -255,6 +258,58 @@ class ReportServiceTest {
     }
 
     @Test
+    void markFalseAutoMutesOnceTheFalseReportThresholdIsCrossed() throws Exception {
+        UUID reporter = UUID.randomUUID();
+        config = withFalseReportPenalty(new FalseReportPenaltySettings(true, 2, 4, 10));
+        FakePunishmentBridge bridge = new FakePunishmentBridge();
+        service = serviceWithPunishmentBridge(bridge);
+
+        Report first = submit(request(reporter, UUID.randomUUID()));
+        service.markFalse(first.id(), UUID.randomUUID(), "n/a").get(2, TimeUnit.SECONDS);
+        assertTrue(bridge.muted.isEmpty(), "should not mute before the threshold is reached");
+
+        clock.advance(java.time.Duration.ofSeconds(config.cooldownSeconds() + 1));
+        Report second = submit(request(reporter, UUID.randomUUID()));
+        service.markFalse(second.id(), UUID.randomUUID(), "n/a").get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, bridge.muted.size());
+        assertEquals("Reporter", bridge.muted.get(0)[0]);
+        assertEquals("10m", bridge.muted.get(0)[1]);
+    }
+
+    @Test
+    void markFalseDoesNotMuteAgainOnceAlreadyPastTheThreshold() throws Exception {
+        UUID reporter = UUID.randomUUID();
+        config = withFalseReportPenalty(new FalseReportPenaltySettings(true, 1, 4, 10));
+        FakePunishmentBridge bridge = new FakePunishmentBridge();
+        service = serviceWithPunishmentBridge(bridge);
+
+        Report first = submit(request(reporter, UUID.randomUUID()));
+        service.markFalse(first.id(), UUID.randomUUID(), "n/a").get(2, TimeUnit.SECONDS);
+        assertEquals(1, bridge.muted.size());
+
+        clock.advance(java.time.Duration
+                .ofSeconds(config.cooldownSeconds() * config.falseReportPenalty().cooldownMultiplier() + 1));
+        Report second = submit(request(reporter, UUID.randomUUID()));
+        service.markFalse(second.id(), UUID.randomUUID(), "n/a").get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, bridge.muted.size(), "a reporter already past the threshold shouldn't be re-muted");
+    }
+
+    @Test
+    void markFalseNeverMutesWhenMuteMinutesIsZero() throws Exception {
+        UUID reporter = UUID.randomUUID();
+        config = withFalseReportPenalty(new FalseReportPenaltySettings(true, 1, 4, 0));
+        FakePunishmentBridge bridge = new FakePunishmentBridge();
+        service = serviceWithPunishmentBridge(bridge);
+
+        Report report = submit(request(reporter, UUID.randomUUID()));
+        service.markFalse(report.id(), UUID.randomUUID(), "n/a").get(2, TimeUnit.SECONDS);
+
+        assertTrue(bridge.muted.isEmpty());
+    }
+
+    @Test
     void releaseStaleClaimsReturnsExpiredClaimsToPending() throws Exception {
         Report report = submit(request(UUID.randomUUID(), UUID.randomUUID()));
         UUID reviewer = UUID.randomUUID();
@@ -277,6 +332,42 @@ class ReportServiceTest {
 
         submit(request(reporter, UUID.randomUUID()));
         assertTrue(service.isOnCooldown(reporter));
+    }
+
+    @Test
+    void addNoteThenGetNotesRoundTrips() throws Exception {
+        Report report = submit(request(UUID.randomUUID(), UUID.randomUUID()));
+        UUID staff = UUID.randomUUID();
+
+        service.addNote(report.id(), staff, "Steve", "keeping an eye on this").get(2, TimeUnit.SECONDS);
+        List<dev.bookreports.storage.model.ReportNote> notes = service.getNotes(report.id()).get(2, TimeUnit.SECONDS);
+
+        assertEquals(1, notes.size());
+        assertEquals("keeping an eye on this", notes.get(0).noteText());
+        assertEquals("Steve", notes.get(0).authorName());
+    }
+
+    @Test
+    void setArchivedHidesFromTheQueueAndCanBeReversed() throws Exception {
+        Report report = submit(request(UUID.randomUUID(), UUID.randomUUID()));
+
+        boolean archived = service.setArchived(report.id(), true).get(2, TimeUnit.SECONDS);
+        assertTrue(archived);
+        assertTrue(reportDao.findByStatus(ReportStatus.PENDING, 0, 10).isEmpty());
+
+        boolean restored = service.setArchived(report.id(), false).get(2, TimeUnit.SECONDS);
+        assertTrue(restored);
+        assertEquals(1, reportDao.findByStatus(ReportStatus.PENDING, 0, 10).size());
+    }
+
+    @Test
+    void purgeDeletesTheReport() throws Exception {
+        Report report = submit(request(UUID.randomUUID(), UUID.randomUUID()));
+
+        boolean purged = service.purge(report.id()).get(2, TimeUnit.SECONDS);
+
+        assertTrue(purged);
+        assertTrue(reportDao.findById(report.id()).isEmpty());
     }
 
     private ReportRejectedException assertRejected(SubmitReportRequest request) {
@@ -324,7 +415,48 @@ class ReportServiceTest {
 
     private SubmitReportRequest request(UUID reporter, UUID target) {
         return new SubmitReportRequest(reporter, "Reporter", target, "Target", "hacks", "killaura", "evidence",
-                "default", null);
+                "default", null, null, null);
+    }
+
+    private BookReportsConfig withFalseReportPenalty(FalseReportPenaltySettings penalty) {
+        return new BookReportsConfig(config.storageType(), config.mysql(), config.cooldownSeconds(),
+                config.dailyLimit(), config.sessionTimeoutSeconds(), config.preventSelfReport(),
+                config.preventDuplicatePending(), config.categories(), config.priorityEscalation(), penalty,
+                config.enableReportTool(), config.staff(), config.discord(), config.punishments(),
+                config.placeholderApiEnabled(), config.metricsEnabled(), config.locale(), config.serverId(),
+                config.coreProtect(), config.updateChecker());
+    }
+
+    private ReportService serviceWithPunishmentBridge(PunishmentBridge bridge) {
+        return new ReportService(reportDao, penaltyDao, new CooldownService(clock),
+                new DailyLimitService(reportDao, () -> config, clock), new PriorityCalculator(() -> config, clock),
+                () -> config, server.getPluginManager(), new ImmediateSchedulerAdapter(), Runnable::run, clock,
+                Logger.getLogger("BookReportsTest"), Optional.empty(), Optional.of(bridge),
+                new JdbcReportNoteDao(dataSource));
+    }
+
+    private static final class FakePunishmentBridge implements PunishmentBridge {
+        private final List<String[]> muted = new ArrayList<>();
+
+        @Override
+        public String name() {
+            return "Fake";
+        }
+
+        @Override
+        public void ban(String playerName, String duration, String reason, String staffName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void mute(String playerName, String duration, String reason, String staffName) {
+            muted.add(new String[]{playerName, duration, reason, staffName});
+        }
+
+        @Override
+        public void kick(String playerName, String reason, String staffName) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private BookReportsConfig withDailyLimit(int dailyLimit) {

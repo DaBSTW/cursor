@@ -12,6 +12,7 @@ softdepend:
   - LiteBans
   - AdvancedBan
   - Essentials
+  - Vault
 
 # Commands are registered programmatically via the Brigadier lifecycle event
 # (BookReportsPlugin#registerCommands) — Paper plugins have not supported this YAML

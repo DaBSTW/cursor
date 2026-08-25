@@ -35,6 +35,9 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("net.coreprotect:coreprotect:21.3")
+    // Vault's own Chat service (prefix/suffix), not published to Maven Central — JitPack (already configured
+    // above) mirrors its GitHub releases.
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.xerial:sqlite-jdbc:3.46.1.0")
@@ -47,6 +50,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("com.github.seeseemelk:MockBukkit-v1.21:3.133.2")
     testImplementation("net.coreprotect:coreprotect:21.3")
+    testImplementation("com.github.MilkBowl:VaultAPI:1.7.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

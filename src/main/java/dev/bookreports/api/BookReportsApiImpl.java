@@ -31,7 +31,7 @@ public final class BookReportsApiImpl implements BookReportsAPI {
             String evidence) {
         return CompletableFuture
                 .supplyAsync(() -> new SubmitReportRequest(reporter, resolveName(reporter), target, resolveName(target),
-                        categoryId, subReasonId, evidence, config.get().serverId(), null), executor)
+                        categoryId, subReasonId, evidence, config.get().serverId(), null, null, null), executor)
                 .thenCompose(reportService::submitReport);
     }
 

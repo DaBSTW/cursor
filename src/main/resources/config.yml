@@ -51,6 +51,9 @@ false-report-penalty:
   enabled: true
   threshold-in-30-days: 3
   cooldown-multiplier: 4
+  # Automatically mutes a reporter the moment their false-report count crosses threshold-in-30-days, using
+  # whichever punishment plugin is detected below. 0 (default) disables this; requires a punishment bridge to
+  # actually be installed, otherwise it's silently a no-op.
   mute-minutes: 0
 
 enable-report-tool: false

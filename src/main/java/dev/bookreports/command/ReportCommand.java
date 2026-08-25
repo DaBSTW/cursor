@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -84,12 +86,34 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
         }
 
         Player target = Bukkit.getPlayerExact(args[0]);
-        if (target == null || !target.isOnline()) {
-            player.sendMessage(locale.get("report.target-not-found", Map.of("player", args[0])));
+        if (target != null && target.isOnline()) {
+            beginSession(player, target.getUniqueId(), target.getName());
             return true;
         }
-        beginSession(player, target);
+        reportOfflineTarget(player, args[0]);
         return true;
+    }
+
+    /**
+     * Falls back to an offline lookup once no exact online match exists — {@code getOfflinePlayer(name)} can block on
+     * disk for a name the server hasn't cached (same reasoning as {@code ReportAdminCommand.history()}/{@code
+     * .stats()}), so the lookup itself stays off the main thread; only the actual session start hops back onto it.
+     * {@code hasPlayedBefore()} keeps a typo from silently creating a session against a UUID nobody has ever held.
+     */
+    private void reportOfflineTarget(Player player, String targetName) {
+        scheduler.runAsync(() -> {
+            OfflinePlayer offline = Bukkit.getOfflinePlayer(targetName);
+            boolean known = offline.hasPlayedBefore();
+            UUID targetId = offline.getUniqueId();
+            String resolvedName = offline.getName() != null ? offline.getName() : targetName;
+            scheduler.runForPlayer(player, () -> {
+                if (!known) {
+                    player.sendMessage(locale.get("report.target-not-found", Map.of("player", targetName)));
+                    return;
+                }
+                beginSession(player, targetId, resolvedName);
+            });
+        });
     }
 
     private void openTargetPicker(Player player) {
@@ -99,14 +123,14 @@ public final class ReportCommand implements CommandExecutor, TabCompleter {
         books.openSelectTarget(player, candidates);
     }
 
-    private void beginSession(Player player, Player target) {
+    private void beginSession(Player player, UUID targetId, String targetName) {
         BookReportsConfig cfg = config.get();
-        if (cfg.preventSelfReport() && target.getUniqueId().equals(player.getUniqueId())) {
+        if (cfg.preventSelfReport() && targetId.equals(player.getUniqueId())) {
             player.sendMessage(locale.get("report.self-report-blocked"));
             return;
         }
-        ReportSession session = sessions.startWithTarget(player.getUniqueId(), target.getUniqueId());
-        books.openTargetConfirm(player, session, target.getName());
+        ReportSession session = sessions.startWithTarget(player.getUniqueId(), targetId);
+        books.openTargetConfirm(player, session, targetName);
     }
 
     private void giveTool(Player player) {

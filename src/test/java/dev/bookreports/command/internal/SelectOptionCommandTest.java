@@ -24,11 +24,13 @@ import dev.bookreports.session.SessionManager;
 import dev.bookreports.storage.TestDatabases;
 import dev.bookreports.storage.dao.JdbcPenaltyDao;
 import dev.bookreports.storage.dao.JdbcReportDao;
+import dev.bookreports.storage.dao.JdbcReportNoteDao;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.ReportStatus;
 import dev.bookreports.util.ImmediateSchedulerAdapter;
 import java.time.Clock;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -66,7 +68,7 @@ class SelectOptionCommandTest {
         ReportService reportService = new ReportService(reportDao, penaltyDao, new CooldownService(clock),
                 new DailyLimitService(reportDao, () -> config, clock), new PriorityCalculator(() -> config, clock),
                 () -> config, server.getPluginManager(), new ImmediateSchedulerAdapter(), Runnable::run, clock,
-                Logger.getLogger("BookReportsTest"));
+                Logger.getLogger("BookReportsTest"), new JdbcReportNoteDao(dataSource));
 
         sessions = new SessionManager(() -> config, clock);
         BookBuilder books = new BookBuilder(locale);
@@ -176,6 +178,50 @@ class SelectOptionCommandTest {
         assertEquals("hacks", reports.get(0).categoryId());
         assertEquals("killaura", reports.get(0).subReasonId());
         assertEquals(ReportStatus.PENDING, reports.get(0).status());
+    }
+
+    @Test
+    void evidenceShorterThanTheMinimumReopensTheAnvilInsteadOfAdvancing() {
+        PlayerMock player = server.addPlayer();
+        ReportSession session = sessions.startWithTarget(player.getUniqueId(), UUID.randomUUID());
+        run(player, session.sessionId(), "confirm-target");
+        run(player, session.sessionId(), "category:hacks");
+        run(player, session.sessionId(), "subreason:killaura");
+        ReportSession onEvidence = sessions.find(player.getUniqueId()).orElseThrow();
+
+        command.onEvidenceCaptured(player, onEvidence, Optional.of("hi"));
+
+        assertEquals(ReportState.EVIDENCE, sessions.find(player.getUniqueId()).orElseThrow().state());
+    }
+
+    @Test
+    void skippingEvidenceIsNeverSubjectToTheMinimumLength() {
+        PlayerMock player = server.addPlayer();
+        ReportSession session = sessions.startWithTarget(player.getUniqueId(), UUID.randomUUID());
+        run(player, session.sessionId(), "confirm-target");
+        run(player, session.sessionId(), "category:hacks");
+        run(player, session.sessionId(), "subreason:killaura");
+        ReportSession onEvidence = sessions.find(player.getUniqueId()).orElseThrow();
+
+        command.onEvidenceCaptured(player, onEvidence, Optional.empty());
+
+        assertEquals(ReportState.SUMMARY, sessions.find(player.getUniqueId()).orElseThrow().state());
+    }
+
+    @Test
+    void evidenceAtOrAboveTheMinimumLengthAdvancesNormally() {
+        PlayerMock player = server.addPlayer();
+        ReportSession session = sessions.startWithTarget(player.getUniqueId(), UUID.randomUUID());
+        run(player, session.sessionId(), "confirm-target");
+        run(player, session.sessionId(), "category:hacks");
+        run(player, session.sessionId(), "subreason:killaura");
+        ReportSession onEvidence = sessions.find(player.getUniqueId()).orElseThrow();
+
+        command.onEvidenceCaptured(player, onEvidence, Optional.of("saw them fly repeatedly"));
+
+        ReportSession advanced = sessions.find(player.getUniqueId()).orElseThrow();
+        assertEquals(ReportState.SUMMARY, advanced.state());
+        assertEquals("saw them fly repeatedly", advanced.evidenceText());
     }
 
     @Test

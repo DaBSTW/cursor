@@ -22,6 +22,7 @@ import dev.bookreports.session.SessionManager;
 import dev.bookreports.storage.TestDatabases;
 import dev.bookreports.storage.dao.JdbcPenaltyDao;
 import dev.bookreports.storage.dao.JdbcReportDao;
+import dev.bookreports.storage.dao.JdbcReportNoteDao;
 import dev.bookreports.storage.dao.PenaltyDao;
 import dev.bookreports.storage.dao.ReportDao;
 import dev.bookreports.storage.model.Priority;
@@ -71,7 +72,8 @@ class ReportCommandTest {
         ReportService reportService = new ReportService(reportDao, penaltyDao, new CooldownService(clock),
                 new DailyLimitService(reportDao, TestConfigs::minimal, clock),
                 new PriorityCalculator(TestConfigs::minimal, clock), TestConfigs::minimal, server.getPluginManager(),
-                new ImmediateSchedulerAdapter(), Runnable::run, clock, Logger.getLogger("BookReportsTest"));
+                new ImmediateSchedulerAdapter(), Runnable::run, clock, Logger.getLogger("BookReportsTest"),
+                new JdbcReportNoteDao(dataSource));
 
         updateChecker = mock(UpdateChecker.class);
         command = new ReportCommand(sessions, TestConfigs::minimal, locale, books, rateLimiter, reportService,
@@ -103,6 +105,18 @@ class ReportCommandTest {
         boolean handled = command.onCommand(reporter, null, "report", new String[]{"sTeVe"});
 
         assertTrue(handled);
+        assertTrue(reporter.nextComponentMessage() == null);
+    }
+
+    @Test
+    void fallsBackToAnOfflinePlayerTheServerHasSeenBefore() {
+        PlayerMock offlineTarget = server.addPlayer("WentOffline");
+        offlineTarget.disconnect();
+
+        boolean handled = command.onCommand(reporter, null, "report", new String[]{"WentOffline"});
+
+        assertTrue(handled);
+        // No "target not found" — the session actually started against the offline player's real uuid.
         assertTrue(reporter.nextComponentMessage() == null);
     }
 
@@ -186,7 +200,7 @@ class ReportCommandTest {
     private Report draft(UUID reporterId, String categoryId) {
         return new Report(0, UUID.randomUUID(), reporterId, "Reporter", UUID.randomUUID(), "Target", categoryId, null,
                 null, "default", ReportStatus.PENDING, Priority.LOW, null, null, Instant.now(), null, null, 0, null,
-                null, null, null);
+                null, null, null, null, null, false);
     }
 
     @Test

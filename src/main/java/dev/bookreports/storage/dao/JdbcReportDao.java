@@ -34,7 +34,8 @@ public final class JdbcReportDao implements ReportDao {
     public Report insert(Report report) {
         String sql = "INSERT INTO br_reports (uuid, reporter_uuid, reporter_name, target_uuid, target_name, "
                 + "category_id, sub_reason_id, evidence_text, server, status, priority, created_at, chat_context, "
-                + "coreprotect_context) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "coreprotect_context, target_location, reporter_location) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         long id;
         // The insert connection must be closed before findById below borrows another one — the pool is
         // sized to 1 for SQLite, so holding both open at once would deadlock waiting for itself.
@@ -54,6 +55,8 @@ public final class JdbcReportDao implements ReportDao {
             statement.setTimestamp(12, Timestamp.from(report.createdAt()));
             statement.setString(13, report.chatContext());
             statement.setString(14, report.coreProtectContext());
+            statement.setString(15, report.targetLocation());
+            statement.setString(16, report.reporterLocation());
             statement.executeUpdate();
             id = generatedId(statement, report.uuid());
         } catch (SQLException e) {
@@ -132,7 +135,9 @@ public final class JdbcReportDao implements ReportDao {
         }
         // Priority is stored as text, so a plain ORDER BY priority would sort alphabetically (HIGH, LOW,
         // MEDIUM) instead of by severity — this CASE expression ranks it HIGH, MEDIUM, LOW instead.
-        StringBuilder sql = new StringBuilder("SELECT * FROM br_reports WHERE status = ?");
+        // archived = 0 is unconditional here, not an optional filter: an archived report is meant to disappear
+        // from every staff-queue view, still reachable only via findById/findByUuid direct lookup.
+        StringBuilder sql = new StringBuilder("SELECT * FROM br_reports WHERE status = ? AND archived = 0");
         if (categoryId != null) {
             sql.append(" AND category_id = ?");
         }
@@ -357,6 +362,38 @@ public final class JdbcReportDao implements ReportDao {
         }
     }
 
+    @Override
+    public boolean setArchived(long id, boolean archived) {
+        String sql = "UPDATE br_reports SET archived = ? WHERE id = ?";
+        try (Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setBoolean(1, archived);
+            statement.setLong(2, id);
+            return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new StorageException("Failed to set archived=" + archived + " for report id=" + id, e);
+        }
+    }
+
+    @Override
+    public boolean purge(long id) {
+        // Both statements run on the same connection so the pool-size-1 SQLite setup used elsewhere in this
+        // class never deadlocks waiting for a second connection to itself.
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement deleteNotes = connection
+                    .prepareStatement("DELETE FROM br_report_notes WHERE report_id = ?")) {
+                deleteNotes.setLong(1, id);
+                deleteNotes.executeUpdate();
+            }
+            try (PreparedStatement deleteReport = connection.prepareStatement("DELETE FROM br_reports WHERE id = ?")) {
+                deleteReport.setLong(1, id);
+                return deleteReport.executeUpdate() == 1;
+            }
+        } catch (SQLException e) {
+            throw new StorageException("Failed to purge report id=" + id, e);
+        }
+    }
+
     private Report map(ResultSet rs) throws SQLException {
         Timestamp claimedAt = rs.getTimestamp("claimed_at");
         Timestamp resolvedAt = rs.getTimestamp("resolved_at");
@@ -370,6 +407,7 @@ public final class JdbcReportDao implements ReportDao {
                 rs.getTimestamp("created_at").toInstant(), claimedAt != null ? claimedAt.toInstant() : null,
                 resolvedAt != null ? resolvedAt.toInstant() : null, rs.getInt("claim_version"),
                 rs.getString("chat_context"), rs.getString("sanction_type"), rs.getString("sanction_duration"),
-                rs.getString("coreprotect_context"));
+                rs.getString("coreprotect_context"), rs.getString("target_location"), rs.getString("reporter_location"),
+                rs.getBoolean("archived"));
     }
 }

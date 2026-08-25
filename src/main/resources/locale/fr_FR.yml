@@ -62,6 +62,7 @@ book:
 evidence:
   prompt: "Tapez les détails ici"
   too-long: "<red>Les détails ne peuvent pas dépasser <max> caractères.</red>"
+  too-short: "<red>Écrivez au moins <min> caractères pour donner au staff de quoi travailler.</red>"
 
 staff:
   notify:
@@ -94,6 +95,9 @@ staff:
     reporter: "<gray>Signaleur : <white><player></white></gray>"
     category: "<gray>Catégorie : <white><category></white></gray>"
     status: "<gray>Statut : <white><status></white></gray>"
+    live-status: "<gray>Statut en direct : <white><gamemode></white> — ❤ <white><health>/<max_health></white></gray>"
+    live-status-effects: "<gray>Effets actifs : <white><effects></white></gray>"
+    live-status-offline: "<gray>Le joueur est hors ligne</gray>"
     evidence: "<gray>Preuve : <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Fiabilité du signaleur : <white><accuracy>%</white> (<total> signalements)</yellow>"
     chat-context: "<gray>Chat récent : <white><context></white></gray>"
@@ -104,9 +108,13 @@ staff:
     unclaimed: "<gray>Non pris en charge</gray>"
     teleport: "<aqua>[ Téléporter ]</aqua>"
     history: "<gray>[ Voir l'historique ]</gray>"
+    teleport-incident: "<gold>[ Téléporter sur le lieu de l'incident ]</gold>"
+    no-location: "<red>Aucun emplacement n'a été enregistré pour ce signalement.</red>"
+    distance: "<gray>Distance signaleur ↔ signalé à l'envoi : <white><distance> blocs</white></gray>"
     resolve-sanction: "<green>[ Résoudre : Sanctionner ]</green>"
     resolve-reject: "<red>[ Résoudre : Rejeter ]</red>"
     mark-false: "<dark_red>[ Marquer comme faux ]</dark_red>"
+    notes: "<gold>[ Notes du staff ]</gold>"
     back: "<gray>[ Retour ]</gray>"
   resolve-menu:
     title: "Motif de résolution"
@@ -125,6 +133,15 @@ staff:
   stats:
     reporter: "<yellow><player> : <white><accuracy>%</white> de fiabilité (<actioned> sanctionnés, <rejected> rejetés, <total> au total)</yellow>"
     staff: "<yellow><player> : <white><resolved></white> résolus, moyenne de <white><avg_minutes> min</white> entre prise en charge et résolution</yellow>"
+  note:
+    added: "<green>Note ajoutée au signalement #<ticket_id>.</green>"
+    title: "<yellow>Notes du signalement #<ticket_id> :</yellow>"
+    empty: "<gray>Aucune note pour l'instant.</gray>"
+  archive:
+    archived: "<green>Signalement #<ticket_id> archivé — masqué de la file, toujours visible directement.</green>"
+    restored: "<green>Signalement #<ticket_id> restauré dans la file.</green>"
+  purge:
+    success: "<green>Signalement #<ticket_id> supprimé définitivement.</green>"
 
 update:
   notify: "<yellow>⚠ Une nouvelle version de BookReports est disponible : <white><latest></white> (vous avez <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Mettre à jour]</u></green></click> <gray>(<url>)</gray></yellow>"

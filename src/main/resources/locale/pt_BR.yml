@@ -62,6 +62,7 @@ book:
 evidence:
   prompt: "Digite os detalhes aqui"
   too-long: "<red>Os detalhes não podem exceder <max> caracteres.</red>"
+  too-short: "<red>Escreva pelo menos <min> caracteres para dar algo à equipe para trabalhar.</red>"
 
 staff:
   notify:
@@ -94,6 +95,9 @@ staff:
     reporter: "<gray>Reportante: <white><player></white></gray>"
     category: "<gray>Categoria: <white><category></white></gray>"
     status: "<gray>Status: <white><status></white></gray>"
+    live-status: "<gray>Status ao vivo: <white><gamemode></white> — ❤ <white><health>/<max_health></white></gray>"
+    live-status-effects: "<gray>Efeitos ativos: <white><effects></white></gray>"
+    live-status-offline: "<gray>O jogador está offline</gray>"
     evidence: "<gray>Evidência: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Precisão do reportante: <white><accuracy>%</white> (<total> reportes)</yellow>"
     chat-context: "<gray>Chat recente: <white><context></white></gray>"
@@ -104,9 +108,13 @@ staff:
     unclaimed: "<gray>Não reclamado</gray>"
     teleport: "<aqua>[ Teleportar ]</aqua>"
     history: "<gray>[ Ver histórico ]</gray>"
+    teleport-incident: "<gold>[ Teleportar ao local do incidente ]</gold>"
+    no-location: "<red>Nenhuma localização foi registrada para este reporte.</red>"
+    distance: "<gray>Distância reportante ↔ reportado no envio: <white><distance> blocos</white></gray>"
     resolve-sanction: "<green>[ Resolver: Sancionar ]</green>"
     resolve-reject: "<red>[ Resolver: Rejeitar ]</red>"
     mark-false: "<dark_red>[ Marcar como falso ]</dark_red>"
+    notes: "<gold>[ Notas da equipe ]</gold>"
     back: "<gray>[ Voltar ]</gray>"
   resolve-menu:
     title: "Motivo da resolução"
@@ -125,6 +133,15 @@ staff:
   stats:
     reporter: "<yellow><player>: <white><accuracy>%</white> de precisão (<actioned> aplicados, <rejected> rejeitados, <total> total)</yellow>"
     staff: "<yellow><player>: <white><resolved></white> resolvidos, média de <white><avg_minutes> min</white> entre reclamar e resolver</yellow>"
+  note:
+    added: "<green>Nota adicionada ao reporte #<ticket_id>.</green>"
+    title: "<yellow>Notas do reporte #<ticket_id>:</yellow>"
+    empty: "<gray>Ainda não há notas.</gray>"
+  archive:
+    archived: "<green>Reporte #<ticket_id> arquivado — oculto da fila, ainda visível diretamente.</green>"
+    restored: "<green>Reporte #<ticket_id> restaurado à fila.</green>"
+  purge:
+    success: "<green>Reporte #<ticket_id> excluído permanentemente.</green>"
 
 update:
   notify: "<yellow>⚠ Uma nova versão do BookReports está disponível: <white><latest></white> (você tem <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Atualizar agora]</u></green></click> <gray>(<url>)</gray></yellow>"

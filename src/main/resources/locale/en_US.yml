@@ -62,6 +62,7 @@ book:
 evidence:
   prompt: "Type the details here"
   too-long: "<red>Details cannot exceed <max> characters.</red>"
+  too-short: "<red>Please write at least <min> characters so staff have something to go on.</red>"
 
 staff:
   notify:
@@ -94,6 +95,9 @@ staff:
     reporter: "<gray>Reporter: <white><player></white></gray>"
     category: "<gray>Category: <white><category></white></gray>"
     status: "<gray>Status: <white><status></white></gray>"
+    live-status: "<gray>Live status: <white><gamemode></white> — ❤ <white><health>/<max_health></white></gray>"
+    live-status-effects: "<gray>Active effects: <white><effects></white></gray>"
+    live-status-offline: "<gray>Target is currently offline</gray>"
     evidence: "<gray>Evidence: <white><evidence></white></gray>"
     reporter-accuracy: "<yellow>Reporter accuracy: <white><accuracy>%</white> (<total> reports)</yellow>"
     chat-context: "<gray>Recent chat: <white><context></white></gray>"
@@ -104,9 +108,13 @@ staff:
     unclaimed: "<gray>Unclaimed</gray>"
     teleport: "<aqua>[ Teleport ]</aqua>"
     history: "<gray>[ View history ]</gray>"
+    teleport-incident: "<gold>[ Teleport to incident location ]</gold>"
+    no-location: "<red>No location was recorded for this report.</red>"
+    distance: "<gray>Distance reporter ↔ target when filed: <white><distance> blocks</white></gray>"
     resolve-sanction: "<green>[ Resolve: Sanction ]</green>"
     resolve-reject: "<red>[ Resolve: Reject ]</red>"
     mark-false: "<dark_red>[ Mark as false ]</dark_red>"
+    notes: "<gold>[ Staff notes ]</gold>"
     back: "<gray>[ Back ]</gray>"
   resolve-menu:
     title: "Resolution reason"
@@ -125,6 +133,15 @@ staff:
   stats:
     reporter: "<yellow><player>: <white><accuracy>%</white> accuracy (<actioned> actioned, <rejected> rejected, <total> total)</yellow>"
     staff: "<yellow><player>: <white><resolved></white> resolved, avg <white><avg_minutes> min</white> claim-to-resolve</yellow>"
+  note:
+    added: "<green>Note added to report #<ticket_id>.</green>"
+    title: "<yellow>Notes for report #<ticket_id>:</yellow>"
+    empty: "<gray>No notes yet.</gray>"
+  archive:
+    archived: "<green>Report #<ticket_id> archived — hidden from the queue, still viewable directly.</green>"
+    restored: "<green>Report #<ticket_id> restored to the queue.</green>"
+  purge:
+    success: "<green>Report #<ticket_id> permanently deleted.</green>"
 
 update:
   notify: "<yellow>⚠ A new BookReports version is available: <white><latest></white> (you have <white><current></white>) — <click:run_command:'/reportadmin update'><green><u>[Update now]</u></green></click> <gray>(<url>)</gray></yellow>"
