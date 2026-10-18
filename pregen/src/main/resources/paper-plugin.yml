@@ -1,0 +1,86 @@
+name: Pregen
+version: '${version}'
+main: dev.pregen.PregenPlugin
+description: Fast, safe and configurable chunk pre-generator with scheduled trimming.
+authors: [Pregen contributors]
+# Oldest supported version; newer releases (1.21.x and 26.x) load the same jar.
+api-version: '1.21'
+# STARTUP runs onEnable before worlds load, which is what makes scheduled trims safe.
+load: STARTUP
+folia-supported: true
+
+permissions:
+  pregen.admin:
+    description: Every Pregen command, including trim, plus notifications.
+    default: op
+    children:
+      pregen.command.help: true
+      pregen.command.start: true
+      pregen.command.pause: true
+      pregen.command.resume: true
+      pregen.command.cancel: true
+      pregen.command.confirm: true
+      pregen.command.status: true
+      pregen.command.watch: true
+      pregen.command.selection: true
+      pregen.command.trim: true
+      pregen.command.silent: true
+      pregen.command.doctor: true
+      pregen.command.reload: true
+      pregen.notify: true
+  pregen.operator:
+    description: Generation without the destructive trim command.
+    default: false
+    children:
+      pregen.command.help: true
+      pregen.command.start: true
+      pregen.command.pause: true
+      pregen.command.resume: true
+      pregen.command.cancel: true
+      pregen.command.confirm: true
+      pregen.command.status: true
+      pregen.command.watch: true
+      pregen.command.selection: true
+      pregen.notify: true
+  pregen.command.help:
+    description: Shows /pregen and its help.
+    default: op
+  pregen.command.start:
+    description: Starts generation tasks.
+    default: op
+  pregen.command.pause:
+    description: Pauses tasks.
+    default: op
+  pregen.command.resume:
+    description: Resumes paused or saved tasks.
+    default: op
+  pregen.command.cancel:
+    description: Cancels tasks and deletes their saved progress.
+    default: op
+  pregen.command.confirm:
+    description: Confirms sensitive actions.
+    default: op
+  pregen.command.status:
+    description: Shows task progress.
+    default: op
+  pregen.command.watch:
+    description: Toggles the progress boss bar.
+    default: op
+  pregen.command.selection:
+    description: Edits the selection (world, center, radius, corners, worldborder, shape, pattern).
+    default: op
+  pregen.command.trim:
+    description: Previews and schedules chunk deletion. Destructive.
+    default: op
+  pregen.command.silent:
+    description: Changes console progress output (silent, interval).
+    default: op
+  pregen.command.doctor:
+    description: Runs the setup diagnostics.
+    default: op
+  pregen.command.reload:
+    description: Reloads config and messages.
+    default: op
+  pregen.notify:
+    description: Receives task start, finish and error announcements.
+    default: op

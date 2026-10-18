@@ -1,0 +1,59 @@
+# ---------------------------------------------------------------------------
+#  Pregen - chunk pre-generator for Paper and Folia
+# ---------------------------------------------------------------------------
+# Do not edit config-version: it is used to migrate this file on updates.
+config-version: 1
+
+# Default language for the console and for players: es | en
+language: es
+# Show messages in each player's client language when it is es or en.
+use-client-locale: true
+# Seconds a /pregen confirm request stays valid.
+confirm-timeout-seconds: 30
+# Logs extra detail (state changes, throttle decisions). Leave off in production.
+debug: false
+
+generation:
+  # Upper bound of chunks requested at the same time, shared by all running tasks.
+  max-concurrent-chunks: 32
+  adaptive-throttle:
+    # Lowers the number of concurrent chunks while the server's tick time is above the target, and raises it
+    # again when the server recovers. Not available on Folia, which has no global tick time: there the plugin
+    # uses max-concurrent-chunks.
+    enabled: true
+    # Target milliseconds per tick (50 = 20 TPS). Lower keeps the server smoother; higher generates faster.
+    target-mspt: 45.0
+    min-concurrent-chunks: 4
+  # Skip chunks that already exist without loading them. Disable to force-load existing chunks too.
+  skip-existing-chunks: true
+  # Keep each generated chunk loaded (ticking) for N seconds. 0 = unload as soon as possible.
+  keep-ticking-seconds: 0
+  # Resume saved tasks automatically after a restart.
+  resume-on-restart: true
+  # How often running tasks save their progress to disk.
+  autosave-seconds: 30
+  # Hold all tasks while any player is online and continue when the server is empty.
+  pause-when-players-online: false
+  # Maximum radius in blocks that /pregen start accepts. 0 = no limit. Useful for hosting providers.
+  radius-limit: 0
+  # Warn before starting when the estimated size of the new chunks exceeds the free disk space.
+  check-disk-space: true
+  # Background threads used to check chunks and save progress.
+  worker-threads: 2
+
+progress:
+  # Seconds between progress lines in the console.
+  console-interval-seconds: 10
+  # Hide periodic progress lines in the console (start and finish messages are still shown).
+  silent: false
+  bossbar:
+    # PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
+    color: GREEN
+    # PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12, NOTCHED_20
+    overlay: PROGRESS
+
+trim:
+  # Copy every region file a trim modifies or deletes before touching it. Strongly recommended.
+  backup: true
+  # Relative to plugins/Pregen.
+  backup-directory: "backups/trim"

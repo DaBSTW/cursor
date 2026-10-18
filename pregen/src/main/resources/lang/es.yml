@@ -1,0 +1,142 @@
+# Mensajes de Pregen en formato MiniMessage: https://docs.advntr.dev/minimessage/format.html
+# Los marcadores entre < > (por ejemplo <world>) se sustituyen automáticamente; no los traduzcas.
+# Si borras este archivo se regenerará con los valores por defecto.
+
+prefix: "<dark_gray>[<gradient:#3ddc84:#1e90ff>Pregen</gradient>]</dark_gray> "
+
+general:
+  player-only: "<prefix><red>Este comando solo puede usarlo un jugador."
+  invalid-radius: "<prefix><red>Radio inválido: <white><input></white>. Usa un número positivo con sufijo opcional c (chunks), r (regiones) o k (miles de bloques), y + o - para sumar o restar. Ejemplos: 500, 32c, 2r, 1.5k, +100."
+  invalid-shape: "<prefix><red>Forma desconocida: <white><input></white>. Disponibles: <white><options></white>."
+  invalid-pattern: "<prefix><red>Patrón desconocido: <white><input></white>. Disponibles: <white><options></white>."
+  invalid-file-name: "<prefix><red>Nombre de archivo inválido: <white><input></white>. Usa solo letras, números, - y _ (máx. 64)."
+  world-not-found: "<prefix><red>El mundo <white><world></white> no existe o no está cargado."
+  no-task-for-world: "<prefix><red>No hay ninguna tarea para <white><world></white>."
+  internal-error: "<prefix><red>Ocurrió un error interno. Revisa la consola del servidor."
+
+help:
+  header: "<prefix><gray>Comandos disponibles (<white>/pregen</white>, alias <white>/pg</white>):"
+  start: "<click:suggest_command:'/pregen start '><green>/pregen start [mundo] [forma] [radio] [x z]</green></click> <gray>- Empieza a generar la selección."
+  pause: "<click:suggest_command:'/pregen pause'><green>/pregen pause [mundo]</green></click> <gray>- Pausa y guarda tareas."
+  resume: "<click:suggest_command:'/pregen resume'><green>/pregen resume [mundo]</green></click> <gray>- Continúa tareas pausadas o guardadas."
+  cancel: "<click:suggest_command:'/pregen cancel'><green>/pregen cancel [mundo]</green></click> <gray>- Detiene y borra tareas."
+  confirm: "<green>/pregen confirm</green> <gray>- Confirma la última acción delicada."
+  status: "<click:run_command:'/pregen status'><green>/pregen status</green></click> <gray>- Muestra el progreso."
+  watch: "<click:run_command:'/pregen watch'><green>/pregen watch</green></click> <gray>- Muestra u oculta la barra de progreso."
+  selection: "<click:run_command:'/pregen selection'><green>/pregen selection</green></click> <gray>- Muestra tu selección."
+  world: "<click:suggest_command:'/pregen world '><green>/pregen world \\<mundo></green></click> <gray>- Elige el mundo."
+  center: "<click:suggest_command:'/pregen center '><green>/pregen center \\<x> \\<z> | here | spawn</green></click> <gray>- Elige el centro."
+  radius: "<click:suggest_command:'/pregen radius '><green>/pregen radius \\<radio> [radioZ]</green></click> <gray>- Elige el radio (500, 32c, 2r, +100...)."
+  corners: "<click:suggest_command:'/pregen corners '><green>/pregen corners \\<x1> \\<z1> \\<x2> \\<z2></green></click> <gray>- Selecciona por esquinas."
+  worldborder: "<click:run_command:'/pregen worldborder'><green>/pregen worldborder</green></click> <gray>- Usa el borde del mundo."
+  shape: "<click:suggest_command:'/pregen shape '><green>/pregen shape \\<forma></green></click> <gray>- Elige la forma."
+  pattern: "<click:suggest_command:'/pregen pattern '><green>/pregen pattern \\<patrón> [archivo]</green></click> <gray>- Elige el orden de generación."
+  trim: "<click:suggest_command:'/pregen trim '><green>/pregen trim \\<outside|inside> [inhabited \\<ticks>]</green></click> <gray>- Programa el borrado de chunks."
+  silent: "<click:run_command:'/pregen silent'><green>/pregen silent</green></click> <gray>- Activa o desactiva el progreso en consola."
+  interval: "<click:suggest_command:'/pregen interval '><green>/pregen interval \\<segundos></green></click> <gray>- Frecuencia del progreso en consola."
+  doctor: "<click:run_command:'/pregen doctor'><green>/pregen doctor</green></click> <gray>- Revisa la configuración del servidor."
+  reload: "<click:run_command:'/pregen reload'><green>/pregen reload</green></click> <gray>- Recarga config y mensajes."
+
+selection:
+  header: "<prefix><gray>Tu selección actual:"
+  details: "<gray>  Mundo <white><world></white> · Centro <white><x>, <z></white> · Radio <white><radius></white> · Forma <white><shape></white> · Patrón <white><pattern></white>"
+  world: "<prefix><gray>Mundo fijado en <white><world></white>."
+  center: "<prefix><gray>Centro fijado en <white><x>, <z></white>."
+  radius: "<prefix><gray>Radio fijado en <white><radius></white> bloques."
+  radii: "<prefix><gray>Radios fijados en <white><radius_x></white> (x) y <white><radius_z></white> (z) bloques."
+  shape: "<prefix><gray>Forma fijada en <white><shape></white>."
+  pattern: "<prefix><gray>Patrón fijado en <white><pattern></white>."
+  no-border: "<prefix><yellow>El mundo <white><world></white> no tiene un borde configurado (tamaño por defecto)."
+
+start:
+  preparing: "<prefix><gray>Preparando la tarea para <white><world></white>..."
+  started: "<prefix><green>Generación iniciada en <white><world></white>: <white><shape></white> centrado en <white><x>, <z></white> con radio <white><radius></white> (<white><total></white> chunks)."
+  already-running: "<prefix><red>Ya hay una tarea activa en <white><world></white>. Usa /pregen status."
+  saved-task: "<prefix><yellow>Hay una tarea guardada para <white><world></white>. Usa <click:suggest_command:'/pregen resume '><white>/pregen resume <world></white></click> para continuarla o <white>/pregen cancel <world></white> para descartarla."
+  radius-limit: "<prefix><red>El radio máximo permitido en este servidor es <white><limit></white> bloques."
+  disk-space: "<prefix><yellow>Espacio libre: <white><free></white>. Espacio estimado necesario: <white><required></white>. Escribe <click:run_command:'/pregen confirm'><white>/pregen confirm</white></click> para empezar de todas formas."
+  missing-file: "<prefix><red>No se pudo leer <white>plugins/Pregen/csv/<file>.csv</white>."
+  empty: "<prefix><red>La selección no contiene ningún chunk."
+  trim-pending: "<prefix><red>Hay un recorte programado para <white><world></white>. Anúlalo con /pregen trim unschedule <world> o reinicia antes de generar."
+  cancelled-by-listener: "<prefix><red>Otro plugin canceló el inicio de la tarea."
+  pause-when-empty: "<prefix><yellow>Aviso: server.properties tiene pause-when-empty-seconds=<seconds>. Sin jugadores conectados el servidor se pausará y la generación se detendrá. Pon el valor a 0 y reinicia."
+
+pause:
+  done: "<prefix><gray>Tarea pausada y guardada en <white><world></white>."
+  none: "<prefix><gray>No hay tareas en ejecución para pausar."
+resume:
+  done: "<prefix><green>Tarea reanudada en <white><world></white>."
+  none: "<prefix><gray>No hay tareas pausadas ni guardadas para reanudar."
+cancel:
+  confirm: "<prefix><yellow>Las tareas canceladas no se pueden continuar (<white><target></white>). Escribe <click:run_command:'/pregen confirm'><white>/pregen confirm</white></click> para confirmarlo."
+  done: "<prefix><gray>Tarea cancelada en <white><world></white>."
+  none: "<prefix><gray>No hay tareas que cancelar."
+
+confirm:
+  nothing: "<prefix><gray>No hay nada pendiente de confirmar."
+  expired: "<prefix><gray>La confirmación caducó. Repite el comando original."
+
+status:
+  none: "<prefix><gray>No hay tareas activas."
+  header: "<prefix><gray>Tareas:"
+  line: "<gray>  <white><world></white> <dark_gray>[</dark_gray><state><dark_gray>]</dark_gray> <white><percent>%</white> · <processed>/<total> chunks · <rate> c/s · ETA <eta> · tiempo <elapsed>"
+
+progress:
+  console: "<gray>[<world>] <white><percent>%</white> · <processed>/<total> chunks · <rate> c/s · ETA <eta> · último chunk <x>, <z>"
+
+task:
+  completed: "<prefix><green>Generación terminada en <white><world></white>: <white><processed></white> chunks en <white><elapsed></white>."
+  paused-by-errors: "<prefix><red>La tarea de <white><world></white> se pausó tras <white><errors></white> errores seguidos. Revisa la consola y usa /pregen resume."
+  resumed-after-restart: "<prefix><gray>Tarea de <white><world></white> reanudada tras el reinicio (<white><percent>%</white>)."
+
+state:
+  preparing: "<aqua>preparando"
+  running: "<green>en curso"
+  paused: "<yellow>pausada"
+  completed: "<green>terminada"
+  cancelled: "<red>cancelada"
+  throttled: "<gold>en espera"
+
+watch:
+  "on": "<prefix><gray>Barra de progreso <green>activada</green>."
+  "off": "<prefix><gray>Barra de progreso <red>desactivada</red>."
+bossbar:
+  title: "Pregen · <world> · <percent>% · <rate> c/s · ETA <eta>"
+silent:
+  "on": "<prefix><gray>Progreso en consola <red>silenciado</red>."
+  "off": "<prefix><gray>Progreso en consola <green>activado</green>."
+interval:
+  set: "<prefix><gray>El progreso se mostrará cada <white><seconds></white> segundos."
+reload:
+  done: "<prefix><green>Configuración y mensajes recargados."
+  blocked: "<prefix><red>No se puede recargar mientras hay tareas en ejecución. Páusalas primero."
+
+trim:
+  planning: "<prefix><gray>Analizando las regiones de <white><world></white> (no se borra nada)..."
+  preview: "<prefix><yellow>Simulación para <white><world></white> (<mode>): <white><chunks></white> chunks en <white><regions></white> regiones, de las que <white><deleted_files></white> se borrarían enteras. Espacio aproximado: <white><size></white>."
+  preview-inhabited: "<prefix><yellow>Solo se borrarán los chunks con InhabitedTime ≤ <white><ticks></white> ticks; la cifra anterior es un máximo."
+  confirm-hint: "<prefix><red>El borrado se hará en el PRÓXIMO REINICIO, antes de cargar los mundos. Escribe <click:run_command:'/pregen confirm'><white>/pregen confirm</white></click> para programarlo."
+  scheduled: "<prefix><green>Recorte programado para <white><world></white>. Se ejecutará en el próximo reinicio."
+  nothing: "<prefix><gray>No hay chunks que borrar con esa selección."
+  task-running: "<prefix><red>Hay una tarea de generación en <white><world></white>. Cancélala antes de programar un recorte."
+  no-storage: "<prefix><red>No se encontró la carpeta de regiones de <white><world></white>."
+  cancelled-by-listener: "<prefix><red>Otro plugin canceló el recorte."
+  pending-header: "<prefix><gray>Recortes programados para el próximo reinicio:"
+  pending-entry: "<gray>  <white><world></white> · <mode> · <shape> en <x>, <z> radio <radius> · por <by>"
+  pending-none: "<prefix><gray>No hay recortes programados."
+  unscheduled: "<prefix><gray>Recorte de <white><world></white> anulado."
+  unschedule-unknown: "<prefix><red>No hay ningún recorte programado para <white><world></white>."
+  backup-on: "<prefix><gray>Antes de borrar se copiará cada región afectada a <white>plugins/Pregen/<directory></white>."
+  backup-off: "<prefix><red>Las copias de seguridad están DESACTIVADAS (trim.backup: false). Haz una copia del mundo antes de reiniciar."
+  mode-inside: "<red>borrar dentro"
+  mode-outside: "<red>borrar fuera"
+
+doctor:
+  header: "<prefix><gray>Diagnóstico:"
+  ok: "<green>  ✔ No se detectaron problemas."
+  pause-when-empty: "<yellow>  ⚠ pause-when-empty-seconds=<seconds> en server.properties: sin jugadores el servidor se pausa y la generación se detiene. Ponlo a 0 y reinicia."
+  throttle-unavailable: "<yellow>  ⚠ Este servidor no informa del tiempo por tick (Folia): el throttle adaptativo está desactivado y se usa max-concurrent-chunks."
+  disk: "<gray>  • Espacio libre para <white><world></white>: <white><free></white>."
+  pending-trims: "<yellow>  ⚠ Hay <white><count></white> recorte(s) programado(s) para el próximo reinicio. Ver /pregen trim pending."
+  border: "<gray>  • Borde de <white><world></white>: radio <white><radius></white> bloques."
+  saved-tasks: "<gray>  • Tareas guardadas en disco: <white><count></white>."
