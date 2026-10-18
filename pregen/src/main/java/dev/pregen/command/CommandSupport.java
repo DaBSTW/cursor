@@ -1,6 +1,8 @@
 package dev.pregen.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -12,8 +14,10 @@ import dev.pregen.i18n.MessageService;
 import dev.pregen.selection.Selection;
 import dev.pregen.selection.SelectionRegistry;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -21,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -118,6 +123,29 @@ public final class CommandSupport {
             }
             onSuccess.accept(value);
         });
+    }
+
+    /**
+     * World argument by Bukkit name ({@code world_nether}), suggesting loaded worlds. Paper's own world argument takes
+     * dimension keys ({@code minecraft:the_nether}), which do not match the names admins know.
+     */
+    public RequiredArgumentBuilder<CommandSourceStack, String> worldArgument() {
+        return Commands.argument("world", StringArgumentType.string()).suggests(
+                (context, builder) -> suggest(builder, server().getWorlds().stream().map(World::getName).toList()));
+    }
+
+    /** Resolves the world argument by name, or by namespaced key; reports and returns empty when unknown. */
+    public Optional<World> resolveWorld(CommandContext<CommandSourceStack> context) {
+        String raw = StringArgumentType.getString(context, "world");
+        World world = server().getWorld(raw);
+        if (world == null) {
+            NamespacedKey key = NamespacedKey.fromString(raw);
+            world = key == null ? null : server().getWorld(key);
+        }
+        if (world == null) {
+            send(sender(context), MessageKey.WORLD_NOT_FOUND, Arg.text("world", raw));
+        }
+        return Optional.ofNullable(world);
     }
 
     public static CompletableFuture<Suggestions> suggest(SuggestionsBuilder builder, Collection<String> options) {

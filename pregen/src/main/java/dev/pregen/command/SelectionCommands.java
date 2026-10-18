@@ -16,7 +16,6 @@ import dev.pregen.selection.Selection;
 import dev.pregen.util.RadiusInput;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,13 +59,16 @@ final class SelectionCommands {
     }
 
     private LiteralArgumentBuilder<CommandSourceStack> world() {
-        return Commands.literal("world").requires(permission(NODE))
-                .then(Commands.argument("world", ArgumentTypes.world()).executes(context -> {
-                    World world = context.getArgument("world", World.class);
-                    support.updateSelection(sender(context), selection -> selection.withWorld(world.getName()));
-                    support.send(sender(context), MessageKey.SELECTION_WORLD, Arg.text("world", world.getName()));
-                    return success();
-                }));
+        return Commands.literal("world").requires(permission(NODE)).then(support.worldArgument().executes(context -> {
+            Optional<World> resolved = support.resolveWorld(context);
+            if (resolved.isEmpty()) {
+                return 0;
+            }
+            World world = resolved.get();
+            support.updateSelection(sender(context), selection -> selection.withWorld(world.getName()));
+            support.send(sender(context), MessageKey.SELECTION_WORLD, Arg.text("world", world.getName()));
+            return success();
+        }));
     }
 
     private LiteralArgumentBuilder<CommandSourceStack> center() {

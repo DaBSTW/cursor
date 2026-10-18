@@ -43,19 +43,26 @@ public final class WorkerPools {
         return io;
     }
 
+    /**
+     * Stops all threads. Pending chunk checks belong to tasks that are already paused and saved, and may be blocked
+     * on a server thread that is itself shutting down, so they are interrupted right away; only file writes are
+     * given time to finish.
+     */
     public void shutdown(long timeoutMillis) {
-        List<ExecutorService> pools = List.of(checks, io, coordinators);
-        pools.forEach(ExecutorService::shutdown);
+        checks.shutdownNow();
+        coordinators.shutdown();
+        io.shutdown();
         try {
-            for (ExecutorService pool : pools) {
-                if (!pool.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)) {
-                    logger.warning("Worker threads did not stop within " + timeoutMillis + "ms; interrupting them");
-                    pool.shutdownNow();
-                }
+            if (!io.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                logger.warning("File writes did not finish within " + timeoutMillis + "ms; interrupting them");
+                io.shutdownNow();
+            }
+            if (!coordinators.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                coordinators.shutdownNow();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            pools.forEach(ExecutorService::shutdownNow);
+            List.of(checks, io, coordinators).forEach(ExecutorService::shutdownNow);
         }
     }
 

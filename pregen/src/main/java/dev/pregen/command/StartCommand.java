@@ -18,7 +18,6 @@ import dev.pregen.selection.Selection;
 import dev.pregen.util.RadiusInput;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -41,24 +40,26 @@ final class StartCommand {
 
     LiteralArgumentBuilder<CommandSourceStack> build() {
         double max = RadiusInput.MAX_RADIUS;
-        return Commands.literal("start").requires(permission("start")).executes(context -> start(sender(context)))
-                .then(Commands.argument("world", ArgumentTypes.world())
-                        .executes(context -> applyAndStart(context, false, false, false))
-                        .then(Commands.argument("shape", StringArgumentType.word())
-                                .suggests((context, builder) -> CommandSupport.suggest(builder, ShapeType.ids()))
-                                .executes(context -> applyAndStart(context, true, false, false))
-                                .then(Commands.argument("radius", StringArgumentType.word())
-                                        .executes(context -> applyAndStart(context, true, true, false))
-                                        .then(Commands.argument("x", DoubleArgumentType.doubleArg(-max, max))
-                                                .then(Commands.argument("z", DoubleArgumentType.doubleArg(-max, max))
-                                                        .executes(context -> applyAndStart(context, true, true,
-                                                                true)))))));
+        return Commands.literal("start").requires(permission("start")).executes(context -> start(sender(context))).then(
+                support.worldArgument().executes(context -> applyAndStart(context, false, false, false)).then(Commands
+                        .argument("shape", StringArgumentType.word())
+                        .suggests((context, builder) -> CommandSupport.suggest(builder, ShapeType.ids()))
+                        .executes(context -> applyAndStart(context, true, false, false))
+                        .then(Commands.argument("radius", StringArgumentType.word())
+                                .executes(context -> applyAndStart(context, true, true, false))
+                                .then(Commands.argument("x", DoubleArgumentType.doubleArg(-max, max))
+                                        .then(Commands.argument("z", DoubleArgumentType.doubleArg(-max, max))
+                                                .executes(context -> applyAndStart(context, true, true, true)))))));
     }
 
     private int applyAndStart(CommandContext<CommandSourceStack> context, boolean hasShape, boolean hasRadius,
             boolean hasCenter) {
         CommandSender sender = sender(context);
-        World world = context.getArgument("world", World.class);
+        Optional<World> resolved = support.resolveWorld(context);
+        if (resolved.isEmpty()) {
+            return 0;
+        }
+        World world = resolved.get();
         if (hasShape) {
             String raw = StringArgumentType.getString(context, "shape");
             Optional<ShapeType> shape = ShapeType.fromId(raw);

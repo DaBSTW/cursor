@@ -20,6 +20,7 @@ import dev.pregen.i18n.LanguageFiles;
 import dev.pregen.i18n.MessageKey;
 import dev.pregen.i18n.MessageService;
 import dev.pregen.listener.SessionListener;
+import dev.pregen.listener.StartupListener;
 import dev.pregen.persistence.AsyncTaskStore;
 import dev.pregen.persistence.JsonTaskStore;
 import dev.pregen.progress.BossBarDisplay;
@@ -102,7 +103,8 @@ public final class PregenPlugin extends JavaPlugin implements PluginControl {
 
         heartbeat = getServer().getAsyncScheduler().runAtFixedRate(this, task -> beat(reporter), 1, 1,
                 TimeUnit.SECONDS);
-        getServer().getGlobalRegionScheduler().run(this, task -> generation.resumeSavedTasksOnStartup());
+        StartupListener startup = new StartupListener(generation::resumeSavedTasksOnStartup);
+        getServer().getPluginManager().registerEvents(startup, this);
     }
 
     @Override
