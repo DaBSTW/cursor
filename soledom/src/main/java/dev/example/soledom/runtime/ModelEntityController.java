@@ -17,11 +17,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import dev.example.soledom.animation.AnimationPlayer;
+import dev.example.soledom.animation.PoseSolver;
 import dev.example.soledom.animation.TransformSnapshot;
 import dev.example.soledom.api.ModelController;
 import dev.example.soledom.api.ModelDefinition;
@@ -70,8 +70,12 @@ public final class ModelEntityController implements ModelController {
         Location origin = root.getLocation();
         origin.setPitch(0f);
         boolean visible = isVisible();
+        Map<String, org.joml.Matrix4f> restPose = PoseSolver.solve(definition, id -> TransformSnapshot.IDENTITY);
         for (PartDefinition part : definition.parts()) {
-            Transformation rest = TransformSnapshot.IDENTITY.toTransformation(definition, part);
+            if (part.type() == dev.example.soledom.api.PartType.GROUP) {
+                continue;
+            }
+            org.joml.Matrix4f rest = restPose.get(part.id());
             try {
                 Display display = manager.adapter().spawnPart(origin, part, rest, d -> {
                     manager.keys().setString(d, manager.keys().owner, root.getUniqueId().toString());

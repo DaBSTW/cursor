@@ -20,6 +20,8 @@ import com.google.gson.JsonElement;
 
 import dev.example.soledom.animation.TransformTrack;
 import dev.example.soledom.api.AnimationDefinition;
+import dev.example.soledom.blockbench.BlockbenchImporter;
+import dev.example.soledom.blockbench.ImportSettings;
 import dev.example.soledom.api.ModelDefinition;
 import dev.example.soledom.core.utils.NamespacedIds;
 import dev.example.soledom.registry.RegisteredModel;
@@ -38,7 +40,13 @@ public final class ContentLoader {
     private final ModelLoader modelLoader = new ModelLoader();
     private final AnimationLoader animationLoader = new AnimationLoader();
 
+    /** Loads with default Blockbench import settings. */
     public @NotNull LoadReport load(@NotNull Path dataFolder) {
+        return load(dataFolder, ImportSettings.DEFAULT);
+    }
+
+    /** Loads {@code models/}, {@code animations/} and the Blockbench projects in {@code blockbench/}. */
+    public @NotNull LoadReport load(@NotNull Path dataFolder, @NotNull ImportSettings importSettings) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
 
@@ -87,7 +95,19 @@ public final class ContentLoader {
                 errors.add(relative + ": " + describe(e));
             }
         }
-        return new LoadReport(models, animationsById, errors, warnings);
+        BlockbenchImporter.Result imported = new BlockbenchImporter().importAll(dataFolder, importSettings);
+        errors.addAll(imported.errors());
+        warnings.addAll(imported.warnings());
+        for (Map.Entry<String, RegisteredModel> entry : imported.models().entrySet()) {
+            if (models.containsKey(entry.getKey())) {
+                errors.add(entry.getValue().definition().metadata().getOrDefault("source", "blockbench")
+                        + ": model id '" + entry.getKey() + "' is already used by a file in models/");
+                continue;
+            }
+            models.put(entry.getKey(), entry.getValue());
+        }
+        imported.animations().forEach(animationsById::putIfAbsent);
+        return new LoadReport(models, animationsById, errors, warnings, imported.packFiles());
     }
 
     /**
@@ -173,16 +193,18 @@ public final class ContentLoader {
      * @param animations every valid animation by id
      * @param errors     human-readable problems, prefixed with the file they come from
      * @param warnings   non-fatal issues such as unknown fields
+     * @param packAssets resource pack files generated from Blockbench projects, by ZIP path
      */
     public record LoadReport(@NotNull Map<String, RegisteredModel> models,
             @NotNull Map<String, AnimationDefinition> animations, @NotNull List<String> errors,
-            @NotNull List<String> warnings) {
+            @NotNull List<String> warnings, @NotNull Map<String, byte[]> packAssets) {
 
         public LoadReport {
             models = Map.copyOf(models);
             animations = Map.copyOf(animations);
             errors = List.copyOf(errors);
             warnings = List.copyOf(warnings);
+            packAssets = Map.copyOf(packAssets);
         }
 
         public @Nullable RegisteredModel model(@NotNull String id) {

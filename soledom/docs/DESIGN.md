@@ -56,6 +56,23 @@ assets, nombres ni APIs de ningún otro plugin del sector.
 | `Bukkit.getEntity`/iteración global no es segura en Folia | Solo se usan búsquedas locales (`getNearbyEntities`) desde el hilo de la región |
 | Rotaciones grandes por frame se interpolan por el camino corto | Interpolación lineal en euler en el servidor y frames pequeños (tick-rate bajo) |
 
+## Importación de Blockbench
+
+- Cada hueso con cubos → un modelo de ítem propio y una parte `ITEM_DISPLAY`; los huesos sin cubos → `GROUP`.
+  El árbol de huesos se conserva como jerarquía de partes, resuelta en el servidor por `PoseSolver`
+  (`mundo(hijo) = mundo(padre) · local(hijo)`); cada display recibe su matriz con `setTransformationMatrix`, que el
+  servidor descompone (SVD), así que rotaciones y escalas anidadas son exactas.
+- Verificado en el cliente 26.3 (no ofuscado): `DisplayRenderer$ItemDisplayRenderer` rota el ítem 180° en Y y el
+  modelo se centra en (8,8,8). Los modelos generados usan `display.fixed.rotation = [0,180,0]` para anularlo, y la
+  geometría se coloca alrededor del pivote del hueso.
+- Ejes de animación: Blockbench aplica los keyframes restando X/Y de rotación y X de posición (en píxeles); el
+  conversor hace `rotación (-x,-y,z)` y `posición (-x,y,z)/16`. La rotación animada se **suma** a la de reposo en
+  espacio Euler, igual que Blockbench.
+- Proyectos `java_block` (0..16) se desplazan para que (8,0,8) sea el origen; el formato Blockbench 5 (grupos en
+  una lista `groups` aparte) también se lee.
+- Medido en servidor real (1.21.4 y 26.3) con el robot de ejemplo: las traslaciones de reposo coinciden con los
+  pivotes de Blockbench y los hijos heredan la animación del padre.
+
 ## LIMITACIONES (Vanilla/Paper)
 
 - **Sin hitbox con raíz `MARKER`**: un `Marker` no existe en el cliente, no se puede clicar. Usa `INTERACTION`.
@@ -72,8 +89,9 @@ assets, nombres ni APIs de ningún otro plugin del sector.
 
 ## Mejoras futuras
 
-- Importador de Blockbench (`.bbmodel`) con huesos jerárquicos y conversión automática a partes.
-- Jerarquía de huesos (pivotes y herencia de transformaciones) y curvas de easing (bezier, catmull-rom).
+- Curvas de easing (bezier, catmull-rom) y evaluación de expresiones Molang en keyframes.
+- Rotación libre de cubos usando la rotación euler de elementos de los clientes más nuevos (26.x), activable
+  cuando el servidor no necesite soportar 1.21.x.
 - Hitboxes múltiples por parte y "seats" montables.
 - Servidor HTTP embebido opcional para servir el pack.
 - Estados/máquina de animaciones (idle → walk → attack) ligados a la IA de la entidad adjunta.

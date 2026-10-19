@@ -18,6 +18,14 @@ final class ListCommand implements SubCommand {
         this.plugin = plugin;
     }
 
+    private static String source(RegisteredModel model) {
+        if (model.external()) {
+            return "api";
+        }
+        return model.definition().metadata().getOrDefault("source", "file").startsWith("blockbench:")
+                ? "blockbench" : "file";
+    }
+
     @Override
     public @NotNull String name() {
         return "list";
@@ -42,7 +50,7 @@ final class ListCommand implements SubCommand {
                     model.animations().keySet().stream().sorted().toList());
             plugin.messages().send(sender, "list.entry", Messages.ph("id", model.id()),
                     Messages.ph("parts", model.definition().parts().size()), Messages.ph("animations", animations),
-                    Messages.ph("source", model.external() ? "api" : "file"));
+                    Messages.ph("source", source(model)));
         }
     }
 }

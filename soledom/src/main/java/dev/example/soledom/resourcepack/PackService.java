@@ -3,6 +3,7 @@ package dev.example.soledom.resourcepack;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,12 +77,13 @@ public final class PackService {
         PackMeta meta = new PackMeta(settings.description(), settings.packFormat(), settings.minFormat(),
                 settings.maxFormat());
         Path zip = zipPath();
+        Map<String, byte[]> generatedAssets = registry.packAssets();
 
         CompletableFuture<PackExporter.PackResult> future = new CompletableFuture<>();
         scheduler.runAsync(() -> {
             try {
                 PackGenerator.GeneratedPack pack = new PackGenerator(blockItems::contains)
-                        .generate(models, meta, dataFolder.resolve(OVERLAY_DIR));
+                        .generate(models, meta, dataFolder.resolve(OVERLAY_DIR), generatedAssets);
                 PackExporter.PackResult result = new PackExporter().export(pack, zip);
                 logger.info("Resource pack exported to " + result.zip() + " (" + result.entries() + " files, SHA-1 "
                         + result.sha1() + ")");

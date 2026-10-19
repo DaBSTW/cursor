@@ -3,26 +3,27 @@ package dev.example.soledom.runtime;
 import java.util.Objects;
 
 import org.bukkit.entity.Display;
-import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 import dev.example.soledom.api.PartDefinition;
 import dev.example.soledom.compat.VersionAdapter;
 
-/** A spawned part: its display entity plus the last transformation sent, to avoid redundant packets. */
+/** A spawned part: its display entity plus the last matrix sent, to avoid redundant packets. */
 public final class DisplayPart {
 
     private final PartDefinition definition;
     private final Display entity;
-    private final Transformation rest;
-    private @Nullable Transformation lastApplied;
+    private final Matrix4f rest;
+    private @Nullable Matrix4f lastApplied;
 
-    public DisplayPart(@NotNull PartDefinition definition, @NotNull Display entity, @NotNull Transformation rest) {
+    public DisplayPart(@NotNull PartDefinition definition, @NotNull Display entity, @NotNull Matrix4fc rest) {
         this.definition = Objects.requireNonNull(definition, "definition");
         this.entity = Objects.requireNonNull(entity, "entity");
-        this.rest = Objects.requireNonNull(rest, "rest");
-        this.lastApplied = rest;
+        this.rest = new Matrix4f(rest);
+        this.lastApplied = this.rest;
     }
 
     public @NotNull String id() {
@@ -37,8 +38,8 @@ public final class DisplayPart {
         return entity;
     }
 
-    /** Transformation of the rest pose (no animation). */
-    public @NotNull Transformation rest() {
+    /** Model-space matrix of the rest pose (no animation). */
+    public @NotNull Matrix4fc rest() {
         return rest;
     }
 
@@ -46,14 +47,14 @@ public final class DisplayPart {
         return entity.isValid();
     }
 
-    /** Sends {@code transformation} unless it equals the one already shown. */
-    public boolean apply(@NotNull VersionAdapter adapter, @NotNull Transformation transformation,
-            int interpolationTicks) {
-        if (!entity.isValid() || transformation.equals(lastApplied)) {
+    /** Sends {@code matrix} unless it equals the one already shown. */
+    public boolean apply(@NotNull VersionAdapter adapter, @NotNull Matrix4fc matrix, int interpolationTicks) {
+        if (!entity.isValid() || matrix.equals(lastApplied)) {
             return false;
         }
-        adapter.applyTransformation(entity, transformation, interpolationTicks);
-        lastApplied = transformation;
+        Matrix4f copy = new Matrix4f(matrix);
+        adapter.applyTransformation(entity, copy, interpolationTicks);
+        lastApplied = copy;
         return true;
     }
 

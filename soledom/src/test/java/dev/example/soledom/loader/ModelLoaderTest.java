@@ -79,7 +79,7 @@ class ModelLoaderTest {
         assertHas(errors, "parts[0].material: ITEM_DISPLAY parts need a material");
         assertHas(errors, "parts[1].id: duplicate part id 'a'");
         assertHas(errors, "parts[1].scale: expected a number or an array of 3 numbers");
-        assertHas(errors, "parts[2].type: 'SPHERE' is not one of [ITEM_DISPLAY, BLOCK_DISPLAY, TEXT_DISPLAY]");
+        assertHas(errors, "parts[2].type: 'SPHERE' is not one of [ITEM_DISPLAY, BLOCK_DISPLAY, TEXT_DISPLAY, GROUP]");
         assertHas(errors, "parts[3].custom_model_data: must be between 0 and 16777216");
         assertHas(errors, "default_animation: 'walk' is not declared");
         assertEquals("bad.json", e.getSource());
@@ -110,6 +110,26 @@ class ModelLoaderTest {
                 """, "typo.json", warnings);
         assertHas(warnings, "typo.json: colour: unknown field");
         assertHas(warnings, "typo.json: parts[0].positon: unknown field");
+    }
+
+    @Test
+    void validatesPartHierarchy() throws Exception {
+        ModelDefinition ok = loader.parse("""
+                {"id": "arm", "parts": [
+                  {"id": "hand", "type": "TEXT_DISPLAY", "text": "x", "parent": "shoulder"},
+                  {"id": "shoulder", "type": "GROUP", "position": [0, 1, 0]}]}
+                """, "arm.json", new ArrayList<>());
+        assertEquals("shoulder", ok.part("hand").orElseThrow().parent());
+        assertEquals(PartType.GROUP, ok.part("shoulder").orElseThrow().type());
+
+        ValidationException e = assertThrows(ValidationException.class, () -> loader.parse("""
+                {"id": "bad", "parts": [
+                  {"id": "a", "type": "GROUP", "parent": "b"},
+                  {"id": "b", "type": "GROUP", "parent": "a"},
+                  {"id": "c", "type": "GROUP", "parent": "ghost"}]}
+                """, "bad.json", new ArrayList<>()));
+        assertHas(e.getErrors(), "parts[0].parent: parent chain of 'a' loops back on itself");
+        assertHas(e.getErrors(), "parts[2].parent: no part with id 'ghost'");
     }
 
     static void assertHas(List<String> messages, String fragment) {

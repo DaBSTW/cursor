@@ -25,6 +25,18 @@ models:
   # Maximum models per chunk (0 = unlimited).
   max-per-chunk: 32
 
+blockbench:
+  # Blockbench projects (.bbmodel) dropped into plugins/Soledom/blockbench/ are converted automatically on start
+  # and on /soledom reload: every bone becomes a part, the bone tree is kept, animations and embedded textures
+  # are imported. Run /soledom pack export afterwards.
+  enabled: true
+  # Namespace of the generated model ids (soledom:<file name>) and pack resources.
+  namespace: soledom
+  # Item the bones are rendered on through custom model data. Pick an item you don't use elsewhere.
+  material: minecraft:paper
+  # First custom model data value handed out (one per bone with cubes, in file-name order).
+  custom-model-data-start: 20000
+
 resource-pack:
   # Output: plugins/Soledom/export/<file-name>. Generate it with /soledom pack export.
   file-name: SoledomPack.zip

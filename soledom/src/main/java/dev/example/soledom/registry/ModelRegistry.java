@@ -23,13 +23,20 @@ public final class ModelRegistry {
     private volatile Map<String, RegisteredModel> fileModels = Map.of();
     private volatile Map<String, AnimationDefinition> fileAnimations = Map.of();
     private volatile Map<String, RegisteredModel> snapshot = Map.of();
+    private volatile Map<String, byte[]> packAssets = Map.of();
 
-    /** Atomically replaces every file-backed model and animation. */
+    /** Atomically replaces every file-backed model and animation, plus pack files generated for them. */
     public synchronized void replaceFileContent(@NotNull Map<String, RegisteredModel> models,
-            @NotNull Map<String, AnimationDefinition> animations) {
+            @NotNull Map<String, AnimationDefinition> animations, @NotNull Map<String, byte[]> generatedPackAssets) {
         this.fileModels = Map.copyOf(models);
         this.fileAnimations = Map.copyOf(animations);
+        this.packAssets = Map.copyOf(generatedPackAssets);
         rebuild();
+    }
+
+    /** Resource pack files generated while loading (Blockbench item models and textures), by ZIP path. */
+    public @NotNull Map<String, byte[]> packAssets() {
+        return packAssets;
     }
 
     public synchronized void registerExternal(@NotNull RegisteredModel model) {

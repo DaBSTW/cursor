@@ -7,7 +7,7 @@ import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Transformation;
+import org.joml.Matrix4fc;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,16 +36,18 @@ public interface VersionAdapter {
     /**
      * Spawns and fully configures the display entity for {@code part}.
      *
-     * @return the entity, or {@code null} if display entities are unavailable or the part cannot be rendered
+     * @param matrix model-space transformation of the part (see {@code PoseSolver})
+     * @return the entity, or {@code null} for {@code GROUP} parts, when display entities are unavailable or the
+     *         part cannot be rendered
      */
-    @Nullable Display spawnPart(@NotNull Location location, @NotNull PartDefinition part,
-            @NotNull Transformation transformation, @NotNull Consumer<Display> configure);
+    @Nullable Display spawnPart(@NotNull Location location, @NotNull PartDefinition part, @NotNull Matrix4fc matrix,
+            @NotNull Consumer<Display> configure);
 
     /** Builds the item an {@code ITEM_DISPLAY} part shows, with custom model data and item model applied. */
     @NotNull ItemStack createItem(@NotNull PartDefinition part);
 
     /** Sets a new transformation and lets the client interpolate to it over {@code interpolationTicks}. */
-    void applyTransformation(@NotNull Display display, @NotNull Transformation transformation, int interpolationTicks);
+    void applyTransformation(@NotNull Display display, @NotNull Matrix4fc matrix, int interpolationTicks);
 
     /** Sends a server resource pack using the newest API the server offers. */
     void sendResourcePack(@NotNull Player player, @NotNull String url, @Nullable String sha1Hex,

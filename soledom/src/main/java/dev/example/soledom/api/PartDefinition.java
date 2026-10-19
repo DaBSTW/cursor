@@ -6,7 +6,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * One visual piece of a model, rendered by its own display entity.
+ * One piece of a model, rendered by its own display entity ({@link PartType#GROUP} parts are transform-only).
+ *
+ * <p>Parts form a hierarchy through {@code parent}: a part's position, rotation and scale are relative to its
+ * parent's, exactly like bones in Blockbench. Parts without a parent are relative to the model origin.</p>
  *
  * @param id                unique id inside the model ({@code [a-z0-9_-]+})
  * @param type              display entity kind
@@ -29,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
  * @param viewRange         view range multiplier
  * @param shadowRadius      shadow radius in blocks
  * @param shadowStrength    shadow opacity
+ * @param parent            id of the parent part, or {@code null} for a top-level part
  */
 public record PartDefinition(
         @NotNull String id,
@@ -51,7 +55,8 @@ public record PartDefinition(
         @Nullable Brightness brightness,
         float viewRange,
         float shadowRadius,
-        float shadowStrength) {
+        float shadowStrength,
+        @Nullable String parent) {
 
     public PartDefinition {
         Objects.requireNonNull(id, "id");
@@ -69,7 +74,14 @@ public record PartDefinition(
             @Nullable Integer customModelData, @Nullable String model) {
         return new PartDefinition(id, PartType.ITEM_DISPLAY, material, customModelData, model, null, null, null,
                 null, TextStyle.DEFAULT, "FIXED", "FIXED", Vec3.ZERO, Vec3.ZERO, Vec3.ONE, false, null, null,
-                1.0f, 0f, 1f);
+                1.0f, 0f, 1f, null);
+    }
+
+    /** Copy of this part attached to another parent. */
+    public @NotNull PartDefinition withParent(@Nullable String newParent) {
+        return new PartDefinition(id, type, material, customModelData, model, itemModel, legacyBaseModel, block, text,
+                textStyle, displayTransform, billboard, position, rotation, scale, glow, glowColor, brightness,
+                viewRange, shadowRadius, shadowStrength, newParent);
     }
 
     /** Fixed block/sky light levels (0-15). */

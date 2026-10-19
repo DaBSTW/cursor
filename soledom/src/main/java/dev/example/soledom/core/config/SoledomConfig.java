@@ -6,6 +6,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
+import dev.example.soledom.blockbench.ImportSettings;
+import dev.example.soledom.core.utils.NamespacedIds;
+
 /**
  * Immutable snapshot of {@code config.yml}. Replaced as a whole on reload, so readers never see a half-applied
  * configuration.
@@ -18,10 +21,11 @@ import org.jetbrains.annotations.NotNull;
  * @param autoCleanup            remove models whose definition no longer exists, and stray parts
  * @param maxModelsPerChunk      spawn limit per chunk, 0 for unlimited
  * @param pack                   resource pack settings
+ * @param blockbench             Blockbench project import settings
  */
 public record SoledomConfig(boolean debug, int animationTickRate, double maxAnimationDistance,
         boolean animateOnlyNearPlayers, boolean persistModels, boolean autoCleanup, int maxModelsPerChunk,
-        @NotNull PackSettings pack) {
+        @NotNull PackSettings pack, @NotNull ImportSettings blockbench) {
 
     public static @NotNull SoledomConfig from(@NotNull FileConfiguration config, @NotNull Logger logger) {
         int tickRate = clamp(config.getInt("animation.tick-rate", 2), 1, 20, "animation.tick-rate", logger);
@@ -56,7 +60,24 @@ public record SoledomConfig(boolean debug, int animationTickRate, double maxAnim
         return new SoledomConfig(config.getBoolean("debug", false), tickRate, distance,
                 config.getBoolean("animation.only-near-players", true),
                 config.getBoolean("models.persist-across-restart", true),
-                config.getBoolean("models.auto-cleanup", true), maxPerChunk, pack);
+                config.getBoolean("models.auto-cleanup", true), maxPerChunk, pack, blockbench(config, logger));
+    }
+
+    private static ImportSettings blockbench(FileConfiguration config, Logger logger) {
+        ImportSettings defaults = ImportSettings.DEFAULT;
+        String namespace = NamespacedIds.normalize(config.getString("blockbench.namespace", defaults.namespace())
+                + ":x", defaults.namespace());
+        String material = NamespacedIds.normalize(config.getString("blockbench.material", defaults.material()),
+                "minecraft");
+        if (namespace == null || material == null) {
+            logger.warning("blockbench.namespace/material are not valid ids, using the defaults");
+            namespace = defaults.namespace() + ":x";
+            material = defaults.material();
+        }
+        int start = clamp(config.getInt("blockbench.custom-model-data-start", defaults.customModelDataStart()), 1,
+                16_000_000, "blockbench.custom-model-data-start", logger);
+        return new ImportSettings(config.getBoolean("blockbench.enabled", true), NamespacedIds.namespace(namespace),
+                material, start);
     }
 
     private static int clamp(int value, int min, int max, String key, Logger logger) {

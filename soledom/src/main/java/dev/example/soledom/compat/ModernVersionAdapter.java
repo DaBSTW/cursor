@@ -26,9 +26,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
@@ -85,13 +86,13 @@ public final class ModernVersionAdapter implements VersionAdapter {
 
     @Override
     public @Nullable Display spawnPart(@NotNull Location location, @NotNull PartDefinition part,
-            @NotNull Transformation transformation, @NotNull Consumer<Display> configure) {
-        if (!features.hasDisplayEntities()) {
+            @NotNull Matrix4fc matrix, @NotNull Consumer<Display> configure) {
+        if (!features.hasDisplayEntities() || part.type() == dev.example.soledom.api.PartType.GROUP) {
             return null;
         }
         World world = requireWorld(location);
         Consumer<Display> common = display -> {
-            applyCommon(display, part, transformation);
+            applyCommon(display, part, matrix);
             configure.accept(display);
         };
         return switch (part.type()) {
@@ -111,6 +112,7 @@ public final class ModernVersionAdapter implements VersionAdapter {
                 applyText(display, part);
                 common.accept(display);
             });
+            case GROUP -> null;
         };
     }
 
@@ -164,12 +166,12 @@ public final class ModernVersionAdapter implements VersionAdapter {
     }
 
     @Override
-    public void applyTransformation(@NotNull Display display, @NotNull Transformation transformation,
-            int interpolationTicks) {
+    public void applyTransformation(@NotNull Display display, @NotNull Matrix4fc matrix, int interpolationTicks) {
         // Delay 0 + duration N restarts client-side interpolation from the current pose to the new one.
         display.setInterpolationDelay(0);
         display.setInterpolationDuration(Math.clamp(interpolationTicks, 0, MAX_DURATION_TICKS));
-        display.setTransformation(transformation);
+        // The server decomposes the matrix (SVD), so any combination of parent rotations and scales is exact.
+        display.setTransformationMatrix(new Matrix4f(matrix));
     }
 
     @Override
@@ -192,7 +194,7 @@ public final class ModernVersionAdapter implements VersionAdapter {
         player.setResourcePack(url, bytes, prompt, required);
     }
 
-    private void applyCommon(Display display, PartDefinition part, Transformation transformation) {
+    private void applyCommon(Display display, PartDefinition part, Matrix4fc matrix) {
         display.setPersistent(false);
         display.setBillboard(Display.Billboard.valueOf(part.billboard()));
         display.setViewRange(part.viewRange());
@@ -207,7 +209,7 @@ public final class ModernVersionAdapter implements VersionAdapter {
         }
         display.setInterpolationDelay(0);
         display.setInterpolationDuration(0);
-        display.setTransformation(transformation);
+        display.setTransformationMatrix(new Matrix4f(matrix));
     }
 
     private void applyText(TextDisplay display, PartDefinition part) {

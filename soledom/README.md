@@ -17,10 +17,12 @@ pausa/stop, export del pack, reload en caliente, persistencia tras reinicio y li
 
 ## Qué hace
 
+- **Proyectos de Blockbench (`.bbmodel`)**: los dejas en `plugins/Soledom/blockbench/` y se importan solos,
+  con huesos, jerarquía, animaciones y texturas. Ver [Blockbench](#blockbench).
 - **Modelos en JSON o YAML** en `plugins/Soledom/models/`, validados con errores claros (`parts[1].scale: expected
   an array of 3 numbers`), recarga en caliente con `/soledom reload`.
 - **Partes visuales** con `ITEM_DISPLAY` (custom model data / `item_model`), `BLOCK_DISPLAY` y `TEXT_DISPLAY`
-  (MiniMessage).
+  (MiniMessage), organizadas en **jerarquía** (`parent`) como los huesos de Blockbench; nodos `GROUP` sin entidad.
 - **Raíz invisible**: `Interaction` (ancla + hitbox clicable) o `Marker` (sin hitbox, la más barata).
 - **Animación server-side**: canales `translation`, `rotation`, `scale`; interpolación lineal o `step`; loop;
   prioridades; pausa/reanudar; culling por distancia; eventos de inicio/fin/loop.
@@ -42,12 +44,70 @@ plugins/Soledom/
 ├── models/example_golem.json
 ├── animations/example_idle.json
 ├── animations/example_rotate.json
-├── pack/assets/soledom/models/item/     ← tus modelos (Blockbench → Java Block/Item)
+├── blockbench/example_robot.bbmodel     ← tus proyectos de Blockbench (se importan solos)
+├── pack/assets/soledom/models/item/     ← modelos sueltos (Blockbench → Java Block/Item)
 ├── pack/assets/soledom/textures/item/   ← tus texturas
 └── export/                              ← SoledomPack.zip + SoledomPack.zip.sha1
 ```
 
-3. `/soledom spawn soledom:example_golem` y `/soledom animate looking rotate`.
+3. `/soledom spawn soledom:example_robot` y `/soledom animate looking wave` (o `soledom:example_golem` con
+   `rotate`). Para verlos con sus modelos, `/soledom pack export` y carga el pack en el cliente.
+
+## Blockbench
+
+Es la forma más fácil de crear modelos: **diseña y anima en Blockbench, guarda el proyecto y listo**.
+
+1. Crea el modelo en Blockbench (formato *Generic Model* / free, o *Java Block/Item*). Usa **huesos (grupos)**
+   para las piezas que se mueven y anímalos en la pestaña *Animate*.
+2. Guarda el proyecto (*File → Save Project*, `.bbmodel`) con las texturas incrustadas (opción por defecto
+   para texturas creadas en Blockbench; para texturas externas, *Embed textures* al guardar).
+3. Copia el `.bbmodel` a `plugins/Soledom/blockbench/` y ejecuta `/soledom reload`.
+4. `/soledom pack export` y envía/carga el pack.
+5. `/soledom spawn soledom:<nombre_del_archivo>` y `/soledom animate looking <animación>`.
+
+Qué se convierte:
+
+| Blockbench | Soledom |
+|---|---|
+| Hueso (grupo) con cubos | Parte `ITEM_DISPLAY` con un modelo de ítem generado solo con sus cubos |
+| Hueso sin cubos | Parte `GROUP` (solo transformación, sin entidad) |
+| Árbol de huesos, pivotes y rotaciones | `parent`, `position` y `rotation` de cada parte |
+| Cubos fuera de cualquier hueso | Parte `root` |
+| Animaciones (rotación, posición, escala) | Animaciones de Soledom; `loop` → en bucle, `once` → vuelve a reposo, `hold` → se queda en el último frame |
+| Animación llamada `idle` | `default_animation` (se reproduce sola) |
+| Texturas incrustadas | `assets/<ns>/textures/item/<modelo>/` en el pack |
+| Tamaño del modelo | Hitbox automático (ancho y alto de los cubos) |
+
+El id del modelo es `soledom:<nombre del archivo>` (`Dragon Boss.bbmodel` → `soledom:dragon_boss`). Cada hueso
+con cubos usa un valor de custom model data sobre `blockbench.material` (por defecto `minecraft:paper`, desde
+`blockbench.custom-model-data-start: 20000`). Si añades o quitas proyectos, vuelve a exportar el pack.
+
+**Ajustes por modelo (opcional):** crea `<nombre>.soledom.json` junto al `.bbmodel` para cambiar campos del
+modelo generado sin tocar el proyecto:
+
+```json
+{
+  "id": "soledom:jefe_dragon",
+  "display_name": "<red>Dragón",
+  "scale": 2.0,
+  "root": { "type": "INTERACTION", "width": 3.0, "height": 4.0 },
+  "default_animation": "fly",
+  "options": { "persist": true }
+}
+```
+
+Se pueden cambiar `id`, `display_name`, `root`, `offset`, `rotation`, `scale`, `default_animation`, `tags`,
+`metadata` y `options`. Para ajustar un modelo de hueso a mano, coloca tu versión en
+`pack/assets/soledom/models/item/<modelo>/<hueso>.json`: tiene prioridad sobre la generada.
+
+**Limitaciones de Minecraft** (el importador avisa en consola/`/soledom reload` cuando ocurren):
+
+- Un cubo solo puede rotar en **un eje** y en pasos de **22.5°** (-45…45). Otras rotaciones se ajustan al valor
+  permitido más cercano. **Rota huesos, no cubos**: los huesos rotan libremente.
+- Un hueso no puede extenderse más de ~1.5 bloques desde su pivote sin reducirse; el importador lo escala hasta
+  4× (~6 bloques). Para piezas más grandes, divídelas en varios huesos.
+- No se importan: elementos *mesh*, expresiones Molang en keyframes (se usa 0), curvas *bezier/catmull-rom*
+  (se convierten a lineales), keyframes de sonido/partículas, ni texturas animadas.
 
 ## Compilar
 
@@ -142,7 +202,8 @@ UUID de la instancia o un id de modelo (la instancia más cercana de ese modelo)
 | Campo | Aplica a | Notas |
 |---|---|---|
 | `id` | todas | `[a-z0-9_-]+`, único en el modelo |
-| `type` | todas | `ITEM_DISPLAY`, `BLOCK_DISPLAY`, `TEXT_DISPLAY` |
+| `type` | todas | `ITEM_DISPLAY`, `BLOCK_DISPLAY`, `TEXT_DISPLAY`, `GROUP` (sin entidad, solo agrupa) |
+| `parent` | todas | Id de la parte padre: hereda su posición, rotación y escala (también animadas) |
 | `material` | ITEM | Id de ítem, p. ej. `minecraft:stick` |
 | `custom_model_data` | ITEM | 0 – 16 777 216 (se guarda como float desde 1.21.4) |
 | `model` | ITEM | Modelo del pack ligado al CMD. Por defecto `<ns>:item/<modelo>/<parte>` |
@@ -152,7 +213,7 @@ UUID de la instancia o un id de modelo (la instancia más cercana de ese modelo)
 | `text`, `text_style` | TEXT | MiniMessage; `background` `#AARRGGBB`, `line_width`, `shadowed`, `see_through`, `alignment` |
 | `display_transform` | ITEM | `FIXED`, `HEAD`, `GUI`, `GROUND`, `NONE`, `THIRDPERSON_*`, `FIRSTPERSON_*` |
 | `billboard` | todas | `FIXED`, `VERTICAL`, `HORIZONTAL`, `CENTER` |
-| `position` / `rotation` / `scale` | todas | Bloques / grados (X→Y→Z, como Blockbench) / factor |
+| `position` / `rotation` / `scale` | todas | Relativos al padre (o al modelo): bloques / grados (X→Y→Z, como Blockbench) / factor |
 | `glow`, `glow_color` | todas | `glow_color` `#RRGGBB` |
 | `brightness` | todas | `{ "block": 15, "sky": 15 }` |
 | `view_range`, `shadow_radius`, `shadow_strength` | todas | |
@@ -187,9 +248,13 @@ Campos desconocidos generan un aviso (para detectar typos); visibles con `debug:
 - Cada keyframe usa `time` absoluto **o** `duration` (segundos desde el keyframe anterior).
 - `duration` de la animación por defecto = último keyframe. `priority` decide quién gana si dos animaciones
   mueven el mismo canal de la misma parte; canales distintos se combinan (p. ej. `idle` sube/baja y `rotate` gira).
-- Los valores son **deltas sobre la pose de reposo** de la parte.
+- Los valores son **deltas sobre la pose de reposo** de la parte: la traslación se suma a `position`, la rotación
+  se suma a `rotation` (en grados, como Blockbench) y la escala multiplica `scale`. Animar una parte mueve a
+  todas sus hijas.
 
 ## Resource pack
+
+Los proyectos `.bbmodel` de `blockbench/` aportan sus modelos y texturas automáticamente. Para modelos sueltos:
 
 1. Exporta tus modelos de Blockbench como *Java Block/Item* a `plugins/Soledom/pack/assets/soledom/models/item/...`
    y sus texturas a `pack/assets/soledom/textures/...`. La ruta del archivo debe coincidir con el `model` de la
@@ -216,7 +281,7 @@ a 26.3. Sube `max-format` cuando salga una versión nueva.
 
 Ver [`config.yml`](src/main/resources/config.yml) (comentado): `animation.tick-rate`, `animation.max-distance`,
 `animation.only-near-players`, `models.persist-across-restart`, `models.auto-cleanup`, `models.max-per-chunk`,
-`resource-pack.*`, `debug`. Todos los mensajes están en [`messages.yml`](src/main/resources/messages.yml)
+`resource-pack.*`, `blockbench.*` (`enabled`, `namespace`, `material`, `custom-model-data-start`), `debug`. Todos los mensajes están en [`messages.yml`](src/main/resources/messages.yml)
 (MiniMessage).
 
 ## API para desarrolladores
@@ -289,8 +354,9 @@ dev.example.soledom
 ├── core                     comandos, listeners, config/mensajes, utilidades, implementación de la API
 ├── registry                 ModelRegistry (snapshot inmutable, lecturas sin locks)
 ├── loader                   ModelLoader / AnimationLoader / ContentLoader (Java puro, testeable, async)
+├── blockbench               BbModelConverter / BlockbenchImporter: .bbmodel → modelos, animaciones y pack
 ├── runtime                  ModelManager, ModelEntityController, DisplayPart, HitboxController, PDC keys
-├── animation                AnimationEngine, AnimationPlayer, tracks, keyframes, TransformSnapshot
+├── animation                AnimationEngine, AnimationPlayer, PoseSolver (jerarquía), tracks, keyframes
 ├── resourcepack             PackMeta, PackGenerator, ModelJsonWriter, PackExporter, PackService
 ├── compat                   ServerVersion, Capability, FeatureFlags, VersionAdapter
 └── scheduler                SchedulerAdapter (Bukkit / Folia)
@@ -302,6 +368,10 @@ Decisiones, riesgos y limitaciones: [`docs/DESIGN.md`](docs/DESIGN.md).
 
 - [ ] Arranque limpio: log de versión/capacidades y "Loaded 1 model(s) and 2 animation(s)".
 - [ ] `/soledom spawn soledom:example_golem` → aparecen cuerpo, cabeza de calabaza y etiqueta; `idle` en marcha.
+- [ ] `/soledom spawn soledom:example_robot` con el pack cargado → el robot se ve como en Blockbench; la cabeza
+      gira con `idle` y `/soledom animate looking wave` mueve el brazo derecho alrededor del hombro.
+- [ ] Copiar otro `.bbmodel` a `blockbench/` + `/soledom reload` + `/soledom pack export` → aparece en
+      `/soledom list` como `[blockbench]` y se ve correctamente.
 - [ ] Clic derecho/izquierdo en el hitbox dispara `SoledomInteractEvent` (y no daña nada).
 - [ ] `/soledom animate looking rotate 2` gira el cuerpo mientras `idle` sigue; `stopanimation looking rotate`
       vuelve a la pose de reposo suavemente.

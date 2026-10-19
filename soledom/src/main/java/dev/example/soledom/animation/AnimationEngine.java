@@ -2,13 +2,14 @@ package dev.example.soledom.animation;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import dev.example.soledom.api.AnimationDefinition;
 import dev.example.soledom.api.Vec3;
@@ -212,20 +213,27 @@ public final class AnimationEngine {
 
     private void applyFrame(ModelEntityController controller, int interpolationTicks) {
         List<AnimationPlayer> players = controller.players();
-        for (DisplayPart part : controller.parts()) {
+        // Every part (GROUP nodes included) gets its delta first, then the hierarchy is resolved in one pass so
+        // that animating a parent moves its children.
+        Map<String, Matrix4f> pose = PoseSolver.solve(controller.getModel(), partId -> {
             TransformSnapshot snapshot = TransformSnapshot.IDENTITY;
             for (Channel channel : Channel.values()) {
                 // Players are sorted by priority: the first one driving this channel wins.
                 for (AnimationPlayer player : players) {
-                    Vec3 value = player.sample(part.id(), channel);
+                    Vec3 value = player.sample(partId, channel);
                     if (value != null) {
                         snapshot = snapshot.with(channel, value);
                         break;
                     }
                 }
             }
-            Transformation transformation = snapshot.toTransformation(controller.getModel(), part.definition());
-            part.apply(adapter, transformation, interpolationTicks);
+            return snapshot;
+        });
+        for (DisplayPart part : controller.parts()) {
+            Matrix4f matrix = pose.get(part.id());
+            if (matrix != null) {
+                part.apply(adapter, matrix, interpolationTicks);
+            }
         }
     }
 

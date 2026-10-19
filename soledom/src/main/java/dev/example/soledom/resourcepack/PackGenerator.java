@@ -60,7 +60,16 @@ public final class PackGenerator {
 
     public @NotNull GeneratedPack generate(@NotNull Collection<ModelDefinition> models, @NotNull PackMeta meta,
             @Nullable Path overlayDir) throws IOException {
-        SortedMap<String, byte[]> entries = new TreeMap<>();
+        return generate(models, meta, overlayDir, Map.of());
+    }
+
+    /**
+     * @param generatedAssets files produced while loading (Blockbench item models and textures); files in the
+     *                        overlay folder take precedence over them so they can be hand-tuned
+     */
+    public @NotNull GeneratedPack generate(@NotNull Collection<ModelDefinition> models, @NotNull PackMeta meta,
+            @Nullable Path overlayDir, @NotNull Map<String, byte[]> generatedAssets) throws IOException {
+        SortedMap<String, byte[]> entries = new TreeMap<>(generatedAssets);
         List<String> warnings = new ArrayList<>();
         readOverlay(overlayDir, entries, warnings);
 

@@ -57,7 +57,7 @@ public final class ModelLoader {
     private static final Set<String> PART_KEYS = Set.of("id", "type", "material", "custom_model_data", "model",
             "item_model", "legacy_base_model", "block", "text", "text_style", "display_transform", "billboard",
             "position", "rotation", "scale", "glow", "glow_color", "brightness", "view_range", "shadow_radius",
-            "shadow_strength", "_comment");
+            "shadow_strength", "parent", "_comment");
     private static final Set<String> OPTION_KEYS = Set.of("persist", "visible_by_default", "animate_only_near_players");
     private static final Set<String> TEXT_STYLE_KEYS = Set.of("background", "line_width", "shadowed", "see_through",
             "alignment");
@@ -156,6 +156,7 @@ public final class ModelLoader {
             problems.error("parts", "too many parts (" + array.size() + "), the limit is " + MAX_PARTS);
         }
         Set<String> seen = new HashSet<>();
+        List<String> paths = new ArrayList<>();
         for (int i = 0; i < array.size(); i++) {
             String path = "parts[" + i + "]";
             JsonElement element = array.get(i);
@@ -169,9 +170,38 @@ public final class ModelLoader {
                     problems.error(path + ".id", "duplicate part id '" + part.id() + "'");
                 }
                 parts.add(part);
+                paths.add(path);
             }
         }
+        validateHierarchy(parts, paths, problems);
         return parts;
+    }
+
+    /** Every parent must exist, and following parents must never loop back. */
+    private static void validateHierarchy(List<PartDefinition> parts, List<String> paths, Problems problems) {
+        java.util.Map<String, String> parentOf = new java.util.HashMap<>();
+        for (PartDefinition part : parts) {
+            parentOf.put(part.id(), part.parent());
+        }
+        for (int i = 0; i < parts.size(); i++) {
+            PartDefinition part = parts.get(i);
+            if (part.parent() == null) {
+                continue;
+            }
+            if (!parentOf.containsKey(part.parent())) {
+                problems.error(paths.get(i) + ".parent", "no part with id '" + part.parent() + "'");
+                continue;
+            }
+            Set<String> visited = new HashSet<>();
+            String current = part.id();
+            while (current != null) {
+                if (!visited.add(current)) {
+                    problems.error(paths.get(i) + ".parent", "parent chain of '" + part.id() + "' loops back on itself");
+                    break;
+                }
+                current = parentOf.get(current);
+            }
+        }
     }
 
     private @Nullable PartDefinition parsePart(JsonObject json, String path, JsonFields f, Problems problems,
@@ -197,6 +227,11 @@ public final class ModelLoader {
                 path + ".legacy_base_model", problems);
         String block = f.string(json, "block", path, false);
         String text = f.string(json, "text", path, false);
+        String parent = f.string(json, "parent", path, false);
+        if (parent != null && !PART_ID.matcher(parent).matches()) {
+            problems.error(path + ".parent", "'" + parent + "' is not a valid part id");
+            parent = null;
+        }
 
         if (type == PartType.ITEM_DISPLAY) {
             if (rawMaterial == null) {
@@ -239,7 +274,7 @@ public final class ModelLoader {
         }
         return new PartDefinition(id, type, material, cmd, model, itemModel, legacyBase, block, text, textStyle,
                 transform, billboard, position, rotation, scale, glow, glowColor, brightness, (float) viewRange,
-                (float) shadowRadius, (float) shadowStrength);
+                (float) shadowRadius, (float) shadowStrength, parent);
     }
 
     private TextStyle parseTextStyle(JsonObject json, String path, JsonFields f, Problems problems) {
