@@ -1,0 +1,43 @@
+name: Soledom CI
+
+on:
+  push:
+    paths:
+      - "soledom/**"
+      - ".github/workflows/soledom.yml"
+  pull_request:
+    paths:
+      - "soledom/**"
+      - ".github/workflows/soledom.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: soledom
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          build-root-directory: soledom
+
+      - name: Build
+        run: ./gradlew build -x test
+
+      - name: Test
+        run: ./gradlew test
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: Soledom
+          path: soledom/build/libs/Soledom-*.jar

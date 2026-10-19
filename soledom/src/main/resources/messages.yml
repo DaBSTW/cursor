@@ -1,0 +1,94 @@
+# Soledom messages — MiniMessage format: https://docs.advntr.dev/minimessage/format.html
+# <prefix> inserts the prefix below. Set a message to "" to silence it.
+prefix: "<dark_gray>[<gradient:#ffc857:#6c8ebf>Soledom</gradient>]</dark_gray> "
+
+no-permission: "<prefix><red>You don't have permission to do that."
+player-only: "<prefix><red>This needs a player (or extra arguments from the console)."
+unknown-subcommand: "<prefix><red>Unknown subcommand <white><input></white>. Try <yellow>/soledom help</yellow>."
+internal-error: "<prefix><red>Something went wrong. Check the console for details."
+invalid-number: "<prefix><red>Invalid number: <white><input>"
+unknown-world: "<prefix><red>Unknown world <white><world>"
+unknown-player: "<prefix><red>Player <white><player></white> is not online."
+usage: "<prefix><gray>Usage: <white><usage>"
+
+usage-text:
+  help: "/soledom help"
+  reload: "/soledom reload"
+  list: "/soledom list"
+  spawn: "/soledom spawn <model> [world x y z [yaw]]"
+  remove: "/soledom remove [looking|nearest|uuid|model]"
+  animate: "/soledom animate <looking|nearest|uuid|model> <animation> [speed]"
+  stopanimation: "/soledom stopanimation [target] [animation]"
+  pause: "/soledom pause [target]"
+  resume: "/soledom resume [target]"
+  pack: "/soledom pack <export|send [player]|info>"
+  debug: "/soledom debug [info|toggle|model [target]|cleanup [radius]]"
+
+help:
+  header: "<prefix><gold>Soledom <gray>v<version></gray> — commands:"
+  line: "<gray> • <yellow><usage></yellow> <dark_gray>—</dark_gray> <white><description>"
+  descriptions:
+    help: "Show this help."
+    reload: "Reload config, messages, models and animations."
+    list: "List registered models."
+    spawn: "Spawn a model at your position."
+    remove: "Remove the model you look at (or the nearest)."
+    animate: "Play an animation on a model."
+    stopanimation: "Stop one or all animations."
+    pause: "Pause animations."
+    resume: "Resume paused animations."
+    pack: "Export or send the resource pack."
+    debug: "Diagnostics and cleanup tools."
+
+reload:
+  start: "<prefix><gray>Reloading…"
+  busy: "<prefix><yellow>A reload is already running."
+  done: "<prefix><green>Reloaded <white><models></white> model(s) and <white><animations></white> animation(s). <gray>Errors: <white><errors>"
+  error-line: "<red> ✖ <white><error>"
+  more-errors: "<gray>   …and <count> more (see console)."
+
+list:
+  empty: "<prefix><yellow>No models registered. Put model files in plugins/Soledom/models and run /soledom reload."
+  header: "<prefix><gold><count></gold> model(s) registered, <gold><active></gold> loaded in the world:"
+  entry: "<gray> • <white><id></white> <dark_gray>[<source>]</dark_gray> parts: <aqua><parts></aqua> animations: <aqua><animations>"
+
+spawn:
+  success: "<prefix><green>Spawned <white><model></white>. <dark_gray>(<uuid>)"
+  unknown-model: "<prefix><red>Unknown model <white><model></white>. See <yellow>/soledom list</yellow>."
+  chunk-limit: "<prefix><red>This chunk already has the maximum of <white><limit></white> models."
+  cancelled: "<prefix><yellow>Another plugin cancelled the spawn."
+  failed: "<prefix><red>Could not spawn the model: <white><error>"
+
+remove:
+  success: "<prefix><green>Removed <white><model></white>. <dark_gray>(<uuid>)"
+
+target:
+  not-found: "<prefix><red>No model found. Look at a model's hitbox, stand near one, or pass a UUID/model id."
+  console-needs-uuid: "<prefix><red>From the console, pass the model instance UUID."
+
+animate:
+  started: "<prefix><green>Playing <white><animation></white> on <white><model></white>."
+  unknown: "<prefix><red><white><model></white> has no animation <white><animation></white>. Available: <gray><available>"
+  stopped: "<prefix><green>Stopped <white><animation></white> on <white><model></white>."
+  paused: "<prefix><green>Paused animations on <white><model></white>."
+  resumed: "<prefix><green>Resumed animations on <white><model></white>."
+
+pack:
+  start: "<prefix><gray>Generating resource pack…"
+  busy: "<prefix><yellow>An export is already running."
+  done: "<prefix><green>Pack exported: <white><path></white><newline><gray>   <entries> files, <size>, SHA-1 <white><sha1>"
+  warning: "<yellow> ⚠ <white><warning>"
+  failed: "<prefix><red>Pack export failed: <white><error>"
+  no-url: "<prefix><red>Set resource-pack.url in config.yml first (Soledom does not host the file)."
+  sent: "<prefix><green>Resource pack sent to <white><player></white>."
+  info: "<prefix><gold>Resource pack<newline><gray> File: <white><path><newline><gray> pack_format: <white><format></white>  range: <white><min>-<max><newline><gray> URL: <white><url><newline><gray> SHA-1: <white><sha1>"
+
+debug:
+  enabled: "<prefix><green>Debug logging enabled (until next reload)."
+  disabled: "<prefix><yellow>Debug logging disabled (until next reload)."
+  info: "<prefix><gold>Diagnostics<newline><gray> Minecraft: <white><version></white>  Scheduler: <white><scheduler><newline><gray> Models: <white><models></white>  Loaded: <white><active></white>  Animating: <white><animating><newline><gray> Last load: <white><errors></white> error(s), <white><warnings></white> warning(s)"
+  capability-on: "<green>  ✔ <white><capability>"
+  capability-off: "<red>  ✖ <gray><capability>"
+  model: "<prefix><gold><model> <dark_gray>(<uuid>)<newline><gray> State: <white><state></white>  Parts: <white><parts></white>  Hitbox: <white><hitbox></white>  Visible: <white><visible><newline><gray> Playing: <white><animations>"
+  part: "<gray>  • <white><part></white> <dark_gray><type></dark_gray> valid: <white><valid>"
+  cleanup: "<prefix><green>Removed <white><count></white> orphaned Soledom entities within <radius> blocks."

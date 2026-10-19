@@ -1,0 +1,51 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Soledom configuration
+#  Models live in plugins/Soledom/models, animations in plugins/Soledom/animations.
+#  Apply changes with /soledom reload.
+# ─────────────────────────────────────────────────────────────────────────────
+config-version: 1
+
+# Verbose logging (spawns, rehydration, validation warnings).
+debug: false
+
+animation:
+  # Ticks between animation frames (1-20). The client interpolates between frames, so 2-3 looks smooth
+  # while halving/thirding the packets compared to 1.
+  tick-rate: 2
+  # Frames are not sent while no player is within this many blocks of a model.
+  max-distance: 64.0
+  # Global switch for the distance check above (models can also opt out with options.animate_only_near_players).
+  only-near-players: true
+
+models:
+  # Keep spawned models across chunk unloads and restarts. Models can opt out with options.persist = false.
+  persist-across-restart: true
+  # Remove placed models whose definition no longer exists, and stray parts left by a crash.
+  auto-cleanup: true
+  # Maximum models per chunk (0 = unlimited).
+  max-per-chunk: 32
+
+resource-pack:
+  # Output: plugins/Soledom/export/<file-name>. Generate it with /soledom pack export.
+  file-name: SoledomPack.zip
+  description: "Soledom generated models"
+  # Resource pack formats (Java Edition):
+  #   34 = 1.21-1.21.1   42 = 1.21.2-1.21.3   46 = 1.21.4   55 = 1.21.5   63 = 1.21.6   64 = 1.21.7-1.21.8
+  #   69 = 1.21.9-1.21.10   75 = 1.21.11   84 = 26.1   88 = 26.2   97 = 26.3
+  # pack-format is what pre-1.21.9 clients read; min/max-format declare the full supported range.
+  # Raise max-format when a newer Minecraft version ships.
+  pack-format: 34
+  min-format: 34
+  max-format: 97
+
+  # Optional: send a hosted copy of the pack to players. Soledom does not host files; upload the exported ZIP
+  # somewhere with a direct download link (your web server, a CDN, a pack host) and paste the URL here.
+  send-on-join: false
+  url: ""
+  # SHA-1 of the hosted file. Leave empty to use the hash of the last export (when use-exported-hash is true).
+  sha1: ""
+  use-exported-hash: true
+  # Kick players who decline the pack.
+  required: false
+  # MiniMessage text shown with the download prompt (empty = client default).
+  prompt: "<gray>This server uses <gold>Soledom</gold> custom models."

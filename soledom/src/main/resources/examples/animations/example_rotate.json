@@ -1,0 +1,28 @@
+{
+  "id": "soledom:example_rotate",
+  "duration": 2.0,
+  "loop": true,
+  "priority": 10,
+  "tracks": [
+    {
+      "part": "body",
+      "channel": "rotation",
+      "interpolation": "linear",
+      "keyframes": [
+        { "time": 0.0, "value": [0.0, 0.0, 0.0] },
+        { "time": 1.0, "value": [0.0, 180.0, 0.0] },
+        { "time": 2.0, "value": [0.0, 360.0, 0.0] }
+      ]
+    },
+    {
+      "part": "head",
+      "channel": "rotation",
+      "keyframes": [
+        { "time": 0.0, "value": [0.0, 0.0, 0.0] },
+        { "duration": 0.5, "value": [0.0, 0.0, 10.0] },
+        { "duration": 1.0, "value": [0.0, 0.0, -10.0] },
+        { "duration": 0.5, "value": [0.0, 0.0, 0.0] }
+      ]
+    }
+  ]
+}

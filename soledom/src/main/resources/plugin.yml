@@ -1,0 +1,36 @@
+name: Soledom
+version: '${version}'
+main: dev.example.soledom.SoledomPlugin
+api-version: '1.21'
+folia-supported: true
+description: Custom models with display entities, server-side keyframe animation and resource pack generation.
+authors: [Soledom contributors]
+website: https://github.com/dabstw/cursor
+
+commands:
+  soledom:
+    description: Soledom model management.
+    usage: /soledom help
+    aliases: [sd]
+
+permissions:
+  soledom.admin:
+    description: Full access, including reload and debug.
+    default: op
+    children:
+      soledom.use: true
+      soledom.spawn: true
+      soledom.animate: true
+      soledom.pack: true
+  soledom.use:
+    description: Use /soledom help and /soledom list.
+    default: op
+  soledom.spawn:
+    description: Spawn and remove models.
+    default: op
+  soledom.animate:
+    description: Play, stop, pause and resume animations.
+    default: op
+  soledom.pack:
+    description: Export and send the resource pack.
+    default: op

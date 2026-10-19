@@ -1,0 +1,58 @@
+{
+  "format_version": 1,
+  "id": "soledom:example_golem",
+  "display_name": "<gray>Example Golem",
+  "root": {
+    "type": "INTERACTION",
+    "width": 1.0,
+    "height": 1.8,
+    "responsive": true
+  },
+  "parts": [
+    {
+      "id": "body",
+      "type": "ITEM_DISPLAY",
+      "material": "minecraft:stick",
+      "custom_model_data": 1000,
+      "model": "soledom:item/example_golem/body",
+      "display_transform": "FIXED",
+      "position": [0.0, 0.7, 0.0],
+      "rotation": [0.0, 0.0, 0.0],
+      "scale": [1.4, 1.4, 1.4]
+    },
+    {
+      "id": "head",
+      "type": "BLOCK_DISPLAY",
+      "block": "minecraft:carved_pumpkin[facing=south]",
+      "position": [-0.3, 1.25, -0.3],
+      "scale": 0.6
+    },
+    {
+      "id": "label",
+      "type": "TEXT_DISPLAY",
+      "text": "<gradient:#ffc857:#6c8ebf>Example Golem</gradient>",
+      "billboard": "CENTER",
+      "position": [0.0, 2.1, 0.0],
+      "scale": 0.8,
+      "text_style": {
+        "background": "#40000000",
+        "shadowed": true
+      }
+    }
+  ],
+  "animations": {
+    "idle": "animations/example_idle.json",
+    "rotate": "soledom:example_rotate"
+  },
+  "default_animation": "idle",
+  "tags": ["example", "golem"],
+  "metadata": {
+    "author": "Soledom",
+    "license": "CC0-1.0"
+  },
+  "options": {
+    "persist": true,
+    "visible_by_default": true,
+    "animate_only_near_players": true
+  }
+}

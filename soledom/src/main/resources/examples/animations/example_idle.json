@@ -1,0 +1,26 @@
+{
+  "id": "soledom:example_idle",
+  "duration": 2.0,
+  "loop": true,
+  "priority": 0,
+  "tracks": [
+    {
+      "part": "body",
+      "channel": "translation",
+      "keyframes": [
+        { "time": 0.0, "value": [0.0, 0.0, 0.0] },
+        { "time": 1.0, "value": [0.0, 0.08, 0.0] },
+        { "time": 2.0, "value": [0.0, 0.0, 0.0] }
+      ]
+    },
+    {
+      "part": "label",
+      "channel": "scale",
+      "keyframes": [
+        { "time": 0.0, "value": 1.0 },
+        { "time": 1.0, "value": 1.08 },
+        { "time": 2.0, "value": 1.0 }
+      ]
+    }
+  ]
+}
