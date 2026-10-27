@@ -1,61 +1,61 @@
 {
-  "voice": "es-MX-JorgeNeural",
+  "voice": "fish:a0419956272841c1b0d3eb5c96a88bea",
   "scenes": [
     {
       "id": "hook",
       "text": "¿Dónde subes tus videos gratis... y encima cobras por ellos?",
       "file": "voice/hook.mp3",
-      "seconds": 4.128,
+      "seconds": 3.912,
       "words": [
         {
-          "text": "Dónde",
-          "start": 0.095,
-          "end": 0.345
+          "text": "¿Dónde",
+          "start": 0.0,
+          "end": 0.56
         },
         {
           "text": "subes",
-          "start": 0.357,
-          "end": 0.675
+          "start": 0.56,
+          "end": 0.98
         },
         {
           "text": "tus",
-          "start": 0.686,
-          "end": 0.845
+          "start": 0.98,
+          "end": 1.1
         },
         {
           "text": "videos",
-          "start": 0.857,
-          "end": 1.198
+          "start": 1.1,
+          "end": 1.34
         },
         {
-          "text": "gratis",
-          "start": 1.209,
-          "end": 1.641
+          "text": "gratis...",
+          "start": 1.34,
+          "end": 2.04
         },
         {
           "text": "y",
-          "start": 1.845,
-          "end": 1.925
+          "start": 2.04,
+          "end": 2.18
         },
         {
           "text": "encima",
-          "start": 1.936,
-          "end": 2.323
+          "start": 2.18,
+          "end": 2.56
         },
         {
           "text": "cobras",
-          "start": 2.334,
-          "end": 2.698
+          "start": 2.56,
+          "end": 3.0
         },
         {
           "text": "por",
-          "start": 2.709,
-          "end": 2.868
+          "start": 3.0,
+          "end": 3.2
         },
         {
-          "text": "ellos",
-          "start": 2.88,
-          "end": 3.311
+          "text": "ellos?",
+          "start": 3.2,
+          "end": 3.42
         }
       ]
     },
@@ -63,72 +63,72 @@
       "id": "chat",
       "text": "En Dembed. Subes gratis y ganas con tus vistas, desde el primer video.",
       "file": "voice/chat.mp3",
-      "seconds": 5.592,
+      "seconds": 4.08,
       "words": [
         {
           "text": "En",
-          "start": 0.095,
-          "end": 0.289
+          "start": 0.0,
+          "end": 0.36
         },
         {
-          "text": "Dembed",
-          "start": 0.3,
-          "end": 0.72
+          "text": "Dembed.",
+          "start": 0.36,
+          "end": 0.76
         },
         {
           "text": "Subes",
-          "start": 1.5,
-          "end": 1.909
+          "start": 0.94,
+          "end": 1.26
         },
         {
           "text": "gratis",
-          "start": 1.92,
-          "end": 2.284
+          "start": 1.26,
+          "end": 1.62
         },
         {
           "text": "y",
-          "start": 2.295,
-          "end": 2.341
+          "start": 1.62,
+          "end": 1.72
         },
         {
           "text": "ganas",
-          "start": 2.352,
-          "end": 2.67
+          "start": 1.72,
+          "end": 2.02
         },
         {
           "text": "con",
-          "start": 2.682,
-          "end": 2.841
+          "start": 2.02,
+          "end": 2.12
         },
         {
           "text": "tus",
-          "start": 2.852,
-          "end": 3.023
+          "start": 2.12,
+          "end": 2.3
         },
         {
-          "text": "vistas",
-          "start": 3.034,
-          "end": 3.455
+          "text": "vistas,",
+          "start": 2.3,
+          "end": 2.64
         },
         {
           "text": "desde",
-          "start": 3.67,
-          "end": 3.909
+          "start": 2.82,
+          "end": 3.0
         },
         {
           "text": "el",
-          "start": 3.92,
-          "end": 4.0
+          "start": 3.0,
+          "end": 3.16
         },
         {
           "text": "primer",
-          "start": 4.011,
-          "end": 4.33
+          "start": 3.16,
+          "end": 3.36
         },
         {
-          "text": "video",
-          "start": 4.341,
-          "end": 4.761
+          "text": "video.",
+          "start": 3.36,
+          "end": 3.68
         }
       ]
     },
@@ -136,67 +136,67 @@
       "id": "requirements",
       "text": "¿Mil suscriptores? ¿Cuatro mil horas de reproducción? Olvídalo. Aquí hay cero requisitos.",
       "file": "voice/requirements.mp3",
-      "seconds": 7.992,
+      "seconds": 5.328,
       "words": [
         {
-          "text": "Mil",
-          "start": 0.095,
-          "end": 0.334
+          "text": "¿Mil",
+          "start": 0.0,
+          "end": 0.42
         },
         {
-          "text": "suscriptores",
-          "start": 0.345,
-          "end": 1.186
+          "text": "suscriptores?",
+          "start": 0.42,
+          "end": 1.08
         },
         {
-          "text": "Cuatro",
-          "start": 1.966,
-          "end": 2.25
+          "text": "¿Cuatro",
+          "start": 1.3,
+          "end": 1.62
         },
         {
           "text": "mil",
-          "start": 2.261,
-          "end": 2.466
+          "start": 1.62,
+          "end": 1.78
         },
         {
           "text": "horas",
-          "start": 2.477,
-          "end": 2.693
+          "start": 1.78,
+          "end": 2.02
         },
         {
           "text": "de",
-          "start": 2.705,
-          "end": 2.773
+          "start": 2.02,
+          "end": 2.14
         },
         {
-          "text": "reproducción",
-          "start": 2.784,
-          "end": 3.466
+          "text": "reproducción?",
+          "start": 2.14,
+          "end": 2.74
         },
         {
-          "text": "Olvídalo",
-          "start": 4.25,
-          "end": 4.909
+          "text": "Olvídalo.",
+          "start": 2.98,
+          "end": 3.52
         },
         {
           "text": "Aquí",
-          "start": 5.705,
-          "end": 6.011
+          "start": 3.8,
+          "end": 4.02
         },
         {
           "text": "hay",
-          "start": 6.023,
-          "end": 6.136
+          "start": 4.02,
+          "end": 4.18
         },
         {
           "text": "cero",
-          "start": 6.148,
-          "end": 6.42
+          "start": 4.18,
+          "end": 4.46
         },
         {
-          "text": "requisitos",
-          "start": 6.432,
-          "end": 7.159
+          "text": "requisitos.",
+          "start": 4.46,
+          "end": 5.02
         }
       ]
     },
@@ -204,72 +204,72 @@
       "id": "panel",
       "text": "Todo en tu propio panel: carpetas, estadísticas, enlaces, e iframe para tu web.",
       "file": "voice/panel.mp3",
-      "seconds": 5.88,
+      "seconds": 4.488,
       "words": [
         {
           "text": "Todo",
-          "start": 0.095,
-          "end": 0.277
+          "start": 0.0,
+          "end": 0.26
         },
         {
           "text": "en",
-          "start": 0.289,
-          "end": 0.368
+          "start": 0.26,
+          "end": 0.42
         },
         {
           "text": "tu",
-          "start": 0.38,
-          "end": 0.482
+          "start": 0.42,
+          "end": 0.56
         },
         {
           "text": "propio",
-          "start": 0.493,
-          "end": 0.823
+          "start": 0.56,
+          "end": 0.72
         },
         {
-          "text": "panel",
-          "start": 0.834,
-          "end": 1.175
+          "text": "panel:",
+          "start": 0.72,
+          "end": 1.06
         },
         {
-          "text": "carpetas",
-          "start": 1.414,
-          "end": 2.016
+          "text": "carpetas,",
+          "start": 1.38,
+          "end": 1.82
         },
         {
-          "text": "estadísticas",
-          "start": 2.209,
-          "end": 2.993
+          "text": "estadísticas,",
+          "start": 1.84,
+          "end": 2.48
         },
         {
-          "text": "enlaces",
-          "start": 3.175,
-          "end": 3.743
+          "text": "enlaces,",
+          "start": 2.72,
+          "end": 3.08
         },
         {
           "text": "e",
-          "start": 3.959,
-          "end": 4.027
+          "start": 3.32,
+          "end": 3.38
         },
         {
           "text": "iframe",
-          "start": 4.039,
-          "end": 4.436
+          "start": 3.38,
+          "end": 3.82
         },
         {
           "text": "para",
-          "start": 4.448,
-          "end": 4.664
+          "start": 3.82,
+          "end": 3.98
         },
         {
           "text": "tu",
-          "start": 4.675,
-          "end": 4.789
+          "start": 3.98,
+          "end": 4.18
         },
         {
-          "text": "web",
-          "start": 4.8,
-          "end": 5.05
+          "text": "web.",
+          "start": 4.18,
+          "end": 4.32
         }
       ]
     },
@@ -277,125 +277,125 @@
       "id": "earnings",
       "text": "Te llevas el treinta por ciento de los anuncios, y cobras por PayPal.",
       "file": "voice/earnings.mp3",
-      "seconds": 4.344,
+      "seconds": 4.08,
       "words": [
         {
           "text": "Te",
-          "start": 0.095,
-          "end": 0.186
+          "start": 0.0,
+          "end": 0.32
         },
         {
           "text": "llevas",
-          "start": 0.198,
-          "end": 0.516
+          "start": 0.32,
+          "end": 0.68
         },
         {
           "text": "el",
-          "start": 0.527,
-          "end": 0.641
+          "start": 0.68,
+          "end": 0.8
         },
         {
           "text": "treinta",
-          "start": 0.652,
-          "end": 0.97
+          "start": 0.8,
+          "end": 1.1
         },
         {
           "text": "por",
-          "start": 0.982,
-          "end": 1.141
+          "start": 1.1,
+          "end": 1.28
         },
         {
           "text": "ciento",
-          "start": 1.152,
-          "end": 1.448
+          "start": 1.28,
+          "end": 1.52
         },
         {
           "text": "de",
-          "start": 1.459,
-          "end": 1.55
+          "start": 1.52,
+          "end": 1.76
         },
         {
           "text": "los",
-          "start": 1.561,
-          "end": 1.698
+          "start": 1.76,
+          "end": 1.86
         },
         {
-          "text": "anuncios",
-          "start": 1.709,
-          "end": 2.243
+          "text": "anuncios,",
+          "start": 1.86,
+          "end": 2.48
         },
         {
           "text": "y",
-          "start": 2.436,
-          "end": 2.516
+          "start": 2.68,
+          "end": 2.74
         },
         {
           "text": "cobras",
-          "start": 2.527,
-          "end": 2.902
+          "start": 2.74,
+          "end": 3.16
         },
         {
           "text": "por",
-          "start": 2.914,
-          "end": 3.084
+          "start": 3.16,
+          "end": 3.38
         },
         {
-          "text": "PayPal",
-          "start": 3.095,
-          "end": 3.516
+          "text": "PayPal.",
+          "start": 3.38,
+          "end": 3.64
         }
       ]
     },
     {
       "id": "cta",
-      "text": "Crea tu cuenta gratis en dembed punto c c.",
+      "text": "Crea tu cuenta gratis en dembed punto ce ce.",
       "file": "voice/cta.mp3",
-      "seconds": 3.216,
+      "seconds": 2.832,
       "words": [
         {
           "text": "Crea",
-          "start": 0.095,
-          "end": 0.334
+          "start": 0.0,
+          "end": 0.44
         },
         {
           "text": "tu",
-          "start": 0.345,
-          "end": 0.448
+          "start": 0.44,
+          "end": 0.6
         },
         {
           "text": "cuenta",
-          "start": 0.459,
-          "end": 0.743
+          "start": 0.6,
+          "end": 0.8
         },
         {
           "text": "gratis",
-          "start": 0.755,
-          "end": 1.152
+          "start": 0.8,
+          "end": 1.3
         },
         {
           "text": "en",
-          "start": 1.164,
-          "end": 1.289
+          "start": 1.3,
+          "end": 1.42
         },
         {
           "text": "dembed",
-          "start": 1.3,
-          "end": 1.641
+          "start": 1.42,
+          "end": 1.74
         },
         {
           "text": "punto",
-          "start": 1.652,
-          "end": 1.948
+          "start": 1.74,
+          "end": 1.96
         },
         {
-          "text": "c",
-          "start": 1.959,
-          "end": 2.084
+          "text": "ce",
+          "start": 1.96,
+          "end": 2.34
         },
         {
-          "text": "c.",
-          "start": 2.095,
-          "end": 2.391
+          "text": "ce.",
+          "start": 2.34,
+          "end": 2.58
         }
       ]
     }

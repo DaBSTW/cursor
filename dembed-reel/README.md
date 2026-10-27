@@ -1,6 +1,6 @@
 # Reel de dembed.cc (Remotion)
 
-Video vertical 1080×1920 a 30 fps (~36 s) para TikTok e Instagram Reels que presenta
+Video vertical 1080×1920 a 30 fps (~30 s) para TikTok e Instagram Reels que presenta
 [dembed.cc](https://dembed.cc), con locución en español, motion graphics y efectos de sonido.
 El render final está en [`dembed-reel.mp4`](dembed-reel.mp4).
 
@@ -22,17 +22,24 @@ npm run studio     # previsualizar y editar
 npm run render     # genera out/dembed-reel.mp4
 ```
 
-## Cambiar la voz o el guion
+## Voz (Fish Audio)
 
-Los textos están en `scripts/narrate.py`. La voz se genera con
-[edge-tts](https://github.com/rany2/edge-tts), que guarda los mp3 en `public/voice/` y los
-tiempos de cada palabra en `src/narration.json`; las escenas se ajustan solas a la nueva duración.
+La locución usa la voz **«Publicidad»** de la biblioteca de [Fish Audio](https://fish.audio/m/a0419956272841c1b0d3eb5c96a88bea)
+(masculina, enérgica, ritmo de anuncio). Los textos y la pronunciación de palabras difíciles
+(`Dembed`, `iframe`, `PayPal`) están en `scripts/narrate.py`.
+
+El script genera hasta 4 tomas por escena, las transcribe con Whisper y se queda con la más
+clara; de esa transcripción salen también los tiempos de cada palabra (`src/narration.json`),
+así que las animaciones y la duración de las escenas se reajustan solas.
 
 ```bash
-pip install edge-tts
-python scripts/narrate.py                          # voz por defecto: es-MX-JorgeNeural
-VOICE=es-AR-TomasNeural python scripts/narrate.py  # acento rioplatense
-VOICE=es-MX-DaliaNeural python scripts/narrate.py  # voz femenina
+pip install faster-whisper numpy
+export FISH_API_KEY=...                       # tu clave de fish.audio (no la subas al repo)
+python scripts/narrate.py                     # voz por defecto
+FISH_VOICE=<id> python scripts/narrate.py     # otra voz: el id de fish.audio/m/<id>
+FISH_SPEED=1.1 python scripts/narrate.py      # más rápido
+TTS=edge VOICE=es-AR-TomasNeural python scripts/narrate.py   # alternativa gratis con edge-tts
+npm run render
 ```
 
 Si cambias una palabra a la que está atada una animación (por ejemplo «Olvídalo» o «PayPal»),
