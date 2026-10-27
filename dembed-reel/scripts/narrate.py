@@ -1,7 +1,7 @@
 """Genera la locución de cada escena y escribe src/narration.json.
 
 Fish Audio (por defecto):
-    pip install faster-whisper numpy
+    pip install faster-whisper librosa numpy
     FISH_API_KEY=... python scripts/narrate.py
     FISH_VOICE=<id de fish.audio/m/<id>> FISH_API_KEY=... python scripts/narrate.py
 
@@ -26,10 +26,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 TTS = os.environ.get("TTS", "fish")
 
-# Voz "Publicidad" de la biblioteca de Fish Audio: masculina, enérgica, ritmo de anuncio.
-FISH_VOICE = os.environ.get("FISH_VOICE", "a0419956272841c1b0d3eb5c96a88bea")
+# Voz "voz de locutor k" de la biblioteca de Fish Audio: masculina, grave, de locutor.
+FISH_VOICE = os.environ.get("FISH_VOICE", "3f45a7fd7a614655a61eb7027b955783")
 FISH_MODEL = os.environ.get("FISH_MODEL", "s1")
-FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.0"))
+FISH_SPEED = float(os.environ.get("FISH_SPEED", "1.1"))
+# Tono medio máximo (Hz) de una toma: por encima suena a voz femenina y se descarta.
+MAX_PITCH = float(os.environ.get("MAX_PITCH", "165"))
 
 EDGE_VOICE = os.environ.get("VOICE", "es-MX-JorgeNeural")
 EDGE_RATE = os.environ.get("RATE", "+10%")
@@ -47,7 +49,7 @@ LINES = {
 # Cómo debe sonar cada palabra difícil (una palabra del guion -> una palabra hablada).
 SPOKEN = {"Dembed": "Démbed", "dembed": "démbed", "iframe": "áifreim", "PayPal": "Péipal"}
 # Tomas por escena: se queda con la que Whisper entiende mejor.
-TAKES = int(os.environ.get("TAKES", "4"))
+TAKES = int(os.environ.get("TAKES", "5"))
 
 
 def ssl_context() -> ssl.SSLContext:
@@ -101,6 +103,17 @@ async def edge_tts_words(text: str, path: Path) -> list[dict]:
                 start = chunk["offset"] / 1e7
                 words.append({"text": chunk["text"], "start": round(start, 3), "end": round(start + chunk["duration"] / 1e7, 3)})
     return words
+
+
+def pitch(path: Path) -> float:
+    """Mediana del tono fundamental de la toma, en Hz."""
+    import librosa
+    import numpy as np
+
+    raw = subprocess.check_output(["ffmpeg", "-loglevel", "error", "-i", str(path), "-f", "s16le", "-ac", "1", "-ar", "16000", "-"])
+    audio = np.frombuffer(raw, np.int16).astype(np.float32) / 32768
+    f0, voiced, _ = librosa.pyin(audio, fmin=60, fmax=450, sr=16000)
+    return float(np.nanmedian(f0[voiced]))
 
 
 def spoken(text: str) -> str:
@@ -177,12 +190,18 @@ async def main() -> None:
                 candidate = path.with_suffix(f".take{take}.mp3")
                 fish_tts(spoken(text), candidate)
                 normalize(candidate)
+                hz = pitch(candidate)
+                if hz > MAX_PITCH:
+                    print(f"  {scene_id} toma {take + 1}: descartada, tono {hz:.0f} Hz")
+                    continue
                 words, score = aligned_words(text, candidate)
-                print(f"  {scene_id} toma {take + 1}: {score:.2f}")
+                print(f"  {scene_id} toma {take + 1}: {score:.2f} ({hz:.0f} Hz)")
                 if best is None or score > best[0]:
                     best = (score, candidate, words)
                 if score > 0.98:
                     break
+            if best is None:
+                raise SystemExit(f"Ninguna toma de '{scene_id}' sonó con voz masculina; prueba otra FISH_VOICE")
             _, chosen, words = best
             chosen.replace(path)
             for leftover in out_dir.glob(f"{scene_id}.take*.mp3"):
